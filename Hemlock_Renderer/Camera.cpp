@@ -1,5 +1,5 @@
 #include "Camera.h"
-#include "Helper_classes.h"
+#include "VectorMath.h"
 #include "Texture.h"
 
 Camera::Camera(int window_width, int window_height, glm::vec3 position)
@@ -9,7 +9,7 @@ Camera::Camera(int window_width, int window_height, glm::vec3 position)
 	Position = position;
 }
 
-void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane , GLFWwindow* window, vec2<int> menu_size)
+void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane , GLFWwindow* window, Vec2<int> menu_size)
 {
 	glm::mat4 view = glm::mat4(1.0f);
 	glm::mat4 proj = glm::mat4(1.0f);
@@ -49,7 +49,7 @@ void Camera::Matrix(GLuint shaderprogram, const char* uniform)
 
 }
 
-void Camera::HandleInputs(GLFWwindow* window, vec2<int> menu_size)
+void Camera::HandleInputs(GLFWwindow* window, Vec2<int> menu_size)
 {
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
@@ -121,11 +121,11 @@ void Camera::HandleInputs(GLFWwindow* window, vec2<int> menu_size)
 			firstclick = false;
 		}
 
-		vec2<double> mousepos;
+		Vec2<double> mousepos;
 
 		glfwGetCursorPos(window, &mousepos.x, &mousepos.y);
 
-		vec2<float> rot;
+		Vec2<float> rot;
 
 		rot.x = sensitivity * (float)(mousepos.y - (w_height / 2)) / w_height;
 		rot.y = sensitivity * (float)(mousepos.x - (w_width / 2)) / w_width;

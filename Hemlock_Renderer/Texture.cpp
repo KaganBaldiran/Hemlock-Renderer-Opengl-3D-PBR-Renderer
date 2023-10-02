@@ -109,9 +109,9 @@ std::string Textures::GetTexturePbrType_str()
 	return this->texture_type_of_pbr_str;
 }
 
-vec2<float> GetScreenRatio(GLFWwindow* m_window , vec2<int> menu_size)
+Vec2<float> GetScreenRatio(GLFWwindow* m_window , Vec2<int> menu_size)
 {
-	vec2<int> winsize;
+	Vec2<int> winsize;
 	glfwGetWindowSize(m_window, &winsize.x, &winsize.y);
 
 	//std::cout << "WINSIZE.X: " << winsize.x << "WINSIZE.Y: " << winsize.y << "\n";
@@ -152,5 +152,5 @@ vec2<float> GetScreenRatio(GLFWwindow* m_window , vec2<int> menu_size)
 	//std::cout << "x: " << ratio_minmax_x << "\n";
 	//std::cout << "y: " << ratio_minmax_y << "\n";
 
-	return vec2<float>{ratio_minmax_x, ratio_minmax_y};
+	return Vec2<float>{ratio_minmax_x, ratio_minmax_y};
 }

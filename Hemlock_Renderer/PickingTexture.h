@@ -3,7 +3,7 @@
 
 #include<glew.h>
 #include<iostream>
-#include"Helper_classes.h"
+#include"VectorMath.h"
 typedef unsigned int uint;
 
 struct mouseleftbuttom
@@ -37,7 +37,7 @@ public:
 
 	pixelinfo ReadPixel(uint x, uint y);
 
-	GLuint onMouse(int x, int y , vec2<uint> windowscale) {
+	GLuint onMouse(int x, int y , Vec2<uint> windowscale) {
 		
 		GLbyte color[4];
 		GLfloat depth;

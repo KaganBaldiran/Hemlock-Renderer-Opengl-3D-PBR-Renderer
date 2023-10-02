@@ -7,7 +7,7 @@
 #include"Shader.h"
 #include"Buffers.h"
 #include"Texture.h"
-#include"Helper_classes.h"
+#include"VectorMath.h"
 
 #define DIFFUSE_TEXTURE 10
 #define SPECULAR_TEXTURE 20

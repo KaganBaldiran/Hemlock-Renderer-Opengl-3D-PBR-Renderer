@@ -7,13 +7,14 @@
   uniform mat4 model;
   
   uniform mat4 cameramatrix;
+
+  uniform float scale_avg;
   
 
   void main()
   {
-    vec4 pos = vec4(vertexdata + aNormal * 0.07, 1.0);
+    vec4 pos = vec4(vertexdata + normalize(aNormal) * scale_avg * 0.004f , 1.0);
     gl_Position = cameramatrix * model * pos;
-
   }
 
 

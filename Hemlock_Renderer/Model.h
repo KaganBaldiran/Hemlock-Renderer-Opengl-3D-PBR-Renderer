@@ -3,14 +3,12 @@
 
 #include <glew.h>
 
-
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "stb_image.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-
 
 #include "Meshhhh.h"
 #include "Shader.h"
@@ -21,7 +19,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
-#include "Helper_classes.h"
+#include "VectorMath.h"
 
 using namespace std;
 using namespace newwww;
@@ -72,9 +70,9 @@ public:
     bool autorotate = false;
     float rotationamount = NULL;
     float keepoldrotation = NULL;
-    vec3<float> moveamount = { NULL,NULL,NULL };
-    vec3<float> maxmove = { 20.0f,20.0f,20.0f };
-    vec3<float> newtreshold = { 20.0f,20.0f,20.0f };
+    Vec3<float> moveamount = { NULL,NULL,NULL };
+    Vec3<float> maxmove = { 20.0f,20.0f,20.0f };
+    Vec3<float> newtreshold = { 20.0f,20.0f,20.0f };
     float degree;
     float scaleamount = 1.0f;
     float maxscale = 2.0f;
@@ -95,7 +93,7 @@ public:
     UIproperties UIprop;
     bool imported = false;
     uint* modelcounterptr;
-    vec3<double> originpoint;
+    Vec3<double> originpoint;
 
     glm::vec3 dynamic_origin;
 

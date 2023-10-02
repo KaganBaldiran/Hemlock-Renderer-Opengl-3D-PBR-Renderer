@@ -11,7 +11,7 @@
 
 #include "Shader.h"
 
-#include "Helper_classes.h"
+#include "VectorMath.h"
 
 
   class Camera
@@ -36,11 +36,11 @@
 	  Camera(int window_width, int window_height, glm::vec3 position);
 
 
-	  void updateMatrix(float FOVdeg, float nearPlane, float farPlane, GLFWwindow* window, vec2<int> menu_size);
+	  void updateMatrix(float FOVdeg, float nearPlane, float farPlane, GLFWwindow* window, Vec2<int> menu_size);
 
 	  void Matrix(GLuint shaderprogram, const char* uniform);
 
-	  void HandleInputs(GLFWwindow* window, vec2<int> menu_size);
+	  void HandleInputs(GLFWwindow* window, Vec2<int> menu_size);
 
 	  glm::vec3 Get_Position() { return Position; };
 

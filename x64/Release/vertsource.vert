@@ -14,12 +14,17 @@
   out vec3 currentpos;
   out vec3 bitangent;
   out vec3 tangent;
+  
+  out vec3 inverse_normal;
 
   out mat3 TBN;
+
+  out vec4 FragPosLight;
 
   uniform mat4 model;
   uniform mat4 view;
   uniform mat4 proj;
+  uniform mat4 lightProjection;
   
 
   uniform mat4 cameramatrix;
@@ -28,6 +33,8 @@
   {
 
     currentpos = vec3(model* vec4(vertexdata , 1.0f));
+    FragPosLight = lightProjection * vec4(currentpos , 1.0f);
+   
     gl_Position = cameramatrix * vec4(currentpos , 1.0f);
     
     bitangent = bitangentnormal;
@@ -42,7 +49,13 @@
     finaltextcoord = textcoord;
     finalcolor = inputcolors;
 
-    Normal = aNormal;
+    //Normal = aNormal;
+    Normal = vec3(model * vec4(aNormal,0.0));
+
+    inverse_normal = mat3(transpose(inverse(model))) * aNormal;
+
+
+    
 
   }
 

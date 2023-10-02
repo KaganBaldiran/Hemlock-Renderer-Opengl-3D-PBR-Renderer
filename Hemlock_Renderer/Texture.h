@@ -1,5 +1,5 @@
 #pragma once
-#include "Helper_classes.h"
+#include "VectorMath.h"
 #include <string>
 
 
@@ -51,7 +51,7 @@ struct GLFWwindow;
 
 
 
-   vec2<float> GetScreenRatio(GLFWwindow* m_window, vec2<int> menu_size);
+   Vec2<float> GetScreenRatio(GLFWwindow* m_window, Vec2<int> menu_size);
 
 
 #endif // INITIALIZE

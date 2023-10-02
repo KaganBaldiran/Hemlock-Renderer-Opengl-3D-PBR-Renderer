@@ -12,9 +12,9 @@
 
 #define CURRENT_OBJECT(Current_obj) (Current_obj - 2)
 
-#define X_GIZMO 10000
-#define Y_GIZMO 20000
-#define Z_GIZMO 30000
+#define X_GIZMO 0x010
+#define Y_GIZMO 0x011
+#define Z_GIZMO 0x012
 
 class scene
 {
@@ -792,7 +792,7 @@ public:
 
 	}
 
-	vec2<double> UseGizmo(GLFWwindow* window , int &currentselectedgizmo , int currentselectedobj, std::pair<uint , bool> &enablegizmo_p , vec2<double> PrevMousePos , Camera camera , int currentselectedlight , GLuint Model_Shader)
+	Vec2<double> UseGizmo(GLFWwindow* window , int &currentselectedgizmo , int currentselectedobj, std::pair<uint , bool> &enablegizmo_p , Vec2<double> PrevMousePos , Camera camera , int currentselectedlight , GLuint Model_Shader)
 	{
 
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
@@ -818,12 +818,12 @@ public:
 		std::cout << "CAMERA DIRECTION: " << camera.Get_Orientation().x << " " << camera.Get_Orientation().y << " " << camera.Get_Orientation().z<<"\n";
 
 
-		vec2<double> temp_mouse;
+		Vec2<double> temp_mouse;
 
 		glfwGetCursorPos(window, &temp_mouse.x, &temp_mouse.y);
 
 
-		vec2<double> delta_mouse = { temp_mouse.x - PrevMousePos.x, temp_mouse.y - PrevMousePos.y };
+		Vec2<double> delta_mouse = { temp_mouse.x - PrevMousePos.x, temp_mouse.y - PrevMousePos.y };
 
 		if (CURRENT_OBJECT(currentselectedobj) >= NULL)
 		{
@@ -1092,10 +1092,6 @@ public:
 		}
 
 	}
-
-	
-
-
 
 };
 

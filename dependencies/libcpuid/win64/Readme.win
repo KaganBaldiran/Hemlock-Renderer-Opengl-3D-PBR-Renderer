@@ -1,0 +1,10 @@
+The binaries here are compiled with Microsoft Visual C++. The following configurations are built:
+
+Debug\ - no optimizations, using the static debug C runtime (/MTd)
+Release\ - optimizations on, using the static C runtime (/MT)
+ReleaseDLL\ - the library is compiled in a .dll (libcpuid.dll), which you'd need to ship alongside your executable. Static C runtime.
+
+Operating system and compiler version:
+Caption=Microsoft Windows Server 2022 Datacenter
+Version=10.0.20348\nMSBuild version 17.5.1+f6fdcf537 for .NET Framework
+17.5.1.16304

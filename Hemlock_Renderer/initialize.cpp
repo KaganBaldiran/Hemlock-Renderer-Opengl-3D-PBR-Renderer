@@ -2,10 +2,10 @@
 #include <iostream>
 #include <glew.h>
 #include <glfw3.h>
-#include "Helper_classes.h"
+#include "VectorMath.h"
 
 
-void WindowSizeRecall(GLFWwindow* window , vec2<int> menu_size)
+void WindowSizeRecall(GLFWwindow* window , Vec2<int> menu_size)
 {
 	int height = NULL, width = NULL;
 	glfwGetWindowSize(window, &width, &height);

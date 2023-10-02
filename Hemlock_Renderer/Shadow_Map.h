@@ -4,7 +4,7 @@
 #include <iostream>
 #include <glew.h>
 #include <glfw3.h>
-#include "Helper_classes.h"
+#include "VectorMath.h"
 #include "Buffers.h"
 #include "Shader.h"
 #include "glm/gtc/type_ptr.hpp"
@@ -66,7 +66,7 @@
 	  };
 
 
-	  void LightProjection(glm::vec3 lightposition,GLuint shader ,GLFWwindow* window,std::vector<Model*> &models ,float scene_scale , Camera camera , vec2<int> current_viewport_size)
+	  void LightProjection(glm::vec3 lightposition,GLuint shader ,GLFWwindow* window,std::vector<Model*> &models ,float scene_scale , Camera camera , Vec2<int> current_viewport_size)
 	  {
 		 
 
@@ -118,7 +118,7 @@
 
 	  uint GetShadowMapImage() { return this->shadowMap; };
 
-	  vec2<uint> GetShadowMapSize() { return { this->shadowMapWidth, this->shadowMapHeight }; };
+	  Vec2<uint> GetShadowMapSize() { return { this->shadowMapWidth, this->shadowMapHeight }; };
 
 	  glm::mat4 GetLightProjection() { return this->lp; };
 

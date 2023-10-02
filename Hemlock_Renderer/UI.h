@@ -15,7 +15,8 @@
 #include "Imgui/imgui_impl_glfw.h"
 #include "Texture.h"
 #include <tuple>
-
+#include "SystemData.h"
+#include "Thread.h"
 
 typedef std::tuple<ImVec4, ImVec4, ImVec4 , ImVec4, ImVec4 , ImVec4> color_sheme_t;
 // Dark theme color values
@@ -37,6 +38,7 @@ typedef std::tuple<ImVec4, ImVec4, ImVec4 , ImVec4, ImVec4 , ImVec4> color_sheme
 #define MINTY_FRESH_THEME color_sheme_t(ImVec4(0.87f, 0.98f, 0.93f, 1.0f), ImVec4(0.21f, 0.55f, 0.40f, 1.0f), ImVec4(0.17f, 0.46f, 0.33f, 1.0f), ImVec4(0.13f, 0.36f, 0.26f, 1.0f), ImVec4(0.31f, 0.73f, 0.56f, 1.0f), ImVec4(0.48f, 0.85f, 0.65f, 1.0f))
 #define ROYAL_PURPLE_THEME color_sheme_t(ImVec4(0.85f, 0.80f, 0.95f, 1.0f), ImVec4(0.37f, 0.20f, 0.54f, 1.0f), ImVec4(0.31f, 0.22f, 0.45f, 1.0f), ImVec4(0.25f, 0.16f, 0.35f, 1.0f), ImVec4(0.47f, 0.41f, 0.68f, 1.0f), ImVec4(0.61f, 0.56f, 0.89f, 1.0f))
 
+static float lines[120];
 
 namespace UI
 {
@@ -71,16 +73,18 @@ namespace UI
 
 	};
 
-	vec2<int> current_win_size = { (1000/5.4f),1000-18 };
-	vec2<int> current_viewport_size;
-	vec2<float> ApplicationSettingSizes;
-	vec2<float> viewport_size;
+	Vec2<int> current_win_size((1000/5.4f),1000-18);
+	Vec2<int> current_viewport_size;
+	Vec2<float> ApplicationSettingSizes;
+	Vec2<float> viewport_size;
 	float image_ratio_divisor = NULL;
 
 	UIcolorShemePack current_color_sheme;
 	color_sheme_t chosen_color_sheme = DARK_THEME;
 
+	//CPU usage counter
 	
+
     struct UIdataPack
     {
         bool renderlights = false;
@@ -89,9 +93,9 @@ namespace UI
         bool autorotate = false;
         float rotationamount = NULL;
         float keepoldrotation = NULL;
-        vec3<float> moveamount = { NULL,NULL,NULL };
-        vec3<float> maxmove = { 20.0f,20.0f,20.0f };
-        vec3<float> newtreshold = { 20.0f,20.0f,20.0f };
+        Vec3<float> moveamount = { NULL,NULL,NULL };
+        Vec3<float> maxmove = { 20.0f,20.0f,20.0f };
+        Vec3<float> newtreshold = { 20.0f,20.0f,20.0f };
         float scaleamount = 1.0f;
         float maxscale = 2.0f;
 
@@ -222,16 +226,29 @@ namespace UI
 		std::string GLSLversion = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
 		GLSLversion = "GLSL version: " + GLSLversion;
 
+		cpu_id_t CPUdata;
+		int flag = InitCpuid(CPUdata);
+
 		logs.push_back(vendor);
 		logs.push_back(renderer);
 		logs.push_back(GLversion);
 		logs.push_back(GLSLversion);
 
+		try
+		{
+			std::string CPUInfoBrand(CPUdata.brand_str);
+			logs.push_back("CPU: " + CPUInfoBrand);
+		}
+		catch (const std::exception& ex)
+		{
+			LOG_ERR("Unable to fetch cpu vendor! :: " << ex.what());
+		}
+
 	}
 
     void FrameBufferSizeCallBack(GLFWwindow* window)
     {
-        vec2<int> winsize;
+        Vec2<int> winsize;
 
         glfwGetWindowSize(window, &winsize.x, &winsize.y);
 
@@ -255,12 +272,12 @@ namespace UI
 
 	}
 
-	vec2<double> CalculateVirtualMouse(GLFWwindow* window)
+	Vec2<double> CalculateVirtualMouse(GLFWwindow* window)
 	{
-		vec2<double> mousepos;
+		Vec2<double> mousepos;
 		glfwGetCursorPos(window, &mousepos.x, &mousepos.y);
 
-		vec2<double> virtual_mouse_pos;
+		Vec2<double> virtual_mouse_pos;
 
 		virtual_mouse_pos.x = (mousepos.x ) - current_win_size.x;
 		virtual_mouse_pos.y = (mousepos.y - 37);
@@ -285,7 +302,7 @@ namespace UI
 
 		static float max_viewport_size_y = -std::numeric_limits<float>::infinity();
 
-		vec2<int> winsize;
+		Vec2<int> winsize;
 
 		glfwGetWindowSize(window, &winsize.x, &winsize.y);
 
@@ -502,7 +519,7 @@ namespace UI
 	}
 
 
-	void ConfigureUI(size_t currentselectedobj ,UIdataPack &data , scene &scene , std::vector<std::string>& logs ,GLuint import_shader , glm::vec4 lightcolor , glm::vec3 lightpos , GLFWwindow* window , std::vector<uint> &auto_rotate_on , GLuint screen_image,GLuint light_shader, int currentselectedlight)
+	void ConfigureUI(size_t currentselectedobj ,UIdataPack &data , scene &scene , std::vector<std::string>& logs ,GLuint import_shader , glm::vec4 lightcolor , glm::vec3 lightpos , GLFWwindow* window , std::vector<uint> &auto_rotate_on , GLuint screen_image,GLuint light_shader, int currentselectedlight , ThreadPool& threads)
 	{
 
 		static bool importmodel_menu = false;
@@ -708,7 +725,7 @@ namespace UI
 
 		if (ApplicationMenuEnabled)
 		{
-			vec2<int> win_size = { NULL,NULL };
+			Vec2<int> win_size = { NULL,NULL };
 
 			glfwGetWindowSize(window, &win_size.x, &win_size.y);
 
@@ -1414,26 +1431,27 @@ namespace UI
 
 					if (ImGui::Button("Import Model", ImVec2(100, 40)))
 					{
-						importmodel = true;
-						data.imported = false;
+							importmodel = true;
+							data.imported = false;
 
-						nfdfilteritem_t filterItem[3] = { { "3D object files", "obj,fbx" }, { "obj", "obj" } , {"fbx","fbx"} };
-						nfdresult_t result = NFD_OpenDialog(&data.outPath, filterItem, 3, NULL);
-						if (result == NFD_OKAY)
-						{
-							puts("Success!");
-							puts(data.outPath);
-						}
-						else if (result == NFD_CANCEL)
-						{
-							puts("User pressed cancel.");
-							data.imported = true;
-							importmodel = false;
-						}
-						else
-						{
-							printf("Error: %s\n", NFD_GetError());
-						}
+							nfdfilteritem_t filterItem[3] = { { "3D object files", "obj,fbx" }, { "obj", "obj" } , {"fbx","fbx"} };
+							nfdresult_t result;
+							result = NFD_OpenDialog(&data.outPath, filterItem, 3, NULL);
+							if (result == NFD_OKAY)
+							{
+								puts("Success!");
+								puts(data.outPath);
+							}
+							else if (result == NFD_CANCEL)
+							{
+								puts("User pressed cancel.");
+								data.imported = true;
+								importmodel = false;
+							}
+							else
+							{
+								printf("Error: %s\n", NFD_GetError());
+							}
 					}
 
 
@@ -1568,6 +1586,15 @@ namespace UI
 			ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.MidMenuColor));
 			ImGui::BeginChildFrame(88, ImVec2(current_win_size.x / 1.1f, current_win_size.y / 1.3f), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
 
+
+			for (size_t i = 0; i < 119; i++)
+			{
+				lines[i] = lines[i + 1];
+			}
+			lines[119] = cpu_clock_measure(2, 0);
+
+
+			ImGui::PlotLines("CPU usage", lines, 120);
 			ImGui::Text("THIS IS LOG TAB");
 
 			if (logs.size() >= 1)
@@ -1584,7 +1611,7 @@ namespace UI
 
 			ImGui::EndTabItem();
 
-
+		
         }
 
 
