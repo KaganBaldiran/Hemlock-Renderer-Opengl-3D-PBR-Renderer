@@ -365,7 +365,9 @@
 
      //endresult += directionalLight(inverted_rougness,texturecolor,lightpositions[0],lightColors[0] , resultnormal , true);
 
-     outColor = endresult;
+     outColor = vec4(pow(endresult.xyz,vec3(0.9)),endresult.w);
+
+
      //vec3 projCoords = FragPosLight.xyz / FragPosLight.w;
      //projCoords = projCoords * 0.5 + 0.5;
      //outColor = vec4(vec3(texture(shadowMap , projCoords.xy).r),1.0f);
@@ -383,9 +385,5 @@
         outColor = endresult * vec4(5.5f,5.5f,2.5f,2.5f);
      }
 
-     
-     //outColor = DepthDemonstration();
-     
-        
-
+          
   }

@@ -30,6 +30,8 @@
 #include "StopWatch.h"
 #include "Thread.h"
 
+#include "G_Buffer.h"
+
 const int windowwidth = 1000;
 const int windowheight = 1000;
 
@@ -46,6 +48,7 @@ int main()
     Shader pickingshader("picking.vert", "picking.frag");
     Shader ShadowMapShader("ShadowMap.vert", "ShadowMap.frag");
     Shader FrameBufferShader("framebuffer.vert", "framebuffer.frag");
+    Shader GbufferPassShader("Gbuffer.vs", "Gbuffer.fs");
 
     scene scene;
 
@@ -65,6 +68,7 @@ int main()
 
     CubeMap Cubemap(cube_map_faces, "CubeMap.vert", "CubeMap.frag");
 
+    GBUFFER::gBuffer SceneGbuffer;
 
     // Enables Cull Facing
     //glEnable(GL_CULL_FACE);
@@ -222,10 +226,9 @@ int main()
 
             UI::HandleAutoRotation(currentselectedobj, scene, auto_rotate_on);
 
+            scene.DrawGbuffer(SceneGbuffer, GbufferPassShader.GetID(), camera, *window);
 
             ShadowMap.LightProjection(scene.LightPositions[0], ShadowMapShader.GetID(), window, scene.models, scene.globalscale, camera, UI::current_viewport_size);
-
-
 
             //std::cout << "index ID " << index << "\n";
             scene.DrawShadowMap(&ShadowMap, ShadowMapShader.GetID(), camera, window, glm::vec4(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w));
@@ -439,13 +442,15 @@ int main()
 
             glBindFramebuffer(GL_FRAMEBUFFER, NULL);
 
-            UI::DrawFrameBuffer(*screen_fbo.GetScreenImage(), window);
+            //UI::DrawFrameBuffer(*screen_fbo.GetScreenImage(), window);
+            UI::DrawFrameBuffer(SceneGbuffer.gNormal, window);
+
 
             LOG("Current selected light: " << currentselectedlight);
             LOG("Current selected gizmo: " << currentselectedgizmo);
             LOG("INDEX: " << index);
 
-            //scene.DrawScreenQuad(FrameBufferShader.GetID(), ShadowMap.GetShadowMapImage());
+            //scene.DrawScreenQuad(FrameBufferShader.GetID(), SceneGbuffer.gNormal);
             //scene.DrawCursor(cursor, pickingshader.GetID(), camera);
 
 

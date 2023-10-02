@@ -164,6 +164,7 @@
     <ClInclude Include="Light.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="post_process.h" />
+    <ClInclude Include="G_Buffer.h" />
     <ClInclude Include="StopWatch.h" />
     <ClInclude Include="SystemData.h" />
     <ClInclude Include="Thread.h" />
@@ -196,6 +197,8 @@
     <None Include="fragsource.frag" />
     <None Include="framebuffer.frag" />
     <None Include="framebuffer.vert" />
+    <None Include="Gbuffer.fs" />
+    <None Include="Gbuffer.vs" />
     <None Include="light.frag" />
     <None Include="light.vert" />
     <None Include="nativefiledialog-extended-master\src\nfd_cocoa.m" />

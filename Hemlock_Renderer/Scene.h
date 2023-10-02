@@ -8,6 +8,7 @@
 #include "Entity.h"
 #include "Light.h"
 #include "PickingTexture.h"
+#include "G_Buffer.h"
 
 
 #define CURRENT_OBJECT(Current_obj) (Current_obj - 2)
@@ -389,6 +390,30 @@ public:
 
 
 
+	}
+
+	void DrawGbuffer(GBUFFER::gBuffer& SceneGbuffer, GLuint GbufferShader, Camera& camera, GLFWwindow& window)
+	{
+		
+		UseShaderProgram(GbufferShader);
+		glEnable(GL_DEPTH_TEST);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, SceneGbuffer.gbuffer);
+		glViewport(0, 0, SceneGbuffer.window_width, SceneGbuffer.window_height);
+
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+		for (size_t i = 1; i < models.size(); i++)
+		{
+			models.at(i)->transformation.SendUniformToShader(GbufferShader, "model");
+			models[i]->Draw(GbufferShader, camera, NULL, NULL);
+		}
+
+		UseShaderProgram(0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	void SetScreenQuads()

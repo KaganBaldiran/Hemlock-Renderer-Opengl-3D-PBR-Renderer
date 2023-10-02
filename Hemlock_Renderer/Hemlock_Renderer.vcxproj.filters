@@ -182,6 +182,9 @@
     <ClInclude Include="StopWatch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="G_Buffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vertsource.vert">
@@ -225,6 +228,12 @@
       <Filter>shaders</Filter>
     </None>
     <None Include="CubeMap.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Gbuffer.fs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Gbuffer.vs">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

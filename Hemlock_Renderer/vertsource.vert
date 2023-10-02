@@ -26,7 +26,6 @@
   uniform mat4 proj;
   uniform mat4 lightProjection;
   
-
   uniform mat4 cameramatrix;
 
   void main()

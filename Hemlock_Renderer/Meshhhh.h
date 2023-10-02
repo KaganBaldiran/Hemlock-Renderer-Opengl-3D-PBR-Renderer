@@ -151,8 +151,6 @@ namespace newwww {
             }
 
             
-
-
             glUniform3f(glGetUniformLocation(shader, "campos"), camera.Position.x, camera.Position.y, camera.Position.z);
 
             camera.Matrix(shader, "cameramatrix");
@@ -161,7 +159,6 @@ namespace newwww {
             glActiveTexture(GL_TEXTURE0 + 7);
 
             glBindTexture(GL_TEXTURE_2D, shadowMap);
-
 
             glUniform1i(glGetUniformLocation(shader, "shadowMap"), 7);
 

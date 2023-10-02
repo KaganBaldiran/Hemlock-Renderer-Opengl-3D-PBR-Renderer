@@ -7,5 +7,6 @@ uniform sampler2D shadowMap;
 
 void main()
 { 
-    FragColor = vec4(texture(shadowMap, TexCoords).r);
+    //FragColor = vec4(texture(shadowMap, TexCoords).r);
+    FragColor = texture(shadowMap, TexCoords);
 }
