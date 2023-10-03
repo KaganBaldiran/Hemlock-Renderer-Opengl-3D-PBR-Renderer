@@ -54,7 +54,9 @@ int main()
 
     FBO screen_fbo;
 
-    CreateCustomFrameBuffer(&screen_fbo , 1920 , 1000);
+    const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+    CreateCustomFrameBuffer(screen_fbo , mode->width, mode->height);
 
     vector<std::string> cube_map_faces
     {
@@ -69,13 +71,6 @@ int main()
     CubeMap Cubemap(cube_map_faces, "CubeMap.vert", "CubeMap.frag");
 
     GBUFFER::gBuffer SceneGbuffer;
-
-    // Enables Cull Facing
-    //glEnable(GL_CULL_FACE);
-    // Keeps front faces
-    //glCullFace(GL_BACK);
-    // Uses counter clock-wise standard
-    //glFrontFace(GL_CCW);
 
     NFD_Init();
     
@@ -174,12 +169,11 @@ int main()
 
     std::vector<uint> auto_rotate_on;
 
-    
+    int RenderPass = RENDER_PASS_COMBINED;
+
 	while (!glfwWindowShouldClose(window))
 	{
-        //if (stopwatch.returnMiliseconds() >= DeltaFrameTime)
-        //{
-            //stopwatch.resetstopwatch();
+       
             UI::SetStyle(data);
 
             WindowSizeRecall(window, UI::current_viewport_size);
@@ -198,25 +192,22 @@ int main()
             camera.updateMatrix(45.0f, 0.1f, 100.0f, window, UI::current_viewport_size);
 
 
-            std::cout << "Light origin x: " << scene.lights.at(0)->originpoint.x << "Light origin y: " << scene.lights.at(0)->originpoint.y << "Light origin z: " << scene.lights.at(0)->originpoint.z << "\n";
+            //std::cout << "Light origin x: " << scene.lights.at(0)->originpoint.x << "Light origin y: " << scene.lights.at(0)->originpoint.y << "Light origin z: " << scene.lights.at(0)->originpoint.z << "\n";
 
 
             UI::HandleSliderMaxValues(data, window);
 
 
-            std::cout << "CURRENT SELECTED OBJECT: " << currentselectedobj << "\n";
+            //std::cout << "CURRENT SELECTED OBJECT: " << currentselectedobj << "\n";
 
             UI::ConfigureUI(currentselectedobj, data, scene, logs, defaultshader.GetID(), lightcolor, lightpos, window, auto_rotate_on, ShadowMap.GetShadowMapImage(), lightshader.GetID(), currentselectedlight,threads);
 
-            //UI::DemoUI(window);
-
-
+            
             scene.DeleteModelKeyboardAction(currentselectedobj, window, logs);
 
             scene.CopyModelKeyboardAction(currentselectedobj, defaultshader.GetID(), window, logs, lightcolor, lightpos);
 
-            //if (selected_model != nullptr)
-            //{
+            
 
             UI::IncrementRotationDegree(data);
 
@@ -230,130 +221,129 @@ int main()
 
             ShadowMap.LightProjection(scene.LightPositions[0], ShadowMapShader.GetID(), window, scene.models, scene.globalscale, camera, UI::current_viewport_size);
 
-            //std::cout << "index ID " << index << "\n";
+          
             scene.DrawShadowMap(&ShadowMap, ShadowMapShader.GetID(), camera, window, glm::vec4(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w));
 
-            glBindFramebuffer(GL_FRAMEBUFFER, *screen_fbo.GetFBO());
+            
 
-            std::cout << "Current viewport size X: " << UI::current_viewport_size.x << "Current viewport size Y: " << UI::current_viewport_size.y << "\n";
+            //std::cout << "Current viewport size X: " << UI::current_viewport_size.x << "Current viewport size Y: " << UI::current_viewport_size.y << "\n";
 
 
             WindowSizeRecall(window, UI::current_viewport_size);
 
 
+            screen_fbo.Bind(GL_FRAMEBUFFER);
+            glViewport(0, 0, screen_fbo.FboSize.x, screen_fbo.FboSize.y);
 
-            glClearColor(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-            glEnable(GL_STENCIL_TEST);
-            glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-
-
-            //glEnable(GL_FRAMEBUFFER_SRGB);
-
-            if (currentselectedobj >= 2)
+            if (RenderPass == RENDER_PASS_COMBINED)
             {
-                scene.DrawModelsWithOutline(defaultshader.GetID(), Outlineshader.GetID(), camera, currentselectedobj - 2, currentselectedobj, ShadowMap.GetShadowMapImage());
 
-            }
-
-
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-            scene.RenderGrid(pickingshader.GetID(), grid, camera);
-
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-            if (data.takesreenshot)
-            {
                 glClearColor(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w);
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-            }
-
-            if (data.render_cube_map)
-            {
-                Cubemap.Draw(camera);
-            }
-
-            UseShaderProgram(defaultshader.GetID());
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
+                glEnable(GL_STENCIL_TEST);
+                glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+
+                //glEnable(GL_FRAMEBUFFER_SRGB);
+
+                if (currentselectedobj >= 2)
+                {
+                    scene.DrawModelsWithOutline(defaultshader.GetID(), Outlineshader.GetID(), camera, currentselectedobj - 2, currentselectedobj, ShadowMap.GetShadowMapImage());
+
+                }
+
+
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+                scene.RenderGrid(pickingshader.GetID(), grid, camera);
+
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+                if (data.takesreenshot)
+                {
+                    glClearColor(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w);
+                    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+                }
+
+                if (data.render_cube_map)
+                {
+                    Cubemap.Draw(camera);
+                }
+
+                UseShaderProgram(defaultshader.GetID());
 
 
 
-            for (int i = 0; i < scene.GetModelCount() + 1; i++) {
-                glStencilFunc(GL_ALWAYS, i + 1, -1);
-                if (i == 0)
+                for (int i = 0; i < scene.GetModelCount() + 1; i++) {
+                    glStencilFunc(GL_ALWAYS, i + 1, -1);
+                    if (i == 0)
+                    {
+
+
+                    }
+                    if (i > 1)
+                    {
+
+                        ShadowMap.LightProjection(scene.LightPositions[0], defaultshader.GetID(), window, scene.models, scene.globalscale, camera, UI::current_viewport_size);
+
+                        glUniform1i(glGetUniformLocation(defaultshader.GetID(), "enablehighlight"), data.enablehighlight);
+
+
+                        scene.GetModel(i - 1)->transformation.SendUniformToShader(defaultshader.GetID(), "model");
+                        scene.DrawModels(defaultshader.GetID(), camera, i - 1, ShadowMap.GetShadowMapImage(), Cubemap.GetCubeMapTexture());
+
+
+                        glActiveTexture(GL_TEXTURE0);
+
+                        UseShaderProgram(0);
+                    }
+
+
+                }
+
+                if (data.renderlights)
                 {
 
+                    for (int i = 0; i < scene.lights.size(); i++) {
+                        glStencilFunc(GL_ALWAYS, i + 1 + scene.GetModelCount() + 1, -1);
 
+                        scene.lights[i]->Draw(lightshader.GetID(), camera);
+
+                    }
                 }
-                if (i > 1)
+                if (CURRENT_OBJECT(currentselectedobj) >= NULL || scene.CURRENT_LIGHT(currentselectedlight) >= NULL)
                 {
+                    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+                    glStencilMask(0xFF);
+                    glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-                    ShadowMap.LightProjection(scene.LightPositions[0], defaultshader.GetID(), window, scene.models, scene.globalscale, camera, UI::current_viewport_size);
+                    for (int i = 0; i < 3; i++)
+                    {
+                        glStencilFunc(GL_ALWAYS, i + 1 + scene.GetModelCount() + 1 + scene.lights.size() + 2, -1);
 
-                    glUniform1i(glGetUniformLocation(defaultshader.GetID(), "enablehighlight"), data.enablehighlight);
+                        scene.DrawGizmo(lightshader.GetID(), camera, i, currentselectedobj, enablegizmo_p, currentselectedlight);
 
+                    }
 
-                    scene.GetModel(i - 1)->transformation.SendUniformToShader(defaultshader.GetID(), "model");
-                    scene.DrawModels(defaultshader.GetID(), camera, i - 1, ShadowMap.GetShadowMapImage(), Cubemap.GetCubeMapTexture());
-
-
-                    glActiveTexture(GL_TEXTURE0);
-
-                    UseShaderProgram(0);
+                    glDepthFunc(GL_LESS);
+                    glStencilMask(0xFF);
+                    glStencilFunc(GL_ALWAYS, 1, 0xFF);
+                    glEnable(GL_DEPTH_TEST);
                 }
 
-
+                //glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, 0);
             }
-
-            if (data.renderlights)
-            {
-
-                for (int i = 0; i < scene.lights.size(); i++) {
-                    glStencilFunc(GL_ALWAYS, i + 1 + scene.GetModelCount() + 1, -1);
-
-                    scene.lights[i]->Draw(lightshader.GetID(), camera);
-
-                }
-            }
-            if (CURRENT_OBJECT(currentselectedobj) >= NULL || scene.CURRENT_LIGHT(currentselectedlight) >= NULL)
-            {
-                glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-                glStencilMask(0xFF);
-                glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-                for (int i = 0; i < 3; i++)
-                {
-                    glStencilFunc(GL_ALWAYS, i + 1 + scene.GetModelCount() + 1 + scene.lights.size() + 2, -1);
-
-                    scene.DrawGizmo(lightshader.GetID(), camera, i, currentselectedobj, enablegizmo_p, currentselectedlight);
-
-                }
-
-                glDepthFunc(GL_LESS);
-                glStencilMask(0xFF);
-                glStencilFunc(GL_ALWAYS, 1, 0xFF);
-                glEnable(GL_DEPTH_TEST);
-            }
-
-
-
-
-
-            //glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, 0);
 
             if (data.takesreenshot)
             {
                 Vec2<int> screensize;
                 glfwGetWindowSize(window, &screensize.x, &screensize.y);
 
-
-                scene.Takescreenshot(&ShadowMap, screensize.x, screensize.y, data.screenshotPathstr.c_str());
+                scene.Takescreenshot(&ShadowMap, screensize.x, screensize.y, data.screenshotPathstr.c_str(),RenderPass,SceneGbuffer,screen_fbo);
                 data.takesreenshot = false;
             }
 
@@ -408,8 +398,8 @@ int main()
 
                 }
 
-                LOG("Current selected light: " << currentselectedlight);
-                LOG("Current selected obj: " << currentselectedobj);
+                //LOG("Current selected light: " << currentselectedlight);
+                //LOG("Current selected obj: " << currentselectedobj);
 
                 if (currentselectedobj >= 2)
                 {
@@ -434,28 +424,26 @@ int main()
             }
 
 
-
             UI::CalculateVirtualMouse(window);
 
             //glDisable(GL_FRAMEBUFFER_SRGB);
 
-
             glBindFramebuffer(GL_FRAMEBUFFER, NULL);
 
             //UI::DrawFrameBuffer(*screen_fbo.GetScreenImage(), window);
-            UI::DrawFrameBuffer(SceneGbuffer.gNormal, window);
-
+            //UI::DrawFrameBuffer(SceneGbuffer.gNormal, window);
 
             LOG("Current selected light: " << currentselectedlight);
             LOG("Current selected gizmo: " << currentselectedgizmo);
             LOG("INDEX: " << index);
 
-            //scene.DrawScreenQuad(FrameBufferShader.GetID(), SceneGbuffer.gNormal);
+
             //scene.DrawCursor(cursor, pickingshader.GetID(), camera);
 
+            scene.DrawScreenQuad(FrameBufferShader.GetID(), screen_fbo.GetScreenImage(),SceneGbuffer, UI::current_win_size.Cast<float>(), UI::current_viewport_size.y,RenderPass, *window);
 
+            UI::DrawOnViewportSettings(*window , RenderPass);
             UI::Render();
-
 
             glfwSwapBuffers(window);
             glfwPollEvents();
@@ -468,8 +456,7 @@ int main()
 
             PrevMousePos = temp_mouse_pos;
 
-        //}
-        //LOG("TIME: " << stopwatch.returnMiliseconds());
+    
 	}
 
     BindVAONull();
@@ -485,9 +472,7 @@ int main()
     DeleteShaderProgram(pickingshader.GetID());
     DeleteShaderProgram(ShadowMapShader.GetID());
     DeleteShaderProgram(FrameBufferShader.GetID());
-
-    
-   // delete gizmo_arrow;
+    DeleteShaderProgram(GbufferPassShader.GetID());
 
     UI::EndUI();
 

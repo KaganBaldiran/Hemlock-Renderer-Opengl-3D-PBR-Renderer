@@ -4,8 +4,15 @@
 #include "VectorMath.h"
 #include "Log.h"
 
+#define RENDER_PASS_NORMAL 0x022
+#define RENDER_PASS_POSITION 0x023
+#define RENDER_PASS_ALBEDO 0x024
+#define RENDER_PASS_SPECULAR 0x025
+#define RENDER_PASS_COMBINED 0x026
+
 namespace GBUFFER
 {
+
 	class gBuffer
 	{
 	public:
@@ -71,6 +78,11 @@ namespace GBUFFER
 
 	gBuffer::~gBuffer()
 	{
+		glDeleteTextures(1, &gPosition);
+		glDeleteTextures(1, &gNormal);
+		glDeleteTextures(1, &gColorSpec);
+		glDeleteFramebuffers(1,&gbuffer);
+		glDeleteRenderbuffers(1, &RBO);
 	}
 
 

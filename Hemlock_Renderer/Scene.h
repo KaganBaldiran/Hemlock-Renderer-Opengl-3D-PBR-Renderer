@@ -9,6 +9,7 @@
 #include "Light.h"
 #include "PickingTexture.h"
 #include "G_Buffer.h"
+#include "post_process.h"
 
 
 #define CURRENT_OBJECT(Current_obj) (Current_obj - 2)
@@ -262,20 +263,61 @@ public:
 
 	}
 
-	void Takescreenshot(shadowmap* ShadowMap, int width, int height, const char* path)
+	void Takescreenshot(shadowmap* ShadowMap, int width, int height, const char* path , int renderPass , GBUFFER::gBuffer& gbuffer , FBO& screenFBO)
 	{
-		
 		// Make the BYTE array, factor of 3 because it's RBG.
-		BYTE* pixels = new BYTE[3 * width * height];
+		BYTE* pixels;
 
+		Vec2<int> finalImageSize;
+		int ChannelSize = 0;
 
-		glReadPixels(0, 0, width, height, GL_BGR, GL_UNSIGNED_BYTE, pixels);
+		if(renderPass == RENDER_PASS_COMBINED)
+		{ 
+			glBindFramebuffer(GL_FRAMEBUFFER, screenFBO.GetFBO());
 
-		// Convert to FreeImage format & save to file
-		FIBITMAP* image = FreeImage_ConvertFromRawBits(pixels, width, height, 3 * width, 24, 0x0000FF, 0xFF0000, 0x00FF00, false);
+			finalImageSize(screenFBO.FboSize.Cast<int>());
+			ChannelSize = 3;
+			pixels = new BYTE[ChannelSize * finalImageSize.x * finalImageSize.y];
+
+			glReadBuffer(GL_COLOR_ATTACHMENT0);
+			glReadPixels(0, 0, screenFBO.FboSize.x, screenFBO.FboSize.y, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		}
+		else
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, gbuffer.gbuffer);
+			finalImageSize({ gbuffer.window_width , gbuffer.window_height });
+			ChannelSize = 4;
+			pixels = new BYTE[ChannelSize * finalImageSize.x * finalImageSize.y];
+			
+			if (renderPass == RENDER_PASS_POSITION)
+			{
+				glReadBuffer(GL_COLOR_ATTACHMENT0);
+				glReadPixels(0, 0, finalImageSize.x, finalImageSize.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+			}
+			else if (renderPass == RENDER_PASS_NORMAL)
+			{
+				// Read the second color attachment
+				glReadBuffer(GL_COLOR_ATTACHMENT1);
+				glReadPixels(0, 0, finalImageSize.x, finalImageSize.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+			}
+			else if (renderPass == RENDER_PASS_ALBEDO)
+			{
+				// Read the third color attachment
+				glReadBuffer(GL_COLOR_ATTACHMENT2);
+				glReadPixels(0, 0, finalImageSize.x, finalImageSize.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+			}
+
+			glBindFramebuffer(GL_FRAMEBUFFER, 0); 
+
+		}
+		
+		FIBITMAP* image = FreeImage_ConvertFromRawBits(pixels, finalImageSize.x, finalImageSize.y, ChannelSize * finalImageSize.x, 8 * ChannelSize, 0x0000FF, 0xFF0000, 0x00FF00, false);
 		FreeImage_Save(FIF_PNG, image, path, 0);
 
-		// Free resources
 		FreeImage_Unload(image);
 		delete[] pixels;
 
@@ -445,23 +487,52 @@ public:
 
 	}
 
-	void DrawScreenQuad(GLuint shader, GLuint buffertexture)
+	void DrawScreenQuad(GLuint shader, GLuint buffertexture , GBUFFER::gBuffer& screenGbuffer , Vec2<float> menuSize,float viewportHeight , int RenderPass, GLFWwindow &window)
 	{
-
-		// now bind back to default framebuffer and draw a quad plane with the attached framebuffer color texture
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
-		// clear all relevant buffers
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
+		glDisable(GL_DEPTH_TEST); 
+		
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); 
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		UseShaderProgram(shader);
 
+		int width, height;
+		glfwGetWindowSize(&window,&width, &height);
+
+		glViewport(0, 0, width, height);
+
+		//LOG("VIEWPORT HEIGHT DISTANCE: " << ((height - viewportHeight) / height));
+		glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(menuSize.x / width, -((height - (height - 18.0f)) / height), 0.0f));
+		//LOG("MENU SIZE: " << menuSize.x);
+
+		glm::mat4 ScaleMat = glm::scale(glm::mat4(1.0f), glm::vec3(((float)width - menuSize.x) / width, (menuSize.y + 18.0f) / height, 1.0f));
+
+		glUniformMatrix4fv(glGetUniformLocation(shader, "modelMat"), 1, GL_FALSE, glm::value_ptr(modelMat * ScaleMat));
+
+		GLuint renderpass = buffertexture;
+
+		if (RenderPass == RENDER_PASS_COMBINED)
+		{
+			renderpass = buffertexture;
+		}
+		else if (RenderPass == RENDER_PASS_NORMAL)
+		{
+			renderpass = screenGbuffer.gNormal;
+		}
+		else if (RenderPass == RENDER_PASS_ALBEDO)
+		{
+			renderpass = screenGbuffer.gColorSpec;
+		}
+		else if (RenderPass == RENDER_PASS_POSITION)
+		{
+			renderpass = screenGbuffer.gPosition;
+		}
 
 		glBindVertexArray(quadVAO);
-		glActiveTexture(GL_TEXTURE0 + 7);
-		glBindTexture(GL_TEXTURE_2D, buffertexture);
-		glUniform1i(glGetUniformLocation(shader, "shadowMap"), 7);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, renderpass);
+		glUniform1i(glGetUniformLocation(shader, "Viewport"), 0);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		UseShaderProgram(0);
 		glBindTexture(GL_TEXTURE_2D, 0);

@@ -254,11 +254,10 @@ namespace UI
 
         int main_menu_height = 18;
 
-        current_win_size.x = winsize.x / 5.4f;
+        //current_win_size.x = winsize.x / 5.4f;
         current_win_size.y = winsize.y - main_menu_height;
 
         ImGui::SetNextWindowSize(ImVec2(current_win_size.x,current_win_size.y));
-        
         ImGui::SetNextWindowPos(ImVec2(0, main_menu_height));
 
     }
@@ -349,6 +348,62 @@ namespace UI
 
 		//ImGui::PopStyleColor();
 
+	}
+
+	void DrawOnViewportSettings(GLFWwindow& window , int& renderPass)
+	{
+		static bool showDropdown = true;
+		
+		Vec2<int> winsize;
+		glfwGetWindowSize(&window, &winsize.x, &winsize.y);
+
+		ImGui::SetNextWindowPos(ImVec2(current_win_size.x, 18));
+		ImGui::SetNextWindowSize(ImVec2(winsize.x - current_win_size.x, current_win_size.y * 0.05f));
+
+		ImGui::Begin("Viewport", (bool*)0, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground);
+
+		ImGui::SetCursorPos(ImVec2((winsize.x - current_win_size.x) / 1.7f, winsize.y / 40.0f));
+		 
+		if (ImGui::BeginCombo("Render pass", "Select an option", ImGuiComboFlags_NoPreview))
+		{
+
+			if (ImGui::Selectable("Normal"))
+			{
+				renderPass = RENDER_PASS_NORMAL;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("Albedo"))
+			{
+
+				renderPass = RENDER_PASS_ALBEDO;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("Position"))
+			{
+
+				renderPass = RENDER_PASS_POSITION;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("Combined"))
+			{
+				renderPass = RENDER_PASS_COMBINED;
+				showDropdown = false;
+			}
+
+			
+			ImGui::EndCombo();
+		}
+
+		if (!ImGui::IsPopupOpen("##Dropdown"))
+		{
+			showDropdown = false;
+		}
+
+		ImGui::PopStyleColor();
+		ImGui::SetCursorPos(ImVec2((winsize.x - current_win_size.x) / 1.3f, winsize.y / 40.0f));
+		ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
+
+		ImGui::End();
 	}
 
 	void DoUIobjectTransformations(size_t currentselectedobj, scene& scene, UI::UIdataPack& data)
@@ -524,11 +579,6 @@ namespace UI
 
 		static bool importmodel_menu = false;
 		static bool ApplicationMenuEnabled = false;
-
-		//current_color_sheme(DARK_THEME);
-		
-
-		//DrawFrameBuffer(screen_image,window);
 
 		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.MidMenuColor));
 
@@ -866,9 +916,10 @@ namespace UI
 			{
 				showDropdown = false;
 			}
-		    
 
-
+			ImGui::Text("Hemlock Renderer is an Open-Source project");
+			ImGui::Text("For more details 'Github/KaganBaldiran'");
+			ImGui::Text("Hemlock Renderer 2023");
 
 			ImGui::End();
 
@@ -882,7 +933,7 @@ namespace UI
 
 
 
-        ImGui::Begin("Settings", (bool*)0, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse);
+        ImGui::Begin("Settings", (bool*)0, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse );
 
        
         ImGui::SetCursorPos(ImVec2(current_win_size.x / 16, current_win_size.y / 20));
@@ -1614,7 +1665,8 @@ namespace UI
 		
         }
 
-
+		current_win_size({ (int)ImGui::GetWindowSize().x,current_viewport_size.y });
+		
 
         ImGui::End();
 

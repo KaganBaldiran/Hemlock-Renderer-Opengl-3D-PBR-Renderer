@@ -3,10 +3,10 @@ out vec4 FragColor;
   
 in vec2 TexCoords;
 
-uniform sampler2D shadowMap;
+uniform sampler2D Viewport;
 
 void main()
 { 
-    //FragColor = vec4(texture(shadowMap, TexCoords).r);
-    FragColor = texture(shadowMap, TexCoords);
+    vec4 OutColor = texture(Viewport, TexCoords);
+    FragColor = vec4(pow(OutColor.xyz,vec3(0.9)),OutColor.w);
 }

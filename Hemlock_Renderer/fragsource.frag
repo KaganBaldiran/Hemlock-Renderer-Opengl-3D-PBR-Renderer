@@ -365,7 +365,7 @@
 
      //endresult += directionalLight(inverted_rougness,texturecolor,lightpositions[0],lightColors[0] , resultnormal , true);
 
-     outColor = vec4(pow(endresult.xyz,vec3(0.9)),endresult.w);
+     outColor = endresult;
 
 
      //vec3 projCoords = FragPosLight.xyz / FragPosLight.w;
