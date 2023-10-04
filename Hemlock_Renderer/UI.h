@@ -17,6 +17,7 @@
 #include <tuple>
 #include "SystemData.h"
 #include "Thread.h"
+#include "Cubemap.h"
 
 typedef std::tuple<ImVec4, ImVec4, ImVec4 , ImVec4, ImVec4 , ImVec4> color_sheme_t;
 // Dark theme color values
@@ -73,7 +74,7 @@ namespace UI
 
 	};
 
-	Vec2<int> current_win_size((1000/5.4f),1000-18);
+	Vec2<int> current_win_size((1000/4.0f),1000-18);
 	Vec2<int> current_viewport_size;
 	Vec2<float> ApplicationSettingSizes;
 	Vec2<float> viewport_size;
@@ -99,6 +100,7 @@ namespace UI
         float scaleamount = 1.0f;
         float maxscale = 2.0f;
 
+		GLuint CubeMapSize = 1024;
 
         bool logbutton = false;
         bool propertiesbutton = false;
@@ -574,7 +576,7 @@ namespace UI
 	}
 
 
-	void ConfigureUI(size_t currentselectedobj ,UIdataPack &data , scene &scene , std::vector<std::string>& logs ,GLuint import_shader , glm::vec4 lightcolor , glm::vec3 lightpos , GLFWwindow* window , std::vector<uint> &auto_rotate_on , GLuint screen_image,GLuint light_shader, int currentselectedlight , ThreadPool& threads)
+	void ConfigureUI(size_t currentselectedobj ,UIdataPack &data , scene &scene , std::vector<std::string>& logs ,GLuint import_shader , glm::vec4 lightcolor , glm::vec3 lightpos , GLFWwindow* window , std::vector<uint> &auto_rotate_on , GLuint screen_image,GLuint light_shader, int currentselectedlight , ThreadPool& threads , CubeMap &Cubemap , GLuint HDRItoCubeMapShader)
 	{
 
 		static bool importmodel_menu = false;
@@ -804,9 +806,37 @@ namespace UI
 				
 			}
 
-			static bool showDropdown = false; 
+			static bool HDRISettingShowDropdown = false;
 
-			
+			ImGui::Text(std::to_string(data.CubeMapSize).c_str());
+			ImGui::SameLine();
+			if (ImGui::BeginCombo("Cubemap(HDRI) Texture Size", "Select an option", ImGuiComboFlags_NoPreview))
+			{
+				if (ImGui::Selectable("512x512"))
+				{
+					data.CubeMapSize = 512;
+					HDRISettingShowDropdown = false;
+				}
+				if (ImGui::Selectable("1024x1024"))
+				{
+					data.CubeMapSize = 1024;
+					HDRISettingShowDropdown = false;
+				}
+				if (ImGui::Selectable("2048x2048"))
+				{
+					data.CubeMapSize = 2048;
+					HDRISettingShowDropdown = false;
+				}
+				if (ImGui::Selectable("4096x4096"))
+				{
+					data.CubeMapSize = 4096;
+					HDRISettingShowDropdown = false;
+				}
+
+				ImGui::EndCombo();
+			}
+
+			static bool showDropdown = false; 
 			
 			if (ImGui::BeginCombo("Set Application Color Theme", "Select an option", ImGuiComboFlags_NoPreview))
 			{
@@ -917,6 +947,10 @@ namespace UI
 				showDropdown = false;
 			}
 
+			ImGui::Spacing();
+			ImGui::Spacing();
+			ImGui::Spacing();
+
 			ImGui::Text("Hemlock Renderer is an Open-Source project");
 			ImGui::Text("For more details 'Github/KaganBaldiran'");
 			ImGui::Text("Hemlock Renderer 2023");
@@ -944,6 +978,8 @@ namespace UI
             data.logbutton = false;
         }
 		
+		ImVec2 ChildMenuSize(current_win_size.x / 1.05f, current_win_size.y / 1.165f);
+		ImVec2 ChildMenuPos(current_win_size.x / 35, current_win_size.y / 20 + (current_win_size.y / 12));
 
 		if (data.propertiesbutton)
 		{
@@ -952,14 +988,14 @@ namespace UI
 
 				if (currentselectedobj == scene.GetModel(currentselectedobj - 2)->GetModelID())
 				{
-					ImGui::SetCursorPos(ImVec2(current_win_size.x / 18, current_win_size.y / 20 + (current_win_size.y / 12)));
+					ImGui::SetCursorPos(ChildMenuPos);
 
 
 					//ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(ImVec4(45 / 255.0, 55 / 255.0, 71 / 255.0, 28 / 255.0)));
 
 					ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.MidMenuColor));
 
-					ImGui::BeginChildFrame(66, ImVec2(current_win_size.x / 1.1f, current_win_size.y / 1.3f), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
+					ImGui::BeginChildFrame(66, ChildMenuSize, ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
 
 					ImGui::PopStyleColor();
 
@@ -973,19 +1009,15 @@ namespace UI
 
 					if (ImGui::CollapsingHeader("Model General Settings", ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_Framed))
 					{
-						ImGui::BeginChildFrame(3, ImVec2(380, 150), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
+						ImGui::BeginChildFrame(3, ImVec2(ChildMenuSize.x * 0.98f, ChildMenuSize.y * 0.40f), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
 
 
 						static float f = 0.0f;
 						static int counter = 0;
 
 
-						ImGui::SetCursorPos(ImVec2(10, 10));
-						ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-						// Edit bools storing our window open/close state
-						ImGui::SetCursorPos(ImVec2(10, 20));
+						//ImGui::SetCursorPos(ImVec2(10, 10));
 						ImGui::Checkbox("Show light meshes", &data.renderlights);
-
 						ImGui::Checkbox("Auto Rotate", &data.autorotate);
 
 						if (data.autorotate)
@@ -1028,14 +1060,7 @@ namespace UI
 						ImGui::SliderFloat("Scale object", &data.scaleamount, 0.1f, data.maxscale);// Edit 1 float using a slider from 0.0f to 1.0f
 						ImGui::ColorEdit3("Background color", (float*)&data.clear_color); // Edit 3 floats representing a color
 						ImGui::Text("Selected Object: %d", currentselectedobj);
-
-
-
-						if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-							counter++;
-						ImGui::SameLine();
-						ImGui::Text("counter = %d", counter);
-
+						
 						ImGui::EndChildFrame();
 
 					}
@@ -1044,7 +1069,7 @@ namespace UI
 
 					if (ImGui::CollapsingHeader("Input Manuel", ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_Framed))
 					{
-						ImGui::BeginChildFrame(16, ImVec2(380, 150), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
+						ImGui::BeginChildFrame(16, ImVec2(ChildMenuSize.x * 0.98f, ChildMenuSize.y * 0.30f), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
 
 
 						ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -1063,7 +1088,7 @@ namespace UI
 
 					if (ImGui::CollapsingHeader("Material Settings", ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_Framed))
 					{
-						ImGui::BeginChildFrame(10, ImVec2(380, 400), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
+						ImGui::BeginChildFrame(10, ImVec2(ChildMenuSize.x * 0.98f, ChildMenuSize.y * 0.80f), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
 
 						static bool allow_import_texture = false;
 						nfdchar_t* texture_path = nullptr;
@@ -1291,7 +1316,7 @@ namespace UI
 				static int counter = 0;
 				static bool importmodel = false;
 
-				ImGui::SetCursorPos(ImVec2(current_win_size.x / 18, current_win_size.y / 20 + (current_win_size.y / 12)));
+				ImGui::SetCursorPos(ChildMenuPos);
 
 
 				//ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(ImVec4(45 / 255.0, 55 / 255.0, 71 / 255.0, 28 / 255.0)));
@@ -1300,7 +1325,7 @@ namespace UI
 
 				ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.MidMenuColor));
 
-				ImGui::BeginChildFrame(66, ImVec2(current_win_size.x / 1.1f, current_win_size.y / 1.3f), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
+				ImGui::BeginChildFrame(66, ChildMenuSize, ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
 
 				ImGui::PopStyleColor();
 				//ImGui::PushStyleColor(ImGuiCol_Header | , ImGui::ColorConvertFloat4ToU32(ImVec4(80 / 255.0, 40 / 255.0, 250 / 255.0, 98 / 255.0)));
@@ -1314,7 +1339,7 @@ namespace UI
 
 				if (ImGui::CollapsingHeader("Light General Settings", ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_Framed))
 				{
-					ImGui::BeginChildFrame(33, ImVec2(380, 150), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
+					ImGui::BeginChildFrame(33, ImVec2(ChildMenuSize.x * 0.98f, ChildMenuSize.y * 0.50f), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
 
 					//ImGui::SetCursorPos(ImVec2(10, 40));
 					ImGui::ColorEdit3("Background color", (float*)&data.clear_color); // Edit 3 floats representing a color
@@ -1323,10 +1348,6 @@ namespace UI
 					//ImGui::SetCursorPos(ImVec2(10, 100));
 					ImGui::Text("Current existing object count: %d", scene.GetModelCount());
 					//ImGui::SetCursorPos(ImVec2(10, 130));
-					if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-						counter++;
-					ImGui::SameLine();
-					ImGui::Text("counter = %d", counter);
 
 					ImGui::EndChildFrame();
 
@@ -1334,7 +1355,7 @@ namespace UI
 				
 				if (ImGui::CollapsingHeader("Input manuel", ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_Framed))
 				{
-					ImGui::BeginChildFrame(7, ImVec2(380, 150), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
+					ImGui::BeginChildFrame(7, ImVec2(ChildMenuSize.x * 0.98f, ChildMenuSize.y * 0.40f), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
 
 					//ImGui::SetCursorPos(ImVec2(10, 160));
 					ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -1357,7 +1378,7 @@ namespace UI
 
 				if (ImGui::CollapsingHeader("Light Settings", ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_Framed))
 				{
-					ImGui::BeginChildFrame(7, ImVec2(380, 150), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
+					ImGui::BeginChildFrame(7, ImVec2(ChildMenuSize.x * 0.98f, ChildMenuSize.y * 0.80f), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
 
 
 
@@ -1388,7 +1409,7 @@ namespace UI
 				static int counter = 0;
 				static bool importmodel = false;
 
-				ImGui::SetCursorPos(ImVec2(current_win_size.x / 18, current_win_size.y / 20 + (current_win_size.y / 12)));
+				ImGui::SetCursorPos(ChildMenuPos);
 
 
 				//ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(ImVec4(45 / 255.0, 55 / 255.0, 71 / 255.0, 28 / 255.0)));
@@ -1396,7 +1417,7 @@ namespace UI
 
 				ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.MidMenuColor));
 
-				ImGui::BeginChildFrame(66, ImVec2(current_win_size.x / 1.1f, current_win_size.y / 1.3f), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
+				ImGui::BeginChildFrame(66, ChildMenuSize, ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
 
 				ImGui::PopStyleColor();
 				//ImGui::PushStyleColor(ImGuiCol_Header | , ImGui::ColorConvertFloat4ToU32(ImVec4(80 / 255.0, 40 / 255.0, 250 / 255.0, 98 / 255.0)));
@@ -1409,24 +1430,70 @@ namespace UI
 
 				if (ImGui::CollapsingHeader("General Settings", ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_Framed))
 				{
-					ImGui::BeginChildFrame(33, ImVec2(380, 150), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
+					ImGui::BeginChildFrame(33, ImVec2(ChildMenuSize.x * 0.98f, ChildMenuSize.y * 0.50f), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
 
 					//ImGui::SetCursorPos(ImVec2(10, 10));
 					ImGui::Checkbox(" Enable Skybox", &data.render_cube_map);
 
+					static bool ImportHDRI = false;
+
+					if (ImGui::Button("Import HDRI", ImVec2(100, 40)) && !ImportHDRI)
+					{
+						nfdfilteritem_t filterItem[3] = { { "High Dynamic Range Image Files", "hdr,exr" }, { "hdr", "hdr" } , {"exr","exr"} };
+						nfdresult_t ResultHDRI = NFD_OpenDialog(&data.outPath, filterItem, 3, NULL);
+						if (ResultHDRI == NFD_OKAY)
+						{
+							ImportHDRI = true;
+							puts("Success!");
+							puts(data.outPath);
+						}
+						else if (ResultHDRI == NFD_CANCEL)
+						{
+							puts("User pressed cancel.");
+							data.imported = true;
+							importmodel = false;
+						}
+						else
+						{
+							printf("Error: %s\n", NFD_GetError());
+						}
+					}
+
+					if (ImportHDRI)
+					{
+						std::pair<GLuint , int> CubeMapTexture = HDRItoCubeMap(data.outPath, data.CubeMapSize, HDRItoCubeMapShader);
+
+						if (CubeMapTexture.second == HDRI_COMPLETE)
+						{
+							Cubemap.SetCubeMapTexture(CubeMapTexture.first);
+							logs.push_back("Imported HDRI :: " + std::string(data.outPath));
+						}
+						else if (CubeMapTexture.second == HDRI_INCOMPATIBLE_FILE)
+						{
+							logs.push_back("Error importing HDRI(Incompatible file extension)! :: " + std::string(data.outPath));
+						}
+						else if (CubeMapTexture.second == HDRI_ERROR)
+						{
+							logs.push_back("Error importing HDRI(Unable to complete the Framebuffer)! :: " + std::string(data.outPath));
+						}
+						
+						ImportHDRI = false;
+					}
+				
+					ImGui::Spacing();
+					ImGui::Spacing();
+
 					ImGui::Checkbox("Show light meshes", &data.renderlights);
 
+					ImGui::Spacing();
+
 					//ImGui::SetCursorPos(ImVec2(10, 40));
-					ImGui::ColorEdit3("Background color", (float*)&data.clear_color); // Edit 3 floats representing a color
+					ImGui::ColorEdit3("Background color", (float*)&data.clear_color); 
 					//ImGui::SetCursorPos(ImVec2(10, 70));
 					ImGui::Text("Selected Object: %d", currentselectedobj);
 					//ImGui::SetCursorPos(ImVec2(10, 100));
 					ImGui::Text("Current existing object count: %d", scene.GetModelCount());
 					//ImGui::SetCursorPos(ImVec2(10, 130));
-					if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-						counter++;
-					ImGui::SameLine();
-					ImGui::Text("counter = %d", counter);
 
 					ImGui::EndChildFrame();
 
@@ -1446,7 +1513,7 @@ namespace UI
 
 				if (ImGui::CollapsingHeader("Input manuel", ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_Framed))
 				{
-					ImGui::BeginChildFrame(7, ImVec2(380, 150), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
+					ImGui::BeginChildFrame(7, ImVec2(ChildMenuSize.x * 0.98f, ChildMenuSize.y * 0.40f), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
 
 					//ImGui::SetCursorPos(ImVec2(10, 160));
 					ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -1628,15 +1695,14 @@ namespace UI
         if (data.logbutton)
         {
 
-			ImGui::SetCursorPos(ImVec2(current_win_size.x / 18, current_win_size.y / 20 + (current_win_size.y / 12)));
+			ImGui::SetCursorPos(ChildMenuPos);
 
 
 			//ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(ImVec4(150 / 255.0, 188 / 255.0, 250 / 255.0, 98 / 255.0)));
 			//ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.ChildMenuColor));
 
 			ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.MidMenuColor));
-			ImGui::BeginChildFrame(88, ImVec2(current_win_size.x / 1.1f, current_win_size.y / 1.3f), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
-
+			ImGui::BeginChildFrame(88, ChildMenuSize, ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
 
 			for (size_t i = 0; i < 119; i++)
 			{
@@ -1644,15 +1710,21 @@ namespace UI
 			}
 			lines[119] = cpu_clock_measure(2, 0);
 
-
 			ImGui::PlotLines("CPU usage", lines, 120);
 			ImGui::Text("THIS IS LOG TAB");
+
+			ImGui::Spacing();
 
 			if (logs.size() >= 1)
 			{
 				for (size_t i = 0; i < logs.size(); i++)
 				{
 					ImGui::Text(logs.at(i).c_str());
+
+					if (i == 4)
+					{
+						ImGui::Spacing();
+					}
 				}
 			}
 

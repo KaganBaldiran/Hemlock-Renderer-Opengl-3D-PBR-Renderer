@@ -187,53 +187,59 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="vertsource.vert">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="fragsource.frag">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="light.vert">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="light.frag">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="Outlinefrag.frag">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="picking.vert">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="picking.frag">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="nativefiledialog-extended-master\src\nfd_cocoa.m" />
-    <None Include="Outlinefrag.vert">
+    <None Include="Shaders\CubeMap.frag">
       <Filter>shaders</Filter>
     </None>
-    <None Include="ShadowMap.vert">
+    <None Include="Shaders\CubeMap.vert">
       <Filter>shaders</Filter>
     </None>
-    <None Include="ShadowMap.frag">
+    <None Include="Shaders\fragsource.frag">
       <Filter>shaders</Filter>
     </None>
-    <None Include="framebuffer.vert">
+    <None Include="Shaders\framebuffer.frag">
       <Filter>shaders</Filter>
     </None>
-    <None Include="framebuffer.frag">
+    <None Include="Shaders\framebuffer.vert">
       <Filter>shaders</Filter>
     </None>
-    <None Include="CubeMap.vert">
+    <None Include="Shaders\Gbuffer.fs">
       <Filter>shaders</Filter>
     </None>
-    <None Include="CubeMap.frag">
+    <None Include="Shaders\Gbuffer.vs">
       <Filter>shaders</Filter>
     </None>
-    <None Include="Gbuffer.fs">
+    <None Include="Shaders\light.frag">
       <Filter>shaders</Filter>
     </None>
-    <None Include="Gbuffer.vs">
+    <None Include="Shaders\light.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\Outlinefrag.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\Outlinefrag.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\picking.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\picking.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\ShadowMap.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\ShadowMap.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\vertsource.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\HDRI.vs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\HDRI.fs">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

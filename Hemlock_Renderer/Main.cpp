@@ -42,13 +42,15 @@ int main()
 
     glViewport(0, 0, windowwidth, windowheight);
 
-    Shader defaultshader("vertsource.vert", "fragsource.frag");
-    Shader lightshader("light.vert", "light.frag");
-    Shader Outlineshader("Outlinefrag.vert", "Outlinefrag.frag");
-    Shader pickingshader("picking.vert", "picking.frag");
-    Shader ShadowMapShader("ShadowMap.vert", "ShadowMap.frag");
-    Shader FrameBufferShader("framebuffer.vert", "framebuffer.frag");
-    Shader GbufferPassShader("Gbuffer.vs", "Gbuffer.fs");
+    Shader defaultshader("Shaders/vertsource.vert", "Shaders/fragsource.frag");
+    Shader lightshader("Shaders/light.vert", "Shaders/light.frag");
+    Shader Outlineshader("Shaders/Outlinefrag.vert", "Shaders/Outlinefrag.frag");
+    Shader pickingshader("Shaders/picking.vert", "Shaders/picking.frag");
+    Shader ShadowMapShader("Shaders/ShadowMap.vert", "Shaders/ShadowMap.frag");
+    Shader FrameBufferShader("Shaders/framebuffer.vert", "Shaders/framebuffer.frag");
+    Shader GbufferPassShader("Shaders/Gbuffer.vs", "Shaders/Gbuffer.fs");
+    Shader HDRIShader("Shaders/HDRI.vs", "Shaders/HDRI.fs");
+
 
     scene scene;
 
@@ -68,7 +70,9 @@ int main()
         "resources/skybox/back.jpg"
     };
 
-    CubeMap Cubemap(cube_map_faces, "CubeMap.vert", "CubeMap.frag");
+    //GLuint CubemapTexture = HDRItoCubeMap("resources/little_paris_eiffel_tower_2k.hdr", 1024, HDRIShader.GetID());
+    //CubeMap Cubemap(CubemapTexture, "Shaders/CubeMap.vert", "Shaders/CubeMap.frag");
+    CubeMap Cubemap(cube_map_faces, "Shaders/CubeMap.vert", "Shaders/CubeMap.frag");
 
     GBUFFER::gBuffer SceneGbuffer;
 
@@ -198,10 +202,8 @@ int main()
             UI::HandleSliderMaxValues(data, window);
 
 
-            //std::cout << "CURRENT SELECTED OBJECT: " << currentselectedobj << "\n";
-
-            UI::ConfigureUI(currentselectedobj, data, scene, logs, defaultshader.GetID(), lightcolor, lightpos, window, auto_rotate_on, ShadowMap.GetShadowMapImage(), lightshader.GetID(), currentselectedlight,threads);
-
+            UI::ConfigureUI(currentselectedobj, data, scene, logs, defaultshader.GetID(), lightcolor, lightpos, window, auto_rotate_on, 
+                           ShadowMap.GetShadowMapImage(), lightshader.GetID(), currentselectedlight,threads,Cubemap,HDRIShader.GetID());
             
             scene.DeleteModelKeyboardAction(currentselectedobj, window, logs);
 
@@ -418,7 +420,6 @@ int main()
                 if (index - 1 >= scene.GetModelCount() + scene.lights.size())
                 {
                     currentselectedgizmo = index;
-
                 }
 
             }
@@ -439,8 +440,9 @@ int main()
 
 
             //scene.DrawCursor(cursor, pickingshader.GetID(), camera);
-
-            scene.DrawScreenQuad(FrameBufferShader.GetID(), screen_fbo.GetScreenImage(),SceneGbuffer, UI::current_win_size.Cast<float>(), UI::current_viewport_size.y,RenderPass, *window);
+            
+            //scene.DrawScreenQuad(FrameBufferShader.GetID(), screen_fbo.GetScreenImage(),SceneGbuffer, UI::current_win_size.Cast<float>(), UI::current_viewport_size.y,RenderPass, *window);
+            scene.DrawScreenQuad(FrameBufferShader.GetID(), screen_fbo.GetScreenImage(), SceneGbuffer, UI::current_win_size.Cast<float>(), UI::current_viewport_size.y, RenderPass, *window);
 
             UI::DrawOnViewportSettings(*window , RenderPass);
             UI::Render();
