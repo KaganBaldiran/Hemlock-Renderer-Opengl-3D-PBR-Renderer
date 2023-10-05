@@ -1,23 +1,23 @@
 #include "PickingTexture.h"
+#include "Log.h"
 
-void pickingtexture::Init(uint w_width, uint w_height)
+pickingtexture::pickingtexture(uint w_width, uint w_height)
 {
-
+    
 	glGenFramebuffers(1, &m_fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
 	glGenTextures(1, &m_picking_texture);
 	glBindTexture(GL_TEXTURE_2D, m_picking_texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32UI, w_width, w_height, 0, GL_RGB_INTEGER, GL_UNSIGNED_INT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, w_width, w_height, 0, GL_RGB, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_picking_texture, 0);
 
-
-	glGenTextures(1, &m_depth_texture);
-	glBindTexture(GL_TEXTURE_2D, m_depth_texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, w_width, w_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depth_texture, 0);
+	//glGenTextures(1, &m_depth_texture);
+	//glBindTexture(GL_TEXTURE_2D, m_depth_texture);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_R , w_width, w_height, 0, GL_R, GL_FLOAT, NULL);
+	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_depth_texture, 0);
 
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
@@ -29,34 +29,45 @@ void pickingtexture::Init(uint w_width, uint w_height)
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	
+}
 
+pickingtexture::~pickingtexture()
+{
+	glDeleteFramebuffers(1, &this->m_fbo);
+	glDeleteTextures(1, &this->m_picking_texture);
 }
 
 void pickingtexture::EnableWriting()
 {
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 }
 
 void pickingtexture::DisableWriting()
 {
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-pickingtexture::pixelinfo pickingtexture::ReadPixel(uint x, uint y)
+pickingtexture::pixelinfo pickingtexture::ReadPixel(uint x, uint y , Vec2<int> WindowSize)
 {
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 
-	pixelinfo pixel;
+	pixelinfo pixelP;
+	float pixel[4];
 
-	glReadPixels(x, y, 1, 1, GL_RGB_INTEGER, GL_UNSIGNED_INT, &pixel);
-	
+	glReadPixels(x, WindowSize.y-y, 1,1, GL_RGBA, GL_FLOAT, &pixel);
+
+	LOG("PIXEL PICKED: " << pixel[0] << " " << pixel[1] << " " << pixel[2] << " " << pixel[3] << " " << x << " " << y);
+
 	glReadBuffer(GL_NONE);
 
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	return pixel;
+	pixelP.ObjectID = pixel[0];
+
+	return pixelP;
 }
 
 bool picking_technique::init()
@@ -73,7 +84,7 @@ void picking_technique::DrawStartCB(GLuint shader, uint Drawindex)
 
 void picking_technique::SetObjectIndex(GLuint shader,uint Objectindex)
 {
-	glUniform1ui(glGetUniformLocation(shader, "objectindex"), Objectindex);
+	glUniform1ui(glGetUniformLocation(shader, "ObjectID"), Objectindex);
 }
 
 

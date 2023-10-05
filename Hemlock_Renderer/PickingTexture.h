@@ -1,9 +1,11 @@
 #ifndef PICKINGTEXTURE
 #define PICKINGTEXTURE
 
-#include<glew.h>
-#include<iostream>
-#include"VectorMath.h"
+#include <glew.h>
+#include <glfw3.h>
+#include <iostream>
+#include "VectorMath.h"
+#include "Log.h"
 typedef unsigned int uint;
 
 struct mouseleftbuttom
@@ -16,7 +18,8 @@ class pickingtexture
 {
 public:
 
-	void Init(uint w_width, uint w_height);
+	pickingtexture(uint w_width, uint w_height);
+	~pickingtexture();
 
 	void EnableWriting();
 	void DisableWriting();
@@ -35,13 +38,34 @@ public:
 	};
 
 
-	pixelinfo ReadPixel(uint x, uint y);
+	pixelinfo ReadPixel(uint x, uint y, Vec2<int> WindowSize);
 
-	GLuint onMouse(int x, int y , Vec2<uint> windowscale) {
+	GLuint onMouse(int x, int y , Vec2<uint> windowscale , Vec2<float> menuSize) {
 		
+
+		Vec3<float> TranslateCoeff(menuSize.x / windowscale.x, ((windowscale.y - (windowscale.y - 18.0f))) / windowscale.y, 0.0f);
+		Vec3<float> ScaleCoeff(((float)windowscale.x - menuSize.x) / windowscale.x, (menuSize.y + 18.0f) / windowscale.y, 1.0f);
+
 		GLbyte color[4];
 		GLfloat depth;
 		GLuint index;
+
+		const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+		Vec2<float> Ratio((float)mode->width / windowscale.x, (float)mode->height / windowscale.y);
+
+		Vec2<float> mousePos(x, y);
+		//mousePos.x /= (float)mode->width;
+		//mousePos.y /= (float)mode->height;
+
+		//mousePos = mousePos * Ratio;
+		//mousePos.x += menuSize.x;
+		//mousePos = mousePos * ScaleCoeff;
+
+		LOG("PIXEL: " << mousePos << " " << mousePos * Ratio);
+
+		x = mousePos.x;
+		y = mousePos.y;
 
 		glReadPixels(x, windowscale.y - y - 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &color);
 		glReadPixels(x, windowscale.y - y - 1, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
@@ -54,6 +78,8 @@ public:
 
 		return index;
 	}
+
+	GLuint GetPickingTexture() { return this->m_picking_texture; };
 
 
 private:

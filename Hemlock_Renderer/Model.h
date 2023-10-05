@@ -94,6 +94,9 @@ public:
     bool imported = false;
     uint* modelcounterptr;
     Vec3<double> originpoint;
+    bool Selected = false;
+    std::string ModelName;
+    int SameModelInstances;
 
     glm::vec3 dynamic_origin;
 
@@ -102,9 +105,26 @@ public:
     
     
     
-    Model(string const& path, bool gamma = false) : gammaCorrection(gamma)
+    Model(string const& path, bool gamma = false) : gammaCorrection(gamma) , SameModelInstances(0)
     {
+        const char* modelName = strrchr(path.c_str(), '/');
+        if (modelName != nullptr) {
+            modelName++; 
+            this->ModelName = modelName;
+        }
+        else {
+            this->ModelName = path;
+        }
         
+        for (size_t i = 0; i < ModelName.size(); i++)
+        {
+            if (ModelName.at(i) == '.')
+            {
+                ModelName = ModelName.substr(0, i);
+                break;
+            }
+        }
+
         static uint counter = 2;
         modelcounterptr = &counter;
         modelid = counter;
@@ -142,10 +162,8 @@ public:
     
     void Draw(GLuint shader , Camera& camera, GLuint shadowMap , GLuint cube_map_texture)
     {
-        glUniform1i(glGetUniformLocation(shader, "modelID"), modelid);
-        
-        //std::cout << "Model ID " << modelid << "\n";
-
+        UseShaderProgram(shader);
+        glUniform1f(glGetUniformLocation(shader, "modelID"), this->GetModelID());
         for (unsigned int i = 0; i < meshes.size(); i++)
             meshes[i].Draw(shader , camera,shadowMap,cube_map_texture);
     }
@@ -179,6 +197,7 @@ private:
         std::vector<glm::vec3> originPoints;
         for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
             aiMesh* mesh = scene->mMeshes[i];
+            
 
             float minX = mesh->mVertices[0].x, minY = mesh->mVertices[0].y, minZ = mesh->mVertices[0].z;
             float maxX = mesh->mVertices[0].x, maxY = mesh->mVertices[0].y, maxZ = mesh->mVertices[0].z;

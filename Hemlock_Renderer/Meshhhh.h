@@ -49,6 +49,8 @@ namespace newwww {
         vector<Texture>  specular_textures;
         vector<Texture>  normal_textures;
 
+        
+
         std::string meshname = "";
 
         int disableclaymaterial[4] = { 0,0,0,0};
@@ -83,7 +85,8 @@ namespace newwww {
         void Draw(GLuint shader, Camera& camera , GLuint shadowMap,GLuint cube_map_texture)
         {
 
-            UseShaderProgram(shader);
+            
+
             // bind appropriate textures
             unsigned int diffuseNr = 1;
             unsigned int specularNr = 1;
@@ -169,6 +172,7 @@ namespace newwww {
 
             // draw mesh
             glBindVertexArray(VAO);
+
             glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
             glBindVertexArray(0);
 

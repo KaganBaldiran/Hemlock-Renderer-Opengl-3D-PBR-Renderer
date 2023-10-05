@@ -365,8 +365,27 @@ namespace UI
 		ImGui::Begin("Viewport", (bool*)0, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground);
 
 		ImGui::SetCursorPos(ImVec2((winsize.x - current_win_size.x) / 1.7f, winsize.y / 40.0f));
-		 
-		if (ImGui::BeginCombo("Render pass", "Select an option", ImGuiComboFlags_NoPreview))
+
+		std::string RenderPassUIText;
+
+		if (renderPass == RENDER_PASS_NORMAL)
+		{
+			RenderPassUIText = "Normal";
+		}
+		else if (renderPass == RENDER_PASS_ALBEDO)
+		{
+			RenderPassUIText = "Albedo";
+		}
+		else if (renderPass == RENDER_PASS_POSITION)
+		{
+			RenderPassUIText = "Position";
+		}
+		else if (renderPass == RENDER_PASS_COMBINED)
+		{
+			RenderPassUIText = "Combined";
+		}
+
+		if (ImGui::BeginCombo(RenderPassUIText.c_str(), "Select an option", ImGuiComboFlags_NoPreview))
 		{
 
 			if (ImGui::Selectable("Normal"))
@@ -576,7 +595,7 @@ namespace UI
 	}
 
 
-	void ConfigureUI(size_t currentselectedobj ,UIdataPack &data , scene &scene , std::vector<std::string>& logs ,GLuint import_shader , glm::vec4 lightcolor , glm::vec3 lightpos , GLFWwindow* window , std::vector<uint> &auto_rotate_on , GLuint screen_image,GLuint light_shader, int currentselectedlight , ThreadPool& threads , CubeMap &Cubemap , GLuint HDRItoCubeMapShader)
+	void ConfigureUI(int &currentselectedobj ,UIdataPack &data , scene &scene , std::vector<std::string>& logs ,GLuint import_shader , glm::vec4 lightcolor , glm::vec3 lightpos , GLFWwindow* window , std::vector<uint> &auto_rotate_on , GLuint screen_image,GLuint light_shader, int currentselectedlight , ThreadPool& threads , CubeMap &Cubemap , GLuint HDRItoCubeMapShader)
 	{
 
 		static bool importmodel_menu = false;
@@ -1671,6 +1690,50 @@ namespace UI
 
 				}
 
+				ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.ChildMenuColor));
+				ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 40.0f);
+				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 3.0f);
+
+				if (ImGui::CollapsingHeader("Outliner", ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_Framed))
+				{
+					ImGui::BeginChildFrame(7, ImVec2(ChildMenuSize.x * 0.98f, ChildMenuSize.y * 0.70f), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
+
+					for (size_t i = 1; i < scene.models.size(); i++)
+					{
+						
+						if (ImGui::TreeNode(scene.models[i]->ModelName.c_str()))
+						{
+							
+							for (size_t t = 0; t < scene.models[i]->meshes.size(); t++)
+							{
+								if (ImGui::TreeNode(scene.models[i]->meshes[t].meshname.c_str()))
+								{
+							
+									if (ImGui::Selectable(("Select##Object" + std::to_string(t)).c_str()))
+									{
+										
+									}
+
+									ImGui::TreePop(); 
+								}
+							}
+							if (ImGui::Selectable(("Select##Object" + std::to_string(i)).c_str()))
+							{
+								currentselectedobj = i + 2;
+							}
+
+							ImGui::TreePop(); 
+						}
+
+						
+					}
+					ImGui::EndChildFrame();
+
+				}
+				ImGui::PopStyleColor();
+				ImGui::PopStyleVar();
+				ImGui::PopStyleVar();
+
 
 				ImGui::EndChildFrame();
 
@@ -1696,10 +1759,6 @@ namespace UI
         {
 
 			ImGui::SetCursorPos(ChildMenuPos);
-
-
-			//ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(ImVec4(150 / 255.0, 188 / 255.0, 250 / 255.0, 98 / 255.0)));
-			//ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.ChildMenuColor));
 
 			ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.MidMenuColor));
 			ImGui::BeginChildFrame(88, ChildMenuSize, ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);

@@ -351,6 +351,16 @@ public:
 	{
 		Model* newmodel = new Model(filepath, shader);
 
+		for (size_t i = 0; i < models.size(); i++)
+		{
+			if (newmodel->ModelName == models.at(i)->ModelName)
+			{
+				models.at(i)->SameModelInstances++;
+				newmodel->ModelName += "(" + std::to_string(models.at(i)->SameModelInstances) + ")";
+				break;
+			}
+		}
+
 		models.push_back(newmodel);
 
 		FindGlobalMeshScales();
@@ -434,7 +444,7 @@ public:
 
 	}
 
-	void DrawGbuffer(GBUFFER::gBuffer& SceneGbuffer, GLuint GbufferShader, Camera& camera, GLFWwindow& window)
+	void DrawGbuffer(GBUFFER::gBuffer& SceneGbuffer, GLuint GbufferShader, Camera& camera, Vec2<float> menuSize, GLFWwindow& window)
 	{
 		
 		UseShaderProgram(GbufferShader);
@@ -443,13 +453,12 @@ public:
 		glBindFramebuffer(GL_FRAMEBUFFER, SceneGbuffer.gbuffer);
 		glViewport(0, 0, SceneGbuffer.window_width, SceneGbuffer.window_height);
 
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		glClear(GL_DEPTH_BUFFER_BIT);
 
 		for (size_t i = 1; i < models.size(); i++)
 		{
+			//glUniform1d(glGetUniformLocation(GbufferShader, "objectid"), 1.0);
 			models.at(i)->transformation.SendUniformToShader(GbufferShader, "model");
 			models[i]->Draw(GbufferShader, camera, NULL, NULL);
 		}
@@ -483,12 +492,43 @@ public:
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
-
-
 	}
 
-	void DrawScreenQuad(GLuint shader, GLuint buffertexture , GBUFFER::gBuffer& screenGbuffer , Vec2<float> menuSize,float viewportHeight , int RenderPass, GLFWwindow &window)
+	void DrawScreenQuad(GLuint shader, GLuint buffertexture , GBUFFER::gBuffer& screenGbuffer , Vec2<float> menuSize,float viewportHeight , int RenderPass,pickingtexture &pickingtexture,GLuint PickingShader, GLFWwindow &window)
 	{
+		int width, height;
+		glfwGetWindowSize(&window, &width, &height);
+
+		glViewport(0, 0, width, height);
+
+		glm::vec3 TranslateCoeff(menuSize.x / width, -((height - (height - 18.0f)) / height), 0.0f);
+		glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), TranslateCoeff);
+
+		glm::vec3 ScaleCoeff(((float)width - menuSize.x) / width, (menuSize.y + 18.0f) / height, 1.0f);
+		glm::mat4 ScaleMat = glm::scale(glm::mat4(1.0f), ScaleCoeff);
+
+
+		pickingtexture.EnableWriting();
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glDisable(GL_DEPTH_TEST);
+		UseShaderProgram(PickingShader);
+
+		glUniformMatrix4fv(glGetUniformLocation(PickingShader, "modelMat"), 1, GL_FALSE, glm::value_ptr(modelMat * ScaleMat));
+
+		glBindVertexArray(quadVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, screenGbuffer.gPosition);
+		glUniform1i(glGetUniformLocation(shader, "IDtexture"), 0);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		UseShaderProgram(0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		pickingtexture.DisableWriting();
+
+		
+		glViewport(0, 0, width, height);
+
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glDisable(GL_DEPTH_TEST); 
 		
@@ -496,20 +536,9 @@ public:
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		UseShaderProgram(shader);
-
-		int width, height;
-		glfwGetWindowSize(&window,&width, &height);
-
-		glViewport(0, 0, width, height);
-
-		//LOG("VIEWPORT HEIGHT DISTANCE: " << ((height - viewportHeight) / height));
-		glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(menuSize.x / width, -((height - (height - 18.0f)) / height), 0.0f));
-		//LOG("MENU SIZE: " << menuSize.x);
-
-		glm::mat4 ScaleMat = glm::scale(glm::mat4(1.0f), glm::vec3(((float)width - menuSize.x) / width, (menuSize.y + 18.0f) / height, 1.0f));
-
+		
 		glUniformMatrix4fv(glGetUniformLocation(shader, "modelMat"), 1, GL_FALSE, glm::value_ptr(modelMat * ScaleMat));
-
+		
 		GLuint renderpass = buffertexture;
 
 		if (RenderPass == RENDER_PASS_COMBINED)
@@ -529,13 +558,16 @@ public:
 			renderpass = screenGbuffer.gPosition;
 		}
 
-		glBindVertexArray(quadVAO);
+
+		//glBindVertexArray(quadVAO);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, renderpass);
 		glUniform1i(glGetUniformLocation(shader, "Viewport"), 0);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		UseShaderProgram(0);
 		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindVertexArray(0);
+
 	}
 
 	void DrawModelsWithOutline(GLuint shader1, GLuint shader2, Camera& camera, size_t model_index_to_draw, size_t current_selected, GLuint shadowMap)
@@ -720,6 +752,8 @@ public:
 		modelmat = glm::scale(modelmat, glm::vec3(1.0f, 1.0f, 1.0f));
 
 		glUniformMatrix4fv(glGetUniformLocation(shader, "model"), 1, GL_FALSE, glm::value_ptr(modelmat));
+		glUniform4f(glGetUniformLocation(shader, "lightColor"), 1.0f,1.0f,1.0f,1.0f);
+
 		camera.Matrix(shader, "cameramatrix");
 		grid.Draw(shader, camera, GL_LINES);
 

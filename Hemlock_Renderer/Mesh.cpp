@@ -76,10 +76,8 @@ void Meshs::Draw(GLuint shaderprogram, Camera& camera , GLenum drawmode)
 
     }
 
-   
-
+ 
     glUniform3f(glGetUniformLocation(shaderprogram, "campos"), camera.Position.x, camera.Position.y, camera.Position.z);
-
     camera.Matrix(shaderprogram, "cameramatrix");
 
 

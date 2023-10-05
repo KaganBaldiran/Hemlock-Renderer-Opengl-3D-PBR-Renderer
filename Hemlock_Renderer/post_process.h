@@ -23,6 +23,7 @@ public:
 	void DeleteFBO();
 
 	GLuint &GetScreenImage() { return screen_image; };
+	GLuint& GetScreenStencilImage() { return screen_stencil_buffer; };
 	GLuint &GetFBO() { return fbo; };
 	GLuint &GetRBO() { return rbo; };
 
@@ -31,7 +32,7 @@ public:
 private:
 
 	GLuint fbo;
-	GLuint screen_image;
+	GLuint screen_image , screen_stencil_buffer;
 	GLuint rbo;
 
 };

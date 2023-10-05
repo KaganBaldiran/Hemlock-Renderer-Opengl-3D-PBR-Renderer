@@ -2,6 +2,7 @@
 out vec4 FragColor;
   
 in vec2 TexCoords;
+in mat4 modelMatr;
 
 uniform sampler2D Viewport;
 
