@@ -164,6 +164,7 @@ public:
     {
         UseShaderProgram(shader);
         glUniform1f(glGetUniformLocation(shader, "modelID"), this->GetModelID());
+
         for (unsigned int i = 0; i < meshes.size(); i++)
             meshes[i].Draw(shader , camera,shadowMap,cube_map_texture);
     }

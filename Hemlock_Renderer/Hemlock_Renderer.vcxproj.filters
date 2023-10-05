@@ -242,5 +242,11 @@
     <None Include="Shaders\HDRI.fs">
       <Filter>shaders</Filter>
     </None>
+    <None Include="Shaders\PickingBufferTexture.fs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\PickingBufferTexture.vs">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

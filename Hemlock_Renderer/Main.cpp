@@ -50,6 +50,7 @@ int main()
     Shader FrameBufferShader("Shaders/framebuffer.vert", "Shaders/framebuffer.frag");
     Shader GbufferPassShader("Shaders/Gbuffer.vs", "Shaders/Gbuffer.fs");
     Shader HDRIShader("Shaders/HDRI.vs", "Shaders/HDRI.fs");
+    Shader PickingBufferTextureShader("Shaders/PickingBufferTexture.vs", "Shaders/PickingBufferTexture.fs");
 
     scene scene;
 
@@ -121,6 +122,8 @@ int main()
     float degree = NULL;
     
     pickingtexture pickingtex(mode->width, mode->height);
+    pickingtexture pickingBuffertex(mode->width, mode->height);
+
     picking_technique pickingteq;
     
 
@@ -153,7 +156,7 @@ int main()
     int  selectedobjlock = NULL;
     std::vector<std::string> logs;
     UI::InitLogs(logs);
-    shadowmap ShadowMap(2048, 2048);
+    shadowmap ShadowMap(1024, 1024);
 
     ShadowMap.LightProjection(scene.LightPositions[0],ShadowMapShader.GetID(),window,scene.models,scene.globalscale,camera, UI::current_viewport_size);
 
@@ -162,14 +165,23 @@ int main()
     stopwatch_t stopwatch;
     int FPS = 100;
     float DeltaFrameTime = (1.0f / FPS) * 1000;
-    ThreadPool threads(4, 15);
+    ThreadPool threads(1, 15);
 
     std::vector<uint> auto_rotate_on;
 
     int RenderPass = RENDER_PASS_COMBINED;
 
+    Vec2<double> mousepos;
+    int width, height;
+
+
 	while (!glfwWindowShouldClose(window))
 	{
+            glfwGetCursorPos(&*window, &mousepos.x, &mousepos.y);
+
+            glfwGetWindowSize(&*window, &width, &height);
+
+
             UI::SetStyle(data);
 
             WindowSizeRecall(window, UI::current_viewport_size);
@@ -177,7 +189,7 @@ int main()
             UI::FindCurrentViewportSize(window);
 
             glClearColor(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w);
-            glClearStencil(0); // this is the default value
+            glClearStencil(0); 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
             UI::CreateNewFrame();
@@ -200,13 +212,14 @@ int main()
 
             UI::IncrementRotationDegree(data);
 
-            Vec2<double> temp_mouse_pos = scene.UseGizmo(window, currentselectedgizmo, currentselectedobj, enablegizmo_p, PrevMousePos, camera, currentselectedlight, defaultshader.GetID());
+            Vec2<double> temp_mouse_pos = scene.UseGizmo(window, currentselectedgizmo, currentselectedobj, enablegizmo_p, PrevMousePos, camera, currentselectedlight, defaultshader.GetID(),mousepos);
 
             UI::DoUIobjectTransformations(currentselectedobj, scene, data);
 
             UI::HandleAutoRotation(currentselectedobj, scene, auto_rotate_on);
 
-            scene.DrawGbuffer(SceneGbuffer, GbufferPassShader.GetID(), camera, UI::current_win_size.Cast<float>(),*window);
+            scene.DrawGbuffer(SceneGbuffer, GbufferPassShader.GetID(), camera, UI::current_win_size.Cast<float>(),*window,currentselectedobj,
+                enablegizmo_p,currentselectedlight, PickingBufferTextureShader.GetID(), pickingBuffertex);
 
             ShadowMap.LightProjection(scene.LightPositions[0], ShadowMapShader.GetID(), window, scene.models, scene.globalscale, camera, UI::current_viewport_size);
 
@@ -259,8 +272,6 @@ int main()
                 }
 
                 UseShaderProgram(defaultshader.GetID());
-
-
 
                 for (int i = 0; i < scene.GetModelCount() + 1; i++) {
                     glStencilFunc(GL_ALWAYS, i + 1, -1);
@@ -332,26 +343,19 @@ int main()
                 data.takesreenshot = false;
             }
 
-            Vec2<double> mousepos;
-            glfwGetCursorPos(&*window, &mousepos.x, &mousepos.y);
-
-            int width, height;
-            glfwGetWindowSize(&*window, &width, &height);
-
-            UI::CalculateVirtualMouse(window);
-
+            
 
             glBindFramebuffer(GL_FRAMEBUFFER, NULL);
            
-            LOG("Current selected light: " << currentselectedlight);
-            LOG("Current selected gizmo: " << currentselectedgizmo);
-            LOG("INDEX: " << index);
+            //LOG("Current selected light: " << currentselectedlight);
+            //LOG("Current selected gizmo: " << currentselectedgizmo);
+            //LOG("INDEX: " << index);
 
             scene.DrawScreenQuad(FrameBufferShader.GetID(), screen_fbo.GetScreenImage(), SceneGbuffer,
-                UI::current_win_size.Cast<float>(), UI::current_viewport_size.y, RenderPass, pickingtex, pickingshader.GetID(), *window);
+                UI::current_win_size.Cast<float>(), UI::current_viewport_size.y, RenderPass, pickingtex, pickingshader.GetID(),pickingBuffertex, *window);
 
             
-            UI::DrawOnViewportSettings(*window, RenderPass);
+            UI::DrawOnViewportSettings({windowwidth,windowheight}, RenderPass);
             UI::Render();
 
 
@@ -366,7 +370,6 @@ int main()
             }
 
             
-
             if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS && allowclick)
             {
                 if (currentselectedobj >= 2)
@@ -377,11 +380,7 @@ int main()
 
                 allowclick = false;
 
-                Vec2<double> mp = UI::CalculateVirtualMouse(window);
-
                 index = pickingtex.ReadPixel(mousepos.x, mousepos.y, { width,height }).ObjectID;
-
-                //std::cout << "index ID " << index << "\n";
                 glUniform1i(glGetUniformLocation(defaultshader.GetID(), "stencilindex"), index);
 
                 if (index - 1 <= scene.GetModelCount())
@@ -415,10 +414,8 @@ int main()
             }
             if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
             {
-
-                Vec2<double> mp = UI::CalculateVirtualMouse(window);
-
-                index = pickingtex.onMouse(mp.x, mp.y, { windowwidth,windowheight }, UI::current_win_size.Cast<float>());
+            
+                index = pickingtex.ReadPixel(mousepos.x, mousepos.y, { width,height }).ObjectID;;
 
                 if (index - 1 >= scene.GetModelCount() + scene.lights.size())
                 {
@@ -452,6 +449,7 @@ int main()
     DeleteShaderProgram(FrameBufferShader.GetID());
     DeleteShaderProgram(GbufferPassShader.GetID());
     DeleteShaderProgram(HDRIShader.GetID());
+    DeleteShaderProgram(PickingBufferTextureShader.GetID());
 
     UI::EndUI();
 

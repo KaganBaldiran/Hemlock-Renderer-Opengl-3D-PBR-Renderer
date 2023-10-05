@@ -352,13 +352,10 @@ namespace UI
 
 	}
 
-	void DrawOnViewportSettings(GLFWwindow& window , int& renderPass)
+	void DrawOnViewportSettings(Vec2<int> winsize, int& renderPass)
 	{
 		static bool showDropdown = true;
 		
-		Vec2<int> winsize;
-		glfwGetWindowSize(&window, &winsize.x, &winsize.y);
-
 		ImGui::SetNextWindowPos(ImVec2(current_win_size.x, 18));
 		ImGui::SetNextWindowSize(ImVec2(winsize.x - current_win_size.x, current_win_size.y * 0.05f));
 
@@ -384,6 +381,10 @@ namespace UI
 		{
 			RenderPassUIText = "Combined";
 		}
+		else if (renderPass == RENDER_PASS_ID)
+		{
+			RenderPassUIText = "ID";
+		}
 
 		if (ImGui::BeginCombo(RenderPassUIText.c_str(), "Select an option", ImGuiComboFlags_NoPreview))
 		{
@@ -408,6 +409,11 @@ namespace UI
 			if (ImGui::Selectable("Combined"))
 			{
 				renderPass = RENDER_PASS_COMBINED;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("ID"))
+			{
+				renderPass = RENDER_PASS_ID;
 				showDropdown = false;
 			}
 

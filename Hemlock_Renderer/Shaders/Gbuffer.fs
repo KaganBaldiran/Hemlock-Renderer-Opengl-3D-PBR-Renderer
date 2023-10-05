@@ -10,12 +10,11 @@ in vec3 Normal;
 
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
-uniform float modelID;
 
 void main()
 {
 	
-   gPosition = vec4(currentpos,modelID);
+   gPosition = vec4(currentpos,1.0f);
    gNormal = vec4(normalize(Normal),1.0f);
    gColorSpec.rgb = texture(texture_diffuse1,finaltextcoord).rgb;
    gColorSpec.a = texture(texture_specular1,finaltextcoord).r;

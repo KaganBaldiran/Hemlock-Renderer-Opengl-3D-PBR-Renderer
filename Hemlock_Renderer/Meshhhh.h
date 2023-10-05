@@ -172,6 +172,7 @@ namespace newwww {
 
             // draw mesh
             glBindVertexArray(VAO);
+            glUniform1i(glGetUniformLocation(shader, "RenderStep"), 1);
 
             glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
             glBindVertexArray(0);

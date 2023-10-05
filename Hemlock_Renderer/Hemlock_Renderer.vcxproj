@@ -208,6 +208,8 @@
     <None Include="Shaders\Outlinefrag.vert" />
     <None Include="Shaders\picking.frag" />
     <None Include="Shaders\picking.vert" />
+    <None Include="Shaders\PickingBufferTexture.fs" />
+    <None Include="Shaders\PickingBufferTexture.vs" />
     <None Include="Shaders\ShadowMap.frag" />
     <None Include="Shaders\ShadowMap.vert" />
     <None Include="Shaders\vertsource.vert" />

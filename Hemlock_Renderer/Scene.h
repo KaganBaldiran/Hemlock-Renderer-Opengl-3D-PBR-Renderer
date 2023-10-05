@@ -444,27 +444,60 @@ public:
 
 	}
 
-	void DrawGbuffer(GBUFFER::gBuffer& SceneGbuffer, GLuint GbufferShader, Camera& camera, Vec2<float> menuSize, GLFWwindow& window)
+	void DrawGbuffer(GBUFFER::gBuffer& SceneGbuffer, GLuint GbufferShader, Camera& camera, Vec2<float> menuSize, GLFWwindow& window , int currentselectedobj , std::pair<uint,bool> enablegizmo_p, int currentselectedlight , GLuint pickingtextureShader , pickingtexture& pickingtex)
 	{
-		
-		UseShaderProgram(GbufferShader);
-		glEnable(GL_DEPTH_TEST);
-
-		glBindFramebuffer(GL_FRAMEBUFFER, SceneGbuffer.gbuffer);
-		glViewport(0, 0, SceneGbuffer.window_width, SceneGbuffer.window_height);
-
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		for (size_t i = 1; i < models.size(); i++)
+		if (!models.empty())
 		{
-			//glUniform1d(glGetUniformLocation(GbufferShader, "objectid"), 1.0);
-			models.at(i)->transformation.SendUniformToShader(GbufferShader, "model");
-			models[i]->Draw(GbufferShader, camera, NULL, NULL);
-		}
+			UseShaderProgram(GbufferShader);
+			glEnable(GL_DEPTH_TEST);
 
-		UseShaderProgram(0);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glBindFramebuffer(GL_FRAMEBUFFER, SceneGbuffer.gbuffer);
+			glViewport(0, 0, SceneGbuffer.window_width, SceneGbuffer.window_height);
+
+			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			for (size_t i = 1; i < models.size(); i++)
+			{
+				models.at(i)->transformation.SendUniformToShader(GbufferShader, "model");
+				models[i]->Draw(GbufferShader, camera, NULL, NULL);
+			}
+
+			pickingtex.EnableWriting();
+			glViewport(0, 0, SceneGbuffer.window_width, SceneGbuffer.window_height);
+			UseShaderProgram(pickingtextureShader);
+			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			for (size_t i = 1; i < models.size(); i++)
+			{
+				models.at(i)->transformation.SendUniformToShader(pickingtextureShader, "model");
+				models[i]->Draw(pickingtextureShader, camera, NULL, NULL);
+			}
+
+			if (CURRENT_OBJECT(currentselectedobj) >= NULL || CURRENT_LIGHT(currentselectedlight) >= NULL)
+			{
+				glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+				glStencilMask(0xFF);
+				glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+				for (int i = 0; i < 3; i++)
+				{
+					glStencilFunc(GL_ALWAYS, i + 1 + GetModelCount() + 1 + lights.size() + 2, -1);
+
+					DrawGizmo(pickingtextureShader, camera, i, currentselectedobj, enablegizmo_p, currentselectedlight);
+
+				}
+
+				glDepthFunc(GL_LESS);
+				glStencilMask(0xFF);
+				glStencilFunc(GL_ALWAYS, 1, 0xFF);
+				glEnable(GL_DEPTH_TEST);
+			}
+
+			UseShaderProgram(0);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		}
 	}
 
 	void SetScreenQuads()
@@ -494,7 +527,7 @@ public:
 
 	}
 
-	void DrawScreenQuad(GLuint shader, GLuint buffertexture , GBUFFER::gBuffer& screenGbuffer , Vec2<float> menuSize,float viewportHeight , int RenderPass,pickingtexture &pickingtexture,GLuint PickingShader, GLFWwindow &window)
+	void DrawScreenQuad(GLuint shader, GLuint buffertexture , GBUFFER::gBuffer& screenGbuffer , Vec2<float> menuSize,float viewportHeight , int RenderPass,pickingtexture &pickingTexture,GLuint PickingShader, pickingtexture &pickingBuffertex,  GLFWwindow &window)
 	{
 		int width, height;
 		glfwGetWindowSize(&window, &width, &height);
@@ -507,8 +540,7 @@ public:
 		glm::vec3 ScaleCoeff(((float)width - menuSize.x) / width, (menuSize.y + 18.0f) / height, 1.0f);
 		glm::mat4 ScaleMat = glm::scale(glm::mat4(1.0f), ScaleCoeff);
 
-
-		pickingtexture.EnableWriting();
+		pickingTexture.EnableWriting();
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glDisable(GL_DEPTH_TEST);
@@ -518,20 +550,18 @@ public:
 
 		glBindVertexArray(quadVAO);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, screenGbuffer.gPosition);
-		glUniform1i(glGetUniformLocation(shader, "IDtexture"), 0);
+		//glBindTexture(GL_TEXTURE_2D, screenGbuffer.gPosition);
+		glBindTexture(GL_TEXTURE_2D, pickingBuffertex.GetPickingTexture());
+		glUniform1i(glGetUniformLocation(PickingShader, "IDtexture"), 0);
+		glUniform1i(glGetUniformLocation(PickingShader, "RenderStep"), 2);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		UseShaderProgram(0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
-		pickingtexture.DisableWriting();
 
-		
-		glViewport(0, 0, width, height);
-
+	
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glDisable(GL_DEPTH_TEST); 
-		
+		glViewport(0, 0, width, height);
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); 
 		glClear(GL_COLOR_BUFFER_BIT);
 
@@ -544,22 +574,29 @@ public:
 		if (RenderPass == RENDER_PASS_COMBINED)
 		{
 			renderpass = buffertexture;
+			glUniform1i(glGetUniformLocation(shader, "RenderPass"), 1);
 		}
 		else if (RenderPass == RENDER_PASS_NORMAL)
 		{
 			renderpass = screenGbuffer.gNormal;
+			glUniform1i(glGetUniformLocation(shader, "RenderPass"), 2);
 		}
 		else if (RenderPass == RENDER_PASS_ALBEDO)
 		{
 			renderpass = screenGbuffer.gColorSpec;
+			glUniform1i(glGetUniformLocation(shader, "RenderPass"), 3);
 		}
 		else if (RenderPass == RENDER_PASS_POSITION)
 		{
 			renderpass = screenGbuffer.gPosition;
+			glUniform1i(glGetUniformLocation(shader, "RenderPass"), 4);
+		}
+		else if (RenderPass == RENDER_PASS_ID)
+		{
+			renderpass = pickingBuffertex.GetPickingTexture();
+			glUniform1i(glGetUniformLocation(shader, "RenderPass"), 5);
 		}
 
-
-		//glBindVertexArray(quadVAO);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, renderpass);
 		glUniform1i(glGetUniformLocation(shader, "Viewport"), 0);
@@ -843,6 +880,7 @@ public:
 			{
 				glUniform4f(glGetUniformLocation(shader, "lightColor"), 0.0f, 0.7f, 0.0f, 1.0f);
 			}
+			*GetModel(0)->GetModelIDptr() = 4 + GetModelCount() + lights.size();
 
 			UseShaderProgram(0);
 			DrawModels(shader, camera, 0, NULL,NULL);
@@ -863,6 +901,7 @@ public:
 				glUniform4f(glGetUniformLocation(shader, "lightColor"), 0.7f, 0.0f, 0.0f, 1.0f);
 			}
 
+			*GetModel(0)->GetModelIDptr() = 5 + GetModelCount() + lights.size();
 			UseShaderProgram(0);
 			DrawModels(shader, camera, 0, NULL,NULL);
 			GetModel(0)->transformation.rotate(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -883,6 +922,8 @@ public:
 			{
 				glUniform4f(glGetUniformLocation(shader, "lightColor"), 0.0f, 0.0f, 0.7f, 1.0f);
 			}
+
+			*GetModel(0)->GetModelIDptr() = 6 + GetModelCount() + lights.size();
 
 			UseShaderProgram(0);
 			DrawModels(shader, camera, 0, NULL,NULL);
@@ -917,12 +958,13 @@ public:
 		GetModel(0)->transformation.translate(-originpoint);
 		
 		
-		
+		*GetModel(0)->GetModelIDptr() = 2;
+
 		
 
 	}
 
-	Vec2<double> UseGizmo(GLFWwindow* window , int &currentselectedgizmo , int currentselectedobj, std::pair<uint , bool> &enablegizmo_p , Vec2<double> PrevMousePos , Camera camera , int currentselectedlight , GLuint Model_Shader)
+	Vec2<double> UseGizmo(GLFWwindow* window , int &currentselectedgizmo , int currentselectedobj, std::pair<uint , bool> &enablegizmo_p , Vec2<double> PrevMousePos , Camera camera , int currentselectedlight , GLuint Model_Shader , Vec2<double> &temp_mouse)
 	{
 
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
@@ -946,11 +988,6 @@ public:
 		}
 
 		std::cout << "CAMERA DIRECTION: " << camera.Get_Orientation().x << " " << camera.Get_Orientation().y << " " << camera.Get_Orientation().z<<"\n";
-
-
-		Vec2<double> temp_mouse;
-
-		glfwGetCursorPos(window, &temp_mouse.x, &temp_mouse.y);
 
 
 		Vec2<double> delta_mouse = { temp_mouse.x - PrevMousePos.x, temp_mouse.y - PrevMousePos.y };
@@ -1151,7 +1188,6 @@ public:
 		
 
 
-		
 		return temp_mouse;
 	}
 
