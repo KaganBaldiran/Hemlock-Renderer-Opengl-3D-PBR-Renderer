@@ -116,6 +116,7 @@ namespace UI
 
         bool enablehighlight = false;
 
+		bool EnableSSAO = false;
 
         float degree = NULL;
 
@@ -385,6 +386,10 @@ namespace UI
 		{
 			RenderPassUIText = "ID";
 		}
+		else if (renderPass == RENDER_PASS_AO)
+		{
+			RenderPassUIText = "AO";
+		}
 
 		if (ImGui::BeginCombo(RenderPassUIText.c_str(), "Select an option", ImGuiComboFlags_NoPreview))
 		{
@@ -414,6 +419,11 @@ namespace UI
 			if (ImGui::Selectable("ID"))
 			{
 				renderPass = RENDER_PASS_ID;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("AO"))
+			{
+				renderPass = RENDER_PASS_AO;
 				showDropdown = false;
 			}
 
@@ -1512,6 +1522,11 @@ namespace UI
 
 					ImGui::Spacing();
 
+					ImGui::Checkbox("Enable SSAO", &data.EnableSSAO);
+
+					ImGui::Spacing();
+
+
 					//ImGui::SetCursorPos(ImVec2(10, 40));
 					ImGui::ColorEdit3("Background color", (float*)&data.clear_color); 
 					//ImGui::SetCursorPos(ImVec2(10, 70));
@@ -1709,7 +1724,12 @@ namespace UI
 						
 						if (ImGui::TreeNode(scene.models[i]->ModelName.c_str()))
 						{
-							
+							if (ImGui::Selectable(("Select##Object" + std::to_string(i)).c_str()))
+							{
+								currentselectedobj = i + 2;
+							}
+							ImGui::Indent();
+
 							for (size_t t = 0; t < scene.models[i]->meshes.size(); t++)
 							{
 								if (ImGui::TreeNode(scene.models[i]->meshes[t].meshname.c_str()))
@@ -1723,12 +1743,11 @@ namespace UI
 									ImGui::TreePop(); 
 								}
 							}
-							if (ImGui::Selectable(("Select##Object" + std::to_string(i)).c_str()))
-							{
-								currentselectedobj = i + 2;
-							}
 
-							ImGui::TreePop(); 
+							ImGui::TreePop();
+
+							ImGui::Unindent(); 
+
 						}
 
 						

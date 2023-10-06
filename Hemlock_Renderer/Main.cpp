@@ -30,7 +30,6 @@
 #include "StopWatch.h"
 #include "Thread.h"
 
-#include "G_Buffer.h"
 
 const int windowwidth = 1000;
 const int windowheight = 1000;
@@ -51,12 +50,17 @@ int main()
     Shader GbufferPassShader("Shaders/Gbuffer.vs", "Shaders/Gbuffer.fs");
     Shader HDRIShader("Shaders/HDRI.vs", "Shaders/HDRI.fs");
     Shader PickingBufferTextureShader("Shaders/PickingBufferTexture.vs", "Shaders/PickingBufferTexture.fs");
+    Shader SSAOShader("Shaders/SSAO.vs", "Shaders/SSAO.fs");
+    Shader SSAOblurShader("Shaders/SSAO.vs", "Shaders/SSAOblur.fs");
+
 
     scene scene;
 
     FBO screen_fbo;
 
     const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+    SSAO ssao({ (float)mode->width,(float)mode->height });
 
     CreateCustomFrameBuffer(screen_fbo , mode->width, mode->height);
 
@@ -350,9 +354,14 @@ int main()
             //LOG("Current selected light: " << currentselectedlight);
             //LOG("Current selected gizmo: " << currentselectedgizmo);
             //LOG("INDEX: " << index);
+            if (data.EnableSSAO)
+            {
+                ssao.Draw(SSAOShader.GetID(), SSAOblurShader.GetID(), SceneGbuffer, camera);
+            }
 
             scene.DrawScreenQuad(FrameBufferShader.GetID(), screen_fbo.GetScreenImage(), SceneGbuffer,
-                UI::current_win_size.Cast<float>(), UI::current_viewport_size.y, RenderPass, pickingtex, pickingshader.GetID(),pickingBuffertex, *window);
+                UI::current_win_size.Cast<float>(), UI::current_viewport_size.y, RenderPass, pickingtex,
+                pickingshader.GetID(),pickingBuffertex,ssao,data.EnableSSAO, *window);
 
             
             UI::DrawOnViewportSettings({windowwidth,windowheight}, RenderPass);
@@ -450,6 +459,8 @@ int main()
     DeleteShaderProgram(GbufferPassShader.GetID());
     DeleteShaderProgram(HDRIShader.GetID());
     DeleteShaderProgram(PickingBufferTextureShader.GetID());
+    DeleteShaderProgram(SSAOShader.GetID());
+    DeleteShaderProgram(SSAOblurShader.GetID());
 
     UI::EndUI();
 

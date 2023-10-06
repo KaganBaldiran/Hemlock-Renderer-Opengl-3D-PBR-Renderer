@@ -169,6 +169,19 @@ public:
             meshes[i].Draw(shader , camera,shadowMap,cube_map_texture);
     }
 
+    void Draw(GLuint shader, Camera& camera, GLuint shadowMap, GLuint cube_map_texture , GLuint SSAOmap)
+    {
+        UseShaderProgram(shader);
+        glUniform1f(glGetUniformLocation(shader, "modelID"), this->GetModelID());
+
+        //glActiveTexture(GL_TEXTURE10);
+        //glBindTexture(GL_TEXTURE_2D, cube_map_texture);
+        //glUniform1i(glGetUniformLocation(shader, "SSAO"), 10);
+
+        for (unsigned int i = 0; i < meshes.size(); i++)
+            meshes[i].Draw(shader, camera, shadowMap, cube_map_texture);
+    }
+
 
     int GetModelID() { return modelid; };
 

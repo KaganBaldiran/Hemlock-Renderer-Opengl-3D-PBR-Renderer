@@ -24,6 +24,7 @@
 	  glm::mat4 cammatrix = glm::mat4(1.0f);
 	  glm::mat4 projection;
 	  glm::mat4 cam_view;
+	  glm::mat4 screenratiodefault;
 
 	  bool firstclick = true;
 

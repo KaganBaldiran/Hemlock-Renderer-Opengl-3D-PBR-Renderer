@@ -70,7 +70,7 @@
   float near = 0.1;
   float far = 100.0;
 
-  
+
   float ShadowCalculation(vec4 fragPosLightSpace , vec3 lightDir ,vec3 normal)
   {
     // perform perspective divide
@@ -204,7 +204,6 @@
      }
 
      vec4 reversed_metalic_map = vec4(1.0f,1.0f,1.0f,1.0f) - metalic_map;
-
      
      //return (texturediffuse * lightColor * ((diffuse * (1.0f - shadow)  + ambient) + texturespecular * specular * (1.0f - shadow) ));
      

@@ -81,6 +81,12 @@
     <ClCompile Include="StopWatch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SSAO.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="G_Buffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="initialize.h">
@@ -185,6 +191,9 @@
     <ClInclude Include="G_Buffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SSAO.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="nativefiledialog-extended-master\src\nfd_cocoa.m" />
@@ -246,6 +255,15 @@
       <Filter>shaders</Filter>
     </None>
     <None Include="Shaders\PickingBufferTexture.vs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\SSAO.vs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\SSAO.fs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\SSAOblur.fs">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

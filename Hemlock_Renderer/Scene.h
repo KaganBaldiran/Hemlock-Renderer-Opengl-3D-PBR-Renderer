@@ -8,8 +8,8 @@
 #include "Entity.h"
 #include "Light.h"
 #include "PickingTexture.h"
-#include "G_Buffer.h"
 #include "post_process.h"
+#include "SSAO.h"
 
 
 #define CURRENT_OBJECT(Current_obj) (Current_obj - 2)
@@ -315,7 +315,7 @@ public:
 
 		}
 		
-		FIBITMAP* image = FreeImage_ConvertFromRawBits(pixels, finalImageSize.x, finalImageSize.y, ChannelSize * finalImageSize.x, 8 * ChannelSize, 0x0000FF, 0xFF0000, 0x00FF00, false);
+		FIBITMAP* image = FreeImage_ConvertFromRawBits(pixels, finalImageSize.x, finalImageSize.y, ChannelSize * finalImageSize.x, 8 * ChannelSize, 0xFF0000, 0xFF0000, 0xFF0000, false);
 		FreeImage_Save(FIF_PNG, image, path, 0);
 
 		FreeImage_Unload(image);
@@ -527,7 +527,7 @@ public:
 
 	}
 
-	void DrawScreenQuad(GLuint shader, GLuint buffertexture , GBUFFER::gBuffer& screenGbuffer , Vec2<float> menuSize,float viewportHeight , int RenderPass,pickingtexture &pickingTexture,GLuint PickingShader, pickingtexture &pickingBuffertex,  GLFWwindow &window)
+	void DrawScreenQuad(GLuint shader, GLuint buffertexture , GBUFFER::gBuffer& screenGbuffer , Vec2<float> menuSize,float viewportHeight , int RenderPass,pickingtexture &pickingTexture,GLuint PickingShader, pickingtexture &pickingBuffertex, SSAO &ssao, bool EnableSSAO,GLFWwindow &window)
 	{
 		int width, height;
 		glfwGetWindowSize(&window, &width, &height);
@@ -550,7 +550,6 @@ public:
 
 		glBindVertexArray(quadVAO);
 		glActiveTexture(GL_TEXTURE0);
-		//glBindTexture(GL_TEXTURE_2D, screenGbuffer.gPosition);
 		glBindTexture(GL_TEXTURE_2D, pickingBuffertex.GetPickingTexture());
 		glUniform1i(glGetUniformLocation(PickingShader, "IDtexture"), 0);
 		glUniform1i(glGetUniformLocation(PickingShader, "RenderStep"), 2);
@@ -596,10 +595,26 @@ public:
 			renderpass = pickingBuffertex.GetPickingTexture();
 			glUniform1i(glGetUniformLocation(shader, "RenderPass"), 5);
 		}
+		else if (RenderPass == RENDER_PASS_AO)
+		{
+			renderpass = ssao.GetSSAOblurredTexture();
+			glUniform1i(glGetUniformLocation(shader, "RenderPass"), 6);
+	    }
+		
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, renderpass);
 		glUniform1i(glGetUniformLocation(shader, "Viewport"), 0);
+
+		if (EnableSSAO)
+		{
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, ssao.GetSSAOblurredTexture());
+			glUniform1i(glGetUniformLocation(shader, "SSAO"), 1);
+		}
+
+		glUniform1i(glGetUniformLocation(shader, "EnableSSAO"), EnableSSAO);
+
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		UseShaderProgram(0);
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -663,6 +678,13 @@ public:
 	{
 
 		models[model_index_to_draw]->Draw(shader, camera, shadowMap,cube_map_texture);
+
+	}
+
+	void DrawModels(GLuint shader, Camera& camera, size_t model_index_to_draw, GLuint shadowMap, GLuint cube_map_texture , GLuint SSAO_tex)
+	{
+
+		models[model_index_to_draw]->Draw(shader, camera, shadowMap, cube_map_texture , SSAO_tex);
 
 	}
 

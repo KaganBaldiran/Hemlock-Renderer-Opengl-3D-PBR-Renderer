@@ -136,6 +136,7 @@
     <ClCompile Include="Buffers.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Cubemap.cpp" />
+    <ClCompile Include="G_Buffer.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="post_process.cpp" />
     <ClCompile Include="Imgui\imgui.cpp" />
@@ -152,6 +153,7 @@
     <ClCompile Include="nativefiledialog-extended-master\src\nfd_win.cpp" />
     <ClCompile Include="PickingTexture.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="SSAO.cpp" />
     <ClCompile Include="StopWatch.cpp" />
     <ClCompile Include="Texture.cpp" />
   </ItemGroup>
@@ -165,6 +167,7 @@
     <ClInclude Include="Log.h" />
     <ClInclude Include="post_process.h" />
     <ClInclude Include="G_Buffer.h" />
+    <ClInclude Include="SSAO.h" />
     <ClInclude Include="StopWatch.h" />
     <ClInclude Include="SystemData.h" />
     <ClInclude Include="Thread.h" />
@@ -212,6 +215,9 @@
     <None Include="Shaders\PickingBufferTexture.vs" />
     <None Include="Shaders\ShadowMap.frag" />
     <None Include="Shaders\ShadowMap.vert" />
+    <None Include="Shaders\SSAO.fs" />
+    <None Include="Shaders\SSAO.vs" />
+    <None Include="Shaders\SSAOblur.fs" />
     <None Include="Shaders\vertsource.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

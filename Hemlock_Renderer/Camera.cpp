@@ -35,10 +35,8 @@ void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane , GLFWwi
 	this->projection = proj;
 	//proj = glm::ortho(0, w_width, w_height, 0, 0, 100);
 
-	glm::mat4 screenratiodefault = glm::mat4(1.0f);
-
+	screenratiodefault = glm::mat4(1.0f);
 	screenratiodefault = glm::scale(screenratiodefault, glm::vec3(GetScreenRatio(window,menu_size).x, GetScreenRatio(window,menu_size).y, 1.0f));
-
 	cammatrix = screenratiodefault * proj * view;
 }
 
@@ -46,8 +44,12 @@ void Camera::Matrix(GLuint shaderprogram, const char* uniform)
 {
 	
 	glUniformMatrix4fv(glGetUniformLocation(shaderprogram, uniform), 1, GL_FALSE, glm::value_ptr(cammatrix));
+	glUniformMatrix4fv(glGetUniformLocation(shaderprogram, "proj"), 1, GL_FALSE, glm::value_ptr(projection));
+	glUniformMatrix4fv(glGetUniformLocation(shaderprogram, "view"), 1, GL_FALSE, glm::value_ptr(cam_view));
 
 }
+
+
 
 void Camera::HandleInputs(GLFWwindow* window, Vec2<int> menu_size)
 {

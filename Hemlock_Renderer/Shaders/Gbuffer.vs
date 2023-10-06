@@ -30,7 +30,8 @@
   void main()
   {
 
-    currentpos = vec3(model* vec4(vertexdata , 1.0f));
+    vec4 Wpos = model * vec4(vertexdata , 1.0f);
+    currentpos = Wpos.xyz;
     FragPosLight = lightProjection * vec4(currentpos , 1.0f);
    
     gl_Position = cameramatrix * vec4(currentpos , 1.0f);
@@ -46,7 +47,9 @@
     finaltextcoord = textcoord;
     finalcolor = inputcolors;
 
-    Normal = vec3(model * vec4(aNormal,0.0));
+    mat3 normalMatrix = transpose(inverse(mat3(view)));
+    Normal = (mat3(view) * aNormal);
+    //Normal = vec3(model * vec4(aNormal,0.0));
 
     inverse_normal = mat3(transpose(inverse(model))) * aNormal;
 
