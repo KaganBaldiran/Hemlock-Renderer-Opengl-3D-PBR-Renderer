@@ -15,7 +15,7 @@ void main()
 {
 	
    gPosition = vec4(currentpos,1.0f);
-   gNormal = vec4(normalize(Normal)* 2.0 - 1.0,1.0f);
+   gNormal = normalize(vec4(Normal,1.0f));
    gColorSpec.rgb = texture(texture_diffuse1,finaltextcoord).rgb;
    gColorSpec.a = texture(texture_specular1,finaltextcoord).r;
 	

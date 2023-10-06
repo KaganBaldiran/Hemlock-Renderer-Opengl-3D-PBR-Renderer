@@ -18,7 +18,7 @@ void main()
 {
 	vec2 noiseScale = ScreenSize / vec2(4.0f);
 
-	vec3 fragPos = texture(gPosition , TexCoords).xyz;
+	vec3 fragPos = texture(gPosition , TexCoords).rgb;
 	vec3 normal = normalize(texture(gNormal,TexCoords).rgb);
 	vec3 randomVector = normalize(texture(texNoise , TexCoords * noiseScale).xyz);
 
