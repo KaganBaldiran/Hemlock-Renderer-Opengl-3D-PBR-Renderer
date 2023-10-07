@@ -3,6 +3,7 @@ Re-committed as a new repo to clean up the code and to continue developping.
 Hemlock Renderer is a personal project I've been working on for the past two months. It's an Opengl based 3D renderer written in C++. Currently doesn't support PBR workflow but soon enough it will ;). 
 This is how it currently looks(Tank Model doesn't belong to me):
 
+![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-Renderer/assets/80681941/f770ced9-2787-4b30-8f49-733aebf1c7ff)
 ![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-Renderer/assets/80681941/670eefe8-5b04-4155-8ba2-fb2ef75bd463)
 ![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-Renderer/assets/80681941/c6161e41-3cbe-4d15-b6f1-d49ca55702e9)
 ![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-Renderer/assets/80681941/43dda2df-a711-4fbe-803f-8842cc0ce12e)
