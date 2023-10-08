@@ -122,6 +122,11 @@ namespace UI
 
 		bool render_cube_map = false;
 
+		Vec3<float> albedo = { 1.0f,1.0f,1.0f };
+		float metallic = 0.0f;
+		float roughness = 0.5f;
+		float ao = 0.1f;
+
     };
 
 	
@@ -1124,6 +1129,15 @@ namespace UI
 					if (ImGui::CollapsingHeader("Material Settings", ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_Framed))
 					{
 						ImGui::BeginChildFrame(10, ImVec2(ChildMenuSize.x * 0.98f, ChildMenuSize.y * 0.80f), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
+
+						float AlbedoColor[3] = { data.albedo.x ,data.albedo.y , data.albedo.z };
+						ImGui::ColorEdit3("Albedo", AlbedoColor);
+						data.albedo({ AlbedoColor[0], AlbedoColor[1], AlbedoColor[2] });
+
+						ImGui::SliderFloat("Metallic", &data.metallic, 0.0f, 1.0f);
+						ImGui::SliderFloat("roughness", &data.roughness, 0.0f, 1.0f);
+						ImGui::SliderFloat("ao", &data.ao, 0.0f, 1.0f);
+						
 
 						static bool allow_import_texture = false;
 						nfdchar_t* texture_path = nullptr;

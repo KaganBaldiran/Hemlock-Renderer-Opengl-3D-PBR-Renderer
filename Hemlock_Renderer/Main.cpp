@@ -52,6 +52,7 @@ int main()
     Shader PickingBufferTextureShader("Shaders/PickingBufferTexture.vs", "Shaders/PickingBufferTexture.fs");
     Shader SSAOShader("Shaders/SSAO.vs", "Shaders/SSAO.fs");
     Shader SSAOblurShader("Shaders/SSAO.vs", "Shaders/SSAOblur.fs");
+    Shader PBRShader("Shaders/PBR.vs", "Shaders/PBR.fs");
 
 
     scene scene;
@@ -80,7 +81,9 @@ int main()
 
     NFD_Init();
     
-    glUniform4f(glGetUniformLocation(defaultshader.GetID(), "colorpr"), 1.0f, 0.0f, 0.0f, 1.0f);
+    //glUniform4f(glGetUniformLocation(defaultshader.GetID(), "colorpr"), 1.0f, 0.0f, 0.0f, 1.0f);
+    glUniform4f(glGetUniformLocation(PBRShader.GetID(), "colorpr"), 1.0f, 0.0f, 0.0f, 1.0f);
+
 
     Meshs grid = scene.SetGrid(lightshader.GetID());
 
@@ -109,13 +112,13 @@ int main()
     }
    
     
-    scene.handlelights(defaultshader.GetID());
+    scene.handlelights(PBRShader.GetID());
 
-    UseShaderProgram(defaultshader.GetID());
+    UseShaderProgram(PBRShader.GetID());
 
     //glUniformMatrix4fv(glGetUniformLocation(defaultshader.GetID(), "model"), 1, GL_FALSE, glm::value_ptr(pyramidmodel));
-    glUniform4f(glGetUniformLocation(defaultshader.GetID(), "lightColor1"), lightcolor.x, lightcolor.y, lightcolor.z, lightcolor.w);
-    glUniform3f(glGetUniformLocation(defaultshader.GetID(), "lightpos1"), lightpos.x, lightpos.y, lightpos.z);
+    glUniform4f(glGetUniformLocation(PBRShader.GetID(), "lightColor1"), lightcolor.x, lightcolor.y, lightcolor.z, lightcolor.w);
+    glUniform3f(glGetUniformLocation(PBRShader.GetID(), "lightpos1"), lightpos.x, lightpos.y, lightpos.z);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_STENCIL_TEST);
@@ -181,6 +184,7 @@ int main()
 
 	while (!glfwWindowShouldClose(window))
 	{
+            
             glfwGetCursorPos(&*window, &mousepos.x, &mousepos.y);
 
             glfwGetWindowSize(&*window, &width, &height);
@@ -205,7 +209,7 @@ int main()
 
             UI::HandleSliderMaxValues(data, window);
 
-            UI::ConfigureUI(currentselectedobj, data, scene, logs, defaultshader.GetID(), lightcolor, lightpos, window, auto_rotate_on, 
+            UI::ConfigureUI(currentselectedobj, data, scene, logs, PBRShader.GetID(), lightcolor, lightpos, window, auto_rotate_on,
                            ShadowMap.GetShadowMapImage(), lightshader.GetID(), currentselectedlight,threads,Cubemap,HDRIShader.GetID());
             
             scene.DeleteModelKeyboardAction(currentselectedobj, window, logs);
@@ -252,7 +256,7 @@ int main()
 
                 if (currentselectedobj >= 2)
                 {
-                    scene.DrawModelsWithOutline(defaultshader.GetID(), Outlineshader.GetID(), camera, currentselectedobj - 2, currentselectedobj, ShadowMap.GetShadowMapImage());
+                    scene.DrawModelsWithOutline(PBRShader.GetID(), Outlineshader.GetID(), camera, currentselectedobj - 2, currentselectedobj, ShadowMap.GetShadowMapImage());
 
                 }
 
@@ -275,7 +279,13 @@ int main()
                     Cubemap.Draw(camera);
                 }
 
-                UseShaderProgram(defaultshader.GetID());
+                UseShaderProgram(PBRShader.GetID());
+
+                glUniform3f(glGetUniformLocation(PBRShader.GetID(), "albedo"), data.albedo.x, data.albedo.y, data.albedo.z);
+                glUniform1f(glGetUniformLocation(PBRShader.GetID(), "metallic"), data.metallic);
+                glUniform1f(glGetUniformLocation(PBRShader.GetID(), "roughness"), data.roughness);
+                glUniform1f(glGetUniformLocation(PBRShader.GetID(), "ao"), data.ao);
+
 
                 for (int i = 0; i < scene.GetModelCount() + 1; i++) {
                     glStencilFunc(GL_ALWAYS, i + 1, -1);
@@ -287,13 +297,13 @@ int main()
                     if (i > 1)
                     {
 
-                        ShadowMap.LightProjection(scene.LightPositions[0], defaultshader.GetID(), window, scene.models, scene.globalscale, camera, UI::current_viewport_size);
+                        ShadowMap.LightProjection(scene.LightPositions[0], PBRShader.GetID(), window, scene.models, scene.globalscale, camera, UI::current_viewport_size);
 
-                        glUniform1i(glGetUniformLocation(defaultshader.GetID(), "enablehighlight"), data.enablehighlight);
+                        glUniform1i(glGetUniformLocation(PBRShader.GetID(), "enablehighlight"), data.enablehighlight);
 
 
-                        scene.GetModel(i - 1)->transformation.SendUniformToShader(defaultshader.GetID(), "model");
-                        scene.DrawModels(defaultshader.GetID(), camera, i - 1, ShadowMap.GetShadowMapImage(), Cubemap.GetCubeMapTexture());
+                        scene.GetModel(i - 1)->transformation.SendUniformToShader(PBRShader.GetID(), "model");
+                        scene.DrawModels(PBRShader.GetID(), camera, i - 1, ShadowMap.GetShadowMapImage(), Cubemap.GetCubeMapTexture());
 
 
                         glActiveTexture(GL_TEXTURE0);
@@ -390,7 +400,7 @@ int main()
                 allowclick = false;
 
                 index = pickingtex.ReadPixel(mousepos.x, mousepos.y, { width,height }).ObjectID;
-                glUniform1i(glGetUniformLocation(defaultshader.GetID(), "stencilindex"), index);
+                glUniform1i(glGetUniformLocation(PBRShader.GetID(), "stencilindex"), index);
 
                 if (index - 1 <= scene.GetModelCount())
                 {
@@ -461,6 +471,8 @@ int main()
     DeleteShaderProgram(PickingBufferTextureShader.GetID());
     DeleteShaderProgram(SSAOShader.GetID());
     DeleteShaderProgram(SSAOblurShader.GetID());
+    DeleteShaderProgram(PBRShader.GetID());
+
 
     UI::EndUI();
 

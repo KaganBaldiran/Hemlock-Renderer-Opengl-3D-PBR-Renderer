@@ -209,6 +209,8 @@
     <None Include="Shaders\light.vert" />
     <None Include="Shaders\Outlinefrag.frag" />
     <None Include="Shaders\Outlinefrag.vert" />
+    <None Include="Shaders\PBR.fs" />
+    <None Include="Shaders\PBR.vs" />
     <None Include="Shaders\picking.frag" />
     <None Include="Shaders\picking.vert" />
     <None Include="Shaders\PickingBufferTexture.fs" />

@@ -265,7 +265,7 @@ public:
 
 	void Takescreenshot(shadowmap* ShadowMap, int width, int height, const char* path , int renderPass , GBUFFER::gBuffer& gbuffer , FBO& screenFBO)
 	{
-		// Make the BYTE array, factor of 3 because it's RBG.
+		
 		BYTE* pixels;
 
 		Vec2<int> finalImageSize;

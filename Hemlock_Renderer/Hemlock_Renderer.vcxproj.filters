@@ -266,5 +266,11 @@
     <None Include="Shaders\SSAOblur.fs">
       <Filter>shaders</Filter>
     </None>
+    <None Include="Shaders\PBR.fs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\PBR.vs">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
