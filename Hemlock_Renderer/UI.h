@@ -81,7 +81,7 @@ namespace UI
 	float image_ratio_divisor = NULL;
 
 	UIcolorShemePack current_color_sheme;
-	color_sheme_t chosen_color_sheme = DARK_THEME;
+	color_sheme_t chosen_color_sheme = GITHUB_STYLE_THEME;
 
 	//CPU usage counter
 	
@@ -616,7 +616,7 @@ namespace UI
 	}
 
 
-	void ConfigureUI(int &currentselectedobj ,UIdataPack &data , scene &scene , std::vector<std::string>& logs ,GLuint import_shader , glm::vec4 lightcolor , glm::vec3 lightpos , GLFWwindow* window , std::vector<uint> &auto_rotate_on , GLuint screen_image,GLuint light_shader, int currentselectedlight , ThreadPool& threads , CubeMap &Cubemap , GLuint HDRItoCubeMapShader)
+	void ConfigureUI(int &currentselectedobj ,UIdataPack &data , scene &scene , std::vector<std::string>& logs ,GLuint import_shader , glm::vec4 lightcolor , glm::vec3 lightpos , GLFWwindow* window , std::vector<uint> &auto_rotate_on , GLuint screen_image,GLuint light_shader, int &currentselectedlight , ThreadPool& threads , CubeMap &Cubemap , GLuint HDRItoCubeMapShader)
 	{
 
 		static bool importmodel_menu = false;
@@ -1763,9 +1763,28 @@ namespace UI
 							ImGui::Unindent(); 
 
 						}
-
 						
 					}
+
+					for (size_t i = 0; i < scene.lights.size(); i++)
+					{
+
+						if (ImGui::TreeNode(("Light" + std::to_string(i)).c_str()))
+						{
+							if (ImGui::Selectable(("Select##Object" + std::to_string(i)).c_str()))
+							{
+								currentselectedlight = i + 1 + scene.GetModelCount() + 1;
+							}
+							
+
+
+							ImGui::TreePop();
+
+						}
+
+					}
+
+
 					ImGui::EndChildFrame();
 
 				}

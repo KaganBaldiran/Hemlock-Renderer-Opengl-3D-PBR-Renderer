@@ -328,6 +328,7 @@ public:
 		if (!(numberoflights >= 10))
 		{
 			Light* templight = new Light(meshposition, meshscale, light_color, shader, light_shape, lighttype);
+			templight->LightID = numberoflights + 1 + GetModelCount() + 1;
 			lights.push_back(templight);
 			LightColors[numberoflights] = light_color;
 			LightPositions[numberoflights] = meshposition;
@@ -444,7 +445,7 @@ public:
 
 	}
 
-	void DrawGbuffer(GBUFFER::gBuffer& SceneGbuffer, GLuint GbufferShader, Camera& camera, Vec2<float> menuSize, GLFWwindow& window , int currentselectedobj , std::pair<uint,bool> enablegizmo_p, int currentselectedlight , GLuint pickingtextureShader , pickingtexture& pickingtex)
+	void DrawGbuffer(GBUFFER::gBuffer& SceneGbuffer, GLuint GbufferShader, Camera& camera, Vec2<float> menuSize, GLFWwindow& window , int currentselectedobj , std::pair<uint,bool> enablegizmo_p, int currentselectedlight , GLuint pickingtextureShader , pickingtexture& pickingtex , bool Drawlights)
 	{
 		if (!models.empty())
 		{
@@ -473,6 +474,18 @@ public:
 			{
 				models.at(i)->transformation.SendUniformToShader(pickingtextureShader, "model");
 				models[i]->Draw(pickingtextureShader, camera, NULL, NULL);
+			}
+
+			if (Drawlights)
+			{
+
+				for (int i = 0; i < lights.size(); i++) {
+					//glStencilFunc(GL_ALWAYS, i + 1 + GetModelCount() + 1, -1);
+
+					lights[i]->LightID = i + 1 + GetModelCount() + 1;
+					lights[i]->Draw(pickingtextureShader, camera);
+
+				}
 			}
 
 			if (CURRENT_OBJECT(currentselectedobj) >= NULL || CURRENT_LIGHT(currentselectedlight) >= NULL)
@@ -986,7 +999,7 @@ public:
 
 	}
 
-	Vec2<double> UseGizmo(GLFWwindow* window , int &currentselectedgizmo , int currentselectedobj, std::pair<uint , bool> &enablegizmo_p , Vec2<double> PrevMousePos , Camera camera , int currentselectedlight , GLuint Model_Shader , Vec2<double> &temp_mouse)
+	Vec2<double> UseGizmo(GLFWwindow* window , int &currentselectedgizmo , int currentselectedobj, std::pair<uint , bool> &enablegizmo_p , Vec2<double> PrevMousePos , Camera camera , int currentselectedlight , GLuint Model_Shader , GLuint PBR_Shader, Vec2<double> &temp_mouse)
 	{
 
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
@@ -1116,7 +1129,7 @@ public:
 
 				currentlight->lightmodel = currentlight->transformation.transformmatrix;
 
-				handlelights(Model_Shader);
+				handlelights(PBR_Shader);
 
 
 			}
@@ -1158,7 +1171,7 @@ public:
 
 				currentlight->lightmodel = currentlight->transformation.transformmatrix;
 
-				handlelights(Model_Shader);
+				handlelights(PBR_Shader);
 
 
 			}
@@ -1201,7 +1214,7 @@ public:
 
 				currentlight->lightmodel = currentlight->transformation.transformmatrix;
 
-				handlelights(Model_Shader);
+				handlelights(PBR_Shader);
 				
 			}
 

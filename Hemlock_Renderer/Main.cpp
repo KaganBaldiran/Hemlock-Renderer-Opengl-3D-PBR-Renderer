@@ -220,14 +220,14 @@ int main()
 
             UI::IncrementRotationDegree(data);
 
-            Vec2<double> temp_mouse_pos = scene.UseGizmo(window, currentselectedgizmo, currentselectedobj, enablegizmo_p, PrevMousePos, camera, currentselectedlight, defaultshader.GetID(),mousepos);
+            Vec2<double> temp_mouse_pos = scene.UseGizmo(window, currentselectedgizmo, currentselectedobj, enablegizmo_p, PrevMousePos, camera, currentselectedlight, defaultshader.GetID() , PBRShader.GetID(), mousepos);
 
             UI::DoUIobjectTransformations(currentselectedobj, scene, data);
 
             UI::HandleAutoRotation(currentselectedobj, scene, auto_rotate_on);
 
             scene.DrawGbuffer(SceneGbuffer, GbufferPassShader.GetID(), camera, UI::current_win_size.Cast<float>(),*window,currentselectedobj,
-                enablegizmo_p,currentselectedlight, PickingBufferTextureShader.GetID(), pickingBuffertex);
+                enablegizmo_p,currentselectedlight, PickingBufferTextureShader.GetID(), pickingBuffertex,data.renderlights);
 
             ShadowMap.LightProjection(scene.LightPositions[0], ShadowMapShader.GetID(), window, scene.models, scene.globalscale, camera, UI::current_viewport_size);
 

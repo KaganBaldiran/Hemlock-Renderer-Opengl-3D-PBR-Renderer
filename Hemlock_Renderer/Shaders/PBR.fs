@@ -203,7 +203,14 @@
         metalicmap = texture(texture_metalic1, finaltextcoord).r;
      }
 
+     float shadow;
 
+     for(int i = 0; i < numberoflights;++i)
+     {
+        // shadow += ShadowCalculation(fragPosLightSpace,lightpositions[i],Normal);
+     }
+
+     shadow /= numberoflights;
 
       vec3 N = normalize(resultnormal);
       vec3 V = normalize(campos - currentpos);

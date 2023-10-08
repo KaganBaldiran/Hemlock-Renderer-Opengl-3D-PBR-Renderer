@@ -123,6 +123,8 @@ public:
 
 		glUniformMatrix4fv(glGetUniformLocation(shader, "model"), 1, GL_FALSE, glm::value_ptr(lightmodel));
 		glUniform4f(glGetUniformLocation(shader, "lightColor"), light_color.x, light_color.y, light_color.z, light_color.w);
+		glUniform1f(glGetUniformLocation(shader, "modelID"), this->LightID);
+
 
 		UseShaderProgram(0);
 
@@ -138,6 +140,7 @@ public:
 	glm::mat4 lightmodel = glm::mat4(1.0f);
 	glm::vec3 originpoint;
 	worldtransform transformation;
+	int LightID;
 
 };
 
