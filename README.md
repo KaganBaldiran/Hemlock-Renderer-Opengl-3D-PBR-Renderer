@@ -9,20 +9,20 @@ I'm mostly following widely used techniques and algorithms.
 I'm trying to widen up the feature arsenal as much as can . But also trying to fix the known bugs.
 Here are some of the key features
 
--Multi-object PBR workflow(Environment light sampling isn't supported for now)
--SSAO
--HDRI support along with simple cubemaps.
--Screen based post processing(Limited but I'll be adding features like DOF soon)
--Linear Shadow Mapping for directional lights(Soon to be replaced)
+- Multi-object PBR workflow(Environment light sampling isn't supported for now)
+- SSAO
+- HDRI support along with simple cubemaps.
+- Screen based post processing(Limited but I'll be adding features like DOF soon)
+- Linear Shadow Mapping for directional lights(Soon to be replaced)
 
 # To-Do
 
--Environment light sampling 
--Widely supported light types in shadow mapping 
--Area Lights
--Screen space global illumination
--Ray marched volume rendering 
--Node support for material authuring(Long term goal)
+- Environment light sampling 
+- Widely supported light types in shadow mapping 
+- Area Lights
+- Screen space global illumination
+- Ray marched volume rendering 
+- Node support for material authuring(Long term goal)
 
 # Showcase
 This is how it currently looks(Some of the models don't belong to me):
