@@ -1,7 +1,31 @@
 # Hemlock-Renderer-Opengl-3D-Renderer
 Re-committed as a new repo to clean up the code and to continue developping.
 Hemlock Renderer is a personal project I've been working on for the past two months. It's an Opengl based 3D PBR renderer written in C++.
-This is how it currently looks(Models don't belong to me):
+Still is in an early stage of development and requires a considerable amount of work in order to bring it to life completely.
+I'm mostly following widely used techniques and algorithms.
+
+# Features
+
+I'm trying to widen up the feature arsenal as much as can . But also trying to fix the known bugs.
+Here are some of the key features
+
+-Multi-object PBR workflow(Environment light sampling isn't supported for now)
+-SSAO
+-HDRI support along with simple cubemaps.
+-Screen based post processing(Limited but I'll be adding features like DOF soon)
+-Linear Shadow Mapping for directional lights(Soon to be replaced)
+
+# To-Do
+
+-Environment light sampling 
+-Widely supported light types in shadow mapping 
+-Area Lights
+-Screen space global illumination
+-Ray marched volume rendering 
+-Node support for material authuring(Long term goal)
+
+# Showcase
+This is how it currently looks(Some of the models don't belong to me):
 
 ![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-Renderer/assets/80681941/f54b5c3a-2790-4524-ac9e-5c31dac62ce4)
 ![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-PBR-Renderer/assets/80681941/486a4163-b193-4ed2-8386-2b0103659365)
