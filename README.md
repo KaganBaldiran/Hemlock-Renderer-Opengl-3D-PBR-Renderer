@@ -4,7 +4,7 @@ Hemlock Renderer is a personal project I've been working on for the past two mon
 This is how it currently looks(Models don't belong to me):
 
 ![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-Renderer/assets/80681941/f54b5c3a-2790-4524-ac9e-5c31dac62ce4)
-![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-Renderer/assets/80681941/508463e6-dacf-4033-ad73-ce376d7dc881)
+![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-PBR-Renderer/assets/80681941/486a4163-b193-4ed2-8386-2b0103659365)
 ![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-Renderer/assets/80681941/db111067-8f33-46fe-9469-bb975aa2824c)
 ![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-Renderer/assets/80681941/e2bdb998-3408-4f79-8fdf-1eea7c836fae)
 ![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-Renderer/assets/80681941/c6161e41-3cbe-4d15-b6f1-d49ca55702e9)
