@@ -14,7 +14,7 @@
 
 
 #define CURRENT_OBJECT(Current_obj) (Current_obj - 2)
-#define MAX_LIGHT_COUNT 10
+#define MAX_LIGHT_COUNT 20
 
 #define X_GIZMO 0x010
 #define Y_GIZMO 0x011
@@ -275,7 +275,6 @@ public:
 	{
 		
 		BYTE* pixels;
-		//float* pixels;
 
 		Vec2<int> finalImageSize;
 		int ChannelSize = 0;
@@ -284,14 +283,12 @@ public:
 		{ 
 			glBindFramebuffer(GL_FRAMEBUFFER, screenFBO.GetFBO());
 
-			finalImageSize({width,height });
+			finalImageSize({ (int)screenFBO.FboSize.x,(int)screenFBO.FboSize.y });
 			ChannelSize = 3;
 			pixels = new BYTE[ChannelSize * finalImageSize.x * finalImageSize.y];
 
 			glReadBuffer(GL_COLOR_ATTACHMENT0);
-			glReadPixels(0, 0, finalImageSize.x, finalImageSize.y, GL_RGB, GL_UNSIGNED_BYTE, pixels);
-			//glReadPixels(0, 0, screenFBO.FboSize.x, screenFBO.FboSize.y, GL_RGB, GL_UNSIGNED_BYTE, pixels);
-
+			glReadPixels(0, 0, finalImageSize.x, finalImageSize.y, GL_BGR, GL_UNSIGNED_BYTE, pixels);
 			
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -306,17 +303,17 @@ public:
 			if (renderPass == RENDER_PASS_POSITION)
 			{
 				glReadBuffer(GL_COLOR_ATTACHMENT0);
-				glReadPixels(0, 0, finalImageSize.x, finalImageSize.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+				glReadPixels(0, 0, finalImageSize.x, finalImageSize.y, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
 			}
 			else if (renderPass == RENDER_PASS_NORMAL)
 			{
 				glReadBuffer(GL_COLOR_ATTACHMENT1);
-				glReadPixels(0, 0, finalImageSize.x, finalImageSize.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+				glReadPixels(0, 0, finalImageSize.x, finalImageSize.y, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
 			}
 			else if (renderPass == RENDER_PASS_ALBEDO)
 			{
 				glReadBuffer(GL_COLOR_ATTACHMENT2);
-				glReadPixels(0, 0, finalImageSize.x, finalImageSize.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+				glReadPixels(0, 0, finalImageSize.x, finalImageSize.y, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
 
 			}
 
@@ -324,8 +321,7 @@ public:
 
 		}
 		
-		FIBITMAP* image = FreeImage_ConvertFromRawBits(pixels, finalImageSize.x, finalImageSize.y, ChannelSize * finalImageSize.x, 8 * ChannelSize,  0xFF0000, 0x00FF00, 0x0000FF, false);
-		
+		FIBITMAP* image = FreeImage_ConvertFromRawBits(pixels, finalImageSize.x, finalImageSize.y, ChannelSize * finalImageSize.x, 8 * ChannelSize, 0x0000FF, 0xFF0000, 0x00FF00, false);
 		FreeImage_Save(FIF_PNG, image, path, 0);
 
 		FreeImage_Unload(image);

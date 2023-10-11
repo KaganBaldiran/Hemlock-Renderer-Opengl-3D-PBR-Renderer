@@ -348,22 +348,20 @@ int main()
                 glBindTexture(GL_TEXTURE_2D, 0);
             }
 
-            if (data.takesreenshot)
-            {
-                Vec2<int> screensize;
-                glfwGetWindowSize(window, &screensize.x, &screensize.y);
-
-                scene.Takescreenshot(&ShadowMap, screensize.x, screensize.y, data.screenshotPathstr.c_str(),RenderPass,SceneGbuffer,screen_fbo);
-                data.takesreenshot = false;
-            }
-
-            
 
             glBindFramebuffer(GL_FRAMEBUFFER, NULL);
            
-            //LOG("Current selected light: " << currentselectedlight);
-            //LOG("Current selected gizmo: " << currentselectedgizmo);
-            //LOG("INDEX: " << index);
+            if (data.takesreenshot)
+            {
+                UseShaderProgram(0);
+
+                Vec2<int> screensize;
+                glfwGetWindowSize(window, &screensize.x, &screensize.y);
+
+                scene.Takescreenshot(&ShadowMap, screensize.x, screensize.y, data.screenshotPathstr.c_str(), RenderPass, SceneGbuffer, screen_fbo);
+                data.takesreenshot = false;
+            }
+
             if (data.EnableSSAO)
             {
                 ssao.Draw(SSAOShader.GetID(), SSAOblurShader.GetID(), SceneGbuffer, camera);

@@ -43,7 +43,7 @@
   uniform vec4 lightColor1;
   uniform vec3 lightpos1;
 
-  #define MAX_LIGHT_COUNT 10
+  #define MAX_LIGHT_COUNT 20
 
   uniform vec4 lightColors[MAX_LIGHT_COUNT];
   uniform vec3 lightpositions[MAX_LIGHT_COUNT];

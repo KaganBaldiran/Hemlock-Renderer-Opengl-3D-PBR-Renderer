@@ -115,9 +115,7 @@ GLFWwindow* initializeWindow(int windowwidth , int windowheight , const char*win
 
 	}
 	
-
 	glfwMakeContextCurrent(window);
-
 
 	if (glewInit() != GLEW_OK)
 	{

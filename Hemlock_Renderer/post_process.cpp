@@ -49,6 +49,5 @@ void CreateCustomFrameBuffer(FBO &fbo , uint width , uint height)
 		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
 	}
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);	
 }
