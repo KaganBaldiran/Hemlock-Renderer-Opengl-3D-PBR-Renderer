@@ -1,10 +1,35 @@
 # Hemlock-Renderer-Opengl-3D-Renderer
 Re-committed as a new repo to clean up the code and to continue developping.
-Hemlock Renderer is a personal project I've been working on for the past two months. It's an Opengl based 3D renderer written in C++. Currently doesn't support PBR workflow but soon enough it will ;). 
-This is how it currently looks(Models don't belong to me):
+Hemlock Renderer is a personal project I've been working on for the past two months. It's an Opengl based 3D PBR renderer written in C++.
+Still is in an early stage of development and requires a considerable amount of work in order to bring it to life completely.
+I'm mostly following widely used techniques and algorithms.
 
-![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-Renderer/assets/80681941/f770ced9-2787-4b30-8f49-733aebf1c7ff)
-![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-Renderer/assets/80681941/508463e6-dacf-4033-ad73-ce376d7dc881)
+# Features
+
+I'm trying to widen up the feature arsenal as much as can . But also trying to fix the known bugs.
+Here are some of the key features
+
+- Multi-object PBR workflow(Environment light sampling isn't supported for now)
+- SSAO
+- HDRI support along with simple cubemaps.
+- Screen based post processing(Limited but I'll be adding features like DOF soon)
+- Linear Shadow Mapping for directional lights(Soon to be replaced)
+
+# To-Do
+
+- Environment light sampling 
+- Widely supported light types in shadow mapping 
+- Area Lights
+- Screen space global illumination
+- Ray marched volume rendering 
+- Node support for material authuring(Long term goal)
+
+# Showcase
+This is how it currently looks(Some of the models don't belong to me):
+
+![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-PBR-Renderer/assets/80681941/0043e6fa-31d7-4abc-a55d-b1bb7777b90a)
+![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-Renderer/assets/80681941/f54b5c3a-2790-4524-ac9e-5c31dac62ce4)
+![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-PBR-Renderer/assets/80681941/486a4163-b193-4ed2-8386-2b0103659365)
 ![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-Renderer/assets/80681941/db111067-8f33-46fe-9469-bb975aa2824c)
 ![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-Renderer/assets/80681941/e2bdb998-3408-4f79-8fdf-1eea7c836fae)
 ![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-Renderer/assets/80681941/c6161e41-3cbe-4d15-b6f1-d49ca55702e9)
