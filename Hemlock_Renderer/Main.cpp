@@ -285,7 +285,7 @@ int main()
                 glUniform1f(glGetUniformLocation(PBRShader.GetID(), "metallic"), data.metallic);
                 glUniform1f(glGetUniformLocation(PBRShader.GetID(), "roughness"), data.roughness);
                 glUniform1f(glGetUniformLocation(PBRShader.GetID(), "ao"), data.ao);
-
+                //glUniform1f(glGetUniformLocation(PBRShader.GetID(), "LightIntensity"), data.LightIntensity);
 
                 for (int i = 0; i < scene.GetModelCount() + 1; i++) {
                     glStencilFunc(GL_ALWAYS, i + 1, -1);

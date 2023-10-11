@@ -139,6 +139,7 @@ public:
 	glm::vec3 lightscale;
 	glm::mat4 lightmodel = glm::mat4(1.0f);
 	glm::vec3 originpoint;
+	float Intensity;
 	worldtransform transformation;
 	int LightID;
 

@@ -43,12 +43,14 @@
   uniform vec4 lightColor1;
   uniform vec3 lightpos1;
 
+  #define MAX_LIGHT_COUNT 10
 
-  uniform vec4 lightColors[10];
-  uniform vec3 lightpositions[10];
+  uniform vec4 lightColors[MAX_LIGHT_COUNT];
+  uniform vec3 lightpositions[MAX_LIGHT_COUNT];
+  uniform float lightIntensities[MAX_LIGHT_COUNT];
   uniform int numberoflights;
 
-  uniform int typeoflight[10];
+  uniform int typeoflight[MAX_LIGHT_COUNT];
 
 
   uniform int stencilindex;
@@ -78,6 +80,8 @@
   uniform float metallic;
   uniform float roughness;
   uniform float ao;
+
+  uniform float LightIntensity;
 
  
   float ShadowCalculation(vec4 fragPosLightSpace , vec3 lightDir ,vec3 normal)
@@ -240,7 +244,7 @@
           vec3 specular = numerator / denominator;
 
           float NdotL = max(dot(N,L),0.0);
-          Lo += (Kd * texturecolor / PI + specular) * radiance * NdotL;
+          Lo += (Kd * texturecolor / PI + specular) * radiance * lightIntensities[i] * NdotL;
       }
      
       vec3 ambient = vec3(0.03) * texturecolor * ao;

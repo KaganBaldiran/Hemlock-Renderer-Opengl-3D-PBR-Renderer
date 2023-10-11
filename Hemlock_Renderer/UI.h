@@ -127,6 +127,8 @@ namespace UI
 		float roughness = 0.5f;
 		float ao = 0.1f;
 
+		float LightIntensity = 1.0f;
+
     };
 
 	
@@ -395,6 +397,10 @@ namespace UI
 		{
 			RenderPassUIText = "AO";
 		}
+		else if (renderPass == RENDER_PASS_SPECULAR)
+		{
+			RenderPassUIText = "AO";
+		}
 
 		if (ImGui::BeginCombo(RenderPassUIText.c_str(), "Select an option", ImGuiComboFlags_NoPreview))
 		{
@@ -429,6 +435,11 @@ namespace UI
 			if (ImGui::Selectable("AO"))
 			{
 				renderPass = RENDER_PASS_AO;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("Specular"))
+			{
+				renderPass = RENDER_PASS_SPECULAR;
 				showDropdown = false;
 			}
 
@@ -621,6 +632,9 @@ namespace UI
 
 		static bool importmodel_menu = false;
 		static bool ApplicationMenuEnabled = false;
+
+		Vec2<int> win_size = { NULL,NULL };
+		glfwGetWindowSize(window, &win_size.x, &win_size.y);
 
 		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.MidMenuColor));
 
@@ -817,9 +831,7 @@ namespace UI
 
 		if (ApplicationMenuEnabled)
 		{
-			Vec2<int> win_size = { NULL,NULL };
-
-			glfwGetWindowSize(window, &win_size.x, &win_size.y);
+			
 
 			ApplicationSettingSizes = { win_size.x / 2.0f , win_size.y / 2.0f };
 			ImVec2 ApplicationSettingPosition = ImVec2((win_size.x / 2) - (ApplicationSettingSizes.x / 2), (win_size.y / 2) - (ApplicationSettingSizes.y / 2));
@@ -1429,9 +1441,24 @@ namespace UI
 				{
 					ImGui::BeginChildFrame(7, ImVec2(ChildMenuSize.x * 0.98f, ChildMenuSize.y * 0.80f), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
 
+					if (ImGui::SliderFloat("Light Intensity", &scene.LightIntensities[scene.CURRENT_LIGHT(currentselectedlight)], 0.0f, 20.0f))
+					{
+						UseShaderProgram(import_shader);
+						GLuint lightIntensities = glGetUniformLocation(import_shader, "lightIntensities");
+						glUniform1fv(lightIntensities, MAX_LIGHT_COUNT, &scene.LightIntensities[0]);
+						UseShaderProgram(0);
+					};
 
+					glm::vec4* c = &scene.LightColors[scene.CURRENT_LIGHT(currentselectedlight)];
+					float* color[4] = { &c->x ,&c->y , &c->z,&c->w };
 
-
+					if (ImGui::ColorEdit4("Light Color", *color))
+					{
+						UseShaderProgram(import_shader);
+						GLuint lightcolors = glGetUniformLocation(import_shader, "lightColors");
+						glUniform4fv(lightcolors, MAX_LIGHT_COUNT, &scene.LightColors[0][0]);
+						UseShaderProgram(0);
+					};
 
 					ImGui::EndChildFrame();
 				}
@@ -1735,9 +1762,13 @@ namespace UI
 
 					for (size_t i = 1; i < scene.models.size(); i++)
 					{
-						
+
 						if (ImGui::TreeNode(scene.models[i]->ModelName.c_str()))
 						{
+
+							ImGui::SameLine(0.0f , 2.0f);
+							ImGui::Button("hello", { ImGui::GetFontSize(),ImGui::GetFontSize() });
+							
 							if (ImGui::Selectable(("Select##Object" + std::to_string(i)).c_str()))
 							{
 								currentselectedobj = i + 2;
@@ -1763,6 +1794,15 @@ namespace UI
 							ImGui::Unindent(); 
 
 						}
+						else
+						{
+							float distance = current_win_size.x ;
+							LOG("(float)current_win_size.x: " << distance * 0.6f);
+							ImGui::SameLine(0.0f, distance * 0.6f);
+							ImGui::Button("hello", { ImGui::GetFontSize(),ImGui::GetFontSize() });
+						}
+
+						
 						
 					}
 

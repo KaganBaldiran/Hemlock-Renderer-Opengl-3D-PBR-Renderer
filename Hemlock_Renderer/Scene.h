@@ -10,9 +10,11 @@
 #include "PickingTexture.h"
 #include "post_process.h"
 #include "SSAO.h"
+#include <algorithm>
 
 
 #define CURRENT_OBJECT(Current_obj) (Current_obj - 2)
+#define MAX_LIGHT_COUNT 10
 
 #define X_GIZMO 0x010
 #define Y_GIZMO 0x011
@@ -22,10 +24,11 @@ class scene
 {
 public:
 
-	glm::vec4 LightColors[10];
-	glm::vec3 LightPositions[10];
+	glm::vec4 LightColors[MAX_LIGHT_COUNT];
+	glm::vec3 LightPositions[MAX_LIGHT_COUNT];
 	int numberoflights = NULL;
-	int typeoflights[10];
+	int typeoflights[MAX_LIGHT_COUNT];
+	float LightIntensities[MAX_LIGHT_COUNT];
 	std::vector<Light*> lights;
 	std::vector<Model*> models;
 	std::vector<Entity*> Entities;
@@ -33,6 +36,11 @@ public:
 
 
 	unsigned int quadVAO, quadVBO;
+
+	scene()
+	{
+		std::fill_n(LightIntensities, MAX_LIGHT_COUNT, 1.0f);
+	}
 
 	int CURRENT_LIGHT(int current_light_index)
 	{
@@ -267,6 +275,7 @@ public:
 	{
 		
 		BYTE* pixels;
+		//float* pixels;
 
 		Vec2<int> finalImageSize;
 		int ChannelSize = 0;
@@ -275,13 +284,15 @@ public:
 		{ 
 			glBindFramebuffer(GL_FRAMEBUFFER, screenFBO.GetFBO());
 
-			finalImageSize(screenFBO.FboSize.Cast<int>());
+			finalImageSize({width,height });
 			ChannelSize = 3;
 			pixels = new BYTE[ChannelSize * finalImageSize.x * finalImageSize.y];
 
 			glReadBuffer(GL_COLOR_ATTACHMENT0);
-			glReadPixels(0, 0, screenFBO.FboSize.x, screenFBO.FboSize.y, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+			glReadPixels(0, 0, finalImageSize.x, finalImageSize.y, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+			//glReadPixels(0, 0, screenFBO.FboSize.x, screenFBO.FboSize.y, GL_RGB, GL_UNSIGNED_BYTE, pixels);
 
+			
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		}
@@ -299,13 +310,11 @@ public:
 			}
 			else if (renderPass == RENDER_PASS_NORMAL)
 			{
-				// Read the second color attachment
 				glReadBuffer(GL_COLOR_ATTACHMENT1);
 				glReadPixels(0, 0, finalImageSize.x, finalImageSize.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 			}
 			else if (renderPass == RENDER_PASS_ALBEDO)
 			{
-				// Read the third color attachment
 				glReadBuffer(GL_COLOR_ATTACHMENT2);
 				glReadPixels(0, 0, finalImageSize.x, finalImageSize.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
@@ -315,7 +324,8 @@ public:
 
 		}
 		
-		FIBITMAP* image = FreeImage_ConvertFromRawBits(pixels, finalImageSize.x, finalImageSize.y, ChannelSize * finalImageSize.x, 8 * ChannelSize, 0xFF0000, 0xFF0000, 0xFF0000, false);
+		FIBITMAP* image = FreeImage_ConvertFromRawBits(pixels, finalImageSize.x, finalImageSize.y, ChannelSize * finalImageSize.x, 8 * ChannelSize,  0xFF0000, 0x00FF00, 0x0000FF, false);
+		
 		FreeImage_Save(FIF_PNG, image, path, 0);
 
 		FreeImage_Unload(image);
@@ -325,7 +335,7 @@ public:
 
 	void Addlight(glm::vec3 meshposition, glm::vec3 meshscale, glm::vec4 light_color, GLuint shader, uint16 light_shape, int lighttype)
 	{
-		if (!(numberoflights >= 10))
+		if (!(numberoflights >= MAX_LIGHT_COUNT))
 		{
 			Light* templight = new Light(meshposition, meshscale, light_color, shader, light_shape, lighttype);
 			templight->LightID = numberoflights + 1 + GetModelCount() + 1;
@@ -613,6 +623,11 @@ public:
 			renderpass = ssao.GetSSAOblurredTexture();
 			glUniform1i(glGetUniformLocation(shader, "RenderPass"), 6);
 	    }
+		else if (RenderPass == RENDER_PASS_SPECULAR)
+		{
+			renderpass = screenGbuffer.gColorSpec;
+			glUniform1i(glGetUniformLocation(shader, "RenderPass"), 7);
+		}
 		
 
 		glActiveTexture(GL_TEXTURE0);
@@ -735,16 +750,19 @@ public:
 		UseShaderProgram(shader);
 
 		GLuint Lcolors = glGetUniformLocation(shader, "lightColors");
-		glUniform4fv(Lcolors, 10, &LightColors[0][0]);
+		glUniform4fv(Lcolors, MAX_LIGHT_COUNT, &LightColors[0][0]);
 
 		GLuint Lpos = glGetUniformLocation(shader, "lightpositions");
-		glUniform3fv(Lpos, 10, &LightPositions[0][0]);
+		glUniform3fv(Lpos, MAX_LIGHT_COUNT, &LightPositions[0][0]);
 
 		GLuint numberofl = glGetUniformLocation(shader, "numberoflights");
 		glUniform1i(numberofl, numberoflights);
 
 		GLuint typeoflight = glGetUniformLocation(shader, "typeoflight");
-		glUniform1iv(typeoflight, 10, typeoflights);
+		glUniform1iv(typeoflight, MAX_LIGHT_COUNT, typeoflights);
+
+		GLuint lightIntensities = glGetUniformLocation(shader, "lightIntensities");
+		glUniform1fv(lightIntensities, MAX_LIGHT_COUNT, &LightIntensities[0]);
 
 		UseShaderProgram(0);
 

@@ -24,6 +24,11 @@ void main()
         FragColor = vec4(pow(OutColor.xyz,vec3(0.9)),OutColor.w);
       }
     }
+    else if(RenderPass == 3)
+    {
+      vec4 OutColor = texture(Viewport, TexCoords);
+      FragColor = vec4(pow(OutColor.xyz,vec3(0.9)),1.0f);
+    }
     else if(RenderPass == 5)
     {
       vec4 OutColor = texture(Viewport, TexCoords);
@@ -33,6 +38,11 @@ void main()
     {
       vec4 OutColor = texture(Viewport, TexCoords);
       FragColor = vec4(pow(vec3(OutColor.x),vec3(0.9)),1.0f);
+    }
+    else if(RenderPass == 7)
+    {
+      vec4 OutColor = texture(Viewport, TexCoords);
+      FragColor = vec4(pow(vec3(OutColor.w),vec3(0.9)),1.0f);
     }
     else
     {
