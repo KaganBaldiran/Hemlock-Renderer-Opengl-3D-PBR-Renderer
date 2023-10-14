@@ -177,7 +177,7 @@ CubeMap::~CubeMap()
     glDeleteTextures(1, &this->cubemaptextureID);
 }
 
-void CubeMap::Draw(Camera &camera)
+void CubeMap::Draw(Camera &camera, Vec2<float> windowSize)
 {
     
     glDepthMask(GL_FALSE);
@@ -190,6 +190,7 @@ void CubeMap::Draw(Camera &camera)
     glUniform1i(glGetUniformLocation(cubemapshader->GetID(), "skybox"), 0);
     glUniformMatrix4fv(glGetUniformLocation(cubemapshader->GetID(), "projection"), 1, GL_FALSE, glm::value_ptr(camera.projection));
     glUniformMatrix4fv(glGetUniformLocation(cubemapshader->GetID(), "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(cubemapshader->GetID(), "ScreenRatio"), 1, GL_FALSE, glm::value_ptr(camera.screenratiodefault));
 
     vao.Bind();
     glActiveTexture(GL_TEXTURE0);

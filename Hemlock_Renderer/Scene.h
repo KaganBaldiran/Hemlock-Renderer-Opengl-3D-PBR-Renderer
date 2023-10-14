@@ -728,6 +728,28 @@ public:
 		models.erase(models.begin() + index);
 	}
 
+
+	void DeleteLight(size_t index , GLuint shader)
+	{
+		if (lights.size() > 1)
+		{
+			for (size_t i = index; i < numberoflights - 1; i++)
+			{
+				LightColors[i] = LightColors[i + 1];
+				LightIntensities[i] = LightIntensities[i + 1];
+				LightPositions[i] = LightPositions[i + 1];
+
+				lights.at(i)->LightID = lights.at(i + 1)->LightID;
+			}
+		}
+		
+		delete lights.at(index);
+		lights.erase(lights.begin() + index);
+		numberoflights--;
+
+		handlelights(shader);
+	}
+
 	~scene()
 	{
 		for (auto temp : lights)
@@ -1036,7 +1058,7 @@ public:
 			enablegizmo_p = { X_GIZMO, true };
 		}
 
-		std::cout << "CAMERA DIRECTION: " << camera.Get_Orientation().x << " " << camera.Get_Orientation().y << " " << camera.Get_Orientation().z<<"\n";
+		//std::cout << "CAMERA DIRECTION: " << camera.Get_Orientation().x << " " << camera.Get_Orientation().y << " " << camera.Get_Orientation().z<<"\n";
 
 
 		Vec2<double> delta_mouse = { temp_mouse.x - PrevMousePos.x, temp_mouse.y - PrevMousePos.y };
@@ -1303,6 +1325,20 @@ public:
 			logs.push_back(logtemp);
 
 			currentselectedobj = 0;
+
+		}
+
+	}
+
+	void DeleteLightKeyboardAction(int& currentSelectedLight, GLFWwindow* window, std::vector<std::string>& logs , GLuint Shader)
+	{
+
+		if (glfwGetKey(window, GLFW_KEY_DELETE) == GLFW_PRESS && CURRENT_LIGHT(currentSelectedLight) >= 0)
+		{
+			DeleteLight(CURRENT_LIGHT(currentSelectedLight), Shader);
+			std::string logtemp = "A light is deleted!";
+			logs.push_back(logtemp);
+			currentSelectedLight = 0;
 
 		}
 

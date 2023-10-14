@@ -22,7 +22,7 @@ public:
 	CubeMap(std::vector<std::string> texture_faces, const char* vertex_source, const char* frag_source);
 	CubeMap(GLuint CubeMap, const char* vertex_source, const char* frag_source);
 	~CubeMap();
-	void Draw(Camera& camera);
+	void Draw(Camera& camera , Vec2<float> windowSize);
 	GLuint GetCubeMapTexture() { return this->cubemaptextureID; };
 	void SetCubeMapTexture(GLuint &CubeMapTexture);
 

@@ -129,6 +129,9 @@ namespace UI
 
 		float LightIntensity = 1.0f;
 
+		bool RenderGrid = true;
+		bool SplashScreenEnabled = true;
+
     };
 
 	
@@ -166,8 +169,6 @@ namespace UI
 		style.Colors[ImGuiCol_WindowBg] = current_color_sheme.MenuBackgroundColor;
 		style.Colors[ImGuiCol_Border] = current_color_sheme.BorderColor;
 		style.Colors[ImGuiCol_MenuBarBg] = current_color_sheme.MenuBackgroundColor;
-
-	
 
 		style.FrameRounding = 5.0f;
 		style.ItemSpacing = ImVec2(20, 10);
@@ -360,16 +361,37 @@ namespace UI
 
 	}
 
-	void DrawOnViewportSettings(Vec2<int> winsize, int& renderPass)
+	void DrawOnViewportSettings(Vec2<int> winsize, int& renderPass , GLuint zeroPointButton, GLuint gridButton, Camera& camera , UIdataPack& data)
 	{
 		static bool showDropdown = true;
+
+		Vec2<float> viewportSettingsSize(winsize.x - current_win_size.x, current_win_size.y * 0.05f);
 		
 		ImGui::SetNextWindowPos(ImVec2(current_win_size.x, 18));
-		ImGui::SetNextWindowSize(ImVec2(winsize.x - current_win_size.x, current_win_size.y * 0.05f));
+		ImGui::SetNextWindowSize(ImVec2(viewportSettingsSize.x, viewportSettingsSize.y));
 
 		ImGui::Begin("Viewport", (bool*)0, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground);
 
-		ImGui::SetCursorPos(ImVec2((winsize.x - current_win_size.x) / 1.7f, winsize.y / 40.0f));
+		ImGui::SetCursorPos(ImVec2((viewportSettingsSize.x * 0.018f) + (viewportSettingsSize.y * 0.7f), viewportSettingsSize.y * 0.1f));
+
+		ImVec2 uv0(0, 1); 
+		ImVec2 uv1(1, 0);
+
+		if (ImGui::ImageButton((void*)(intptr_t)zeroPointButton, { viewportSettingsSize.y * 0.7f,viewportSettingsSize.y * 0.7f }, uv0, uv1))
+		{
+			camera.Position = glm::vec3(0.0f, 0.3f, 2.0f);
+			camera.Orientation = glm::vec3(0.0f, 0.0f, -1.0f);
+		}
+
+
+		ImGui::SetCursorPos(ImVec2((viewportSettingsSize.x * 0.01f) , viewportSettingsSize.y * 0.1f));
+
+		if (ImGui::ImageButton((void*)(intptr_t)gridButton, { viewportSettingsSize.y * 0.7f,viewportSettingsSize.y * 0.7f }, uv0, uv1))
+		{
+			data.RenderGrid = !data.RenderGrid;
+		}
+
+		ImGui::SetCursorPos(ImVec2(viewportSettingsSize.x * 0.45f, viewportSettingsSize.y * 0.3f));
 
 		std::string RenderPassUIText;
 
@@ -453,7 +475,8 @@ namespace UI
 		}
 
 		ImGui::PopStyleColor();
-		ImGui::SetCursorPos(ImVec2((winsize.x - current_win_size.x) / 1.3f, winsize.y / 40.0f));
+		ImGui::SetCursorPos(ImVec2(viewportSettingsSize.x * 0.96f - (ImGui::GetFontSize() * 4), viewportSettingsSize.y * 0.3f));
+		
 		ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
 
 		ImGui::End();
@@ -627,7 +650,7 @@ namespace UI
 	}
 
 
-	void ConfigureUI(int &currentselectedobj ,UIdataPack &data , scene &scene , std::vector<std::string>& logs ,GLuint import_shader , glm::vec4 lightcolor , glm::vec3 lightpos , GLFWwindow* window , std::vector<uint> &auto_rotate_on , GLuint screen_image,GLuint light_shader, int &currentselectedlight , ThreadPool& threads , CubeMap &Cubemap , GLuint HDRItoCubeMapShader)
+	void ConfigureUI(int &currentselectedobj ,UIdataPack &data , scene &scene , std::vector<std::string>& logs ,GLuint import_shader , glm::vec4 lightcolor , glm::vec3 lightpos , GLFWwindow* window , std::vector<uint> &auto_rotate_on , GLuint screen_image,GLuint light_shader, int &currentselectedlight , ThreadPool& threads , CubeMap &Cubemap , GLuint HDRItoCubeMapShader , Textures& SplashScreenImage)
 	{
 
 		static bool importmodel_menu = false;
@@ -813,11 +836,14 @@ namespace UI
 			{
 				if (ImGui::MenuItem("Application Settings", "Ctrl+A+S"))
 				{
-
 					ApplicationMenuEnabled = true;
-					
+					data.SplashScreenEnabled = false;
 				}
-
+				if (ImGui::MenuItem("Splash Screen", "Ctrl+D+S"))
+				{
+					ApplicationMenuEnabled = false;
+					data.SplashScreenEnabled = true;
+				}
 
 				ImGui::EndMenu();
 			}
@@ -1012,7 +1038,52 @@ namespace UI
 			ImGui::PopStyleColor();
 		}
 
+		if (data.SplashScreenEnabled)
+		{
+			const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+			Vec2<float> ScreenScaleRatio(win_size.x / (float)mode->width, win_size.y / (float)mode->height);
 
+			ApplicationSettingSizes = { (SplashScreenImage.GetTextureWidth() * ScreenScaleRatio.x * 0.5f),
+									  (SplashScreenImage.GetTextureHeight()* ScreenScaleRatio.x * 0.5f) + (win_size.y * 0.2f) };
+			ImVec2 ApplicationSettingPosition = ImVec2((win_size.x / 2) - (ApplicationSettingSizes.x / 2), (win_size.y / 2) - (ApplicationSettingSizes.y / 2));
+
+			ImGui::SetNextWindowSize(ImVec2(ApplicationSettingSizes.x, ApplicationSettingSizes.y));
+			ImGui::SetNextWindowPos(ApplicationSettingPosition, ImGuiCond_FirstUseEver);
+
+			ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.ChildMenuColor));
+
+			ImGui::Begin("Splash Screen", &ApplicationMenuEnabled, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration);
+
+			ApplicationSettingPosition = ImGui::GetWindowPos();
+
+			ImVec2 Max = ImVec2(ApplicationSettingPosition.x + (ApplicationSettingSizes.x), ApplicationSettingPosition.y + (ApplicationSettingSizes.y));
+			ImVec2 Min = ImVec2(ApplicationSettingPosition.x - (ApplicationSettingSizes.x), ApplicationSettingPosition.y - (ApplicationSettingSizes.y));
+
+			ImVec2 uv0(0, 1); 
+			ImVec2 uv1(1, 0);
+
+			ImGui::Image((void*)(intptr_t)*SplashScreenImage.GetTexture(), ImVec2(SplashScreenImage.GetTextureWidth()* ScreenScaleRatio.x * 0.5f, SplashScreenImage.GetTextureHeight()* ScreenScaleRatio.x * 0.5f), uv0, uv1);
+
+			//ImGui::SetCursorPos({ ApplicationSettingSizes.x / 2 ,
+				 //(SplashScreenImage.GetTextureHeight() * ScreenScaleRatio.x * 0.5f) + ((win_size.y * 0.2f) * 0.5f) });
+
+			//auto fontSize = ImGui::GetFontSize();
+			
+			//ImGui::GetFont()->FontSize = fontSize / 2.0f;
+
+
+			//ImGui::GetFont()->FontSize = fontSize;
+
+
+			if (!ImGui::IsMouseHoveringRect(Min, Max) && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+			{
+				data.SplashScreenEnabled = false;
+			}
+
+			ImGui::End();
+
+			ImGui::PopStyleColor();
+		}
 
         FrameBufferSizeCallBack(window);
         
@@ -1109,8 +1180,8 @@ namespace UI
 						ImGui::SliderFloat("Translate object(x axis)", &data.moveamount.x, 0.0f, data.maxmove.x);
 						ImGui::SliderFloat("Translate object(y axis)", &data.moveamount.y, 0.0f, data.maxmove.y);
 						ImGui::SliderFloat("Translate object(z axis)", &data.moveamount.z, 0.0f, data.maxmove.z);
-						ImGui::SliderFloat("Scale object", &data.scaleamount, 0.1f, data.maxscale);// Edit 1 float using a slider from 0.0f to 1.0f
-						ImGui::ColorEdit3("Background color", (float*)&data.clear_color); // Edit 3 floats representing a color
+						ImGui::SliderFloat("Scale object", &data.scaleamount, 0.1f, data.maxscale);
+						ImGui::ColorEdit4("Background color", (float*)&std::get<5>(chosen_color_sheme)); 
 						ImGui::Text("Selected Object: %d", currentselectedobj);
 						
 						ImGui::EndChildFrame();
@@ -1569,7 +1640,7 @@ namespace UI
 
 
 					//ImGui::SetCursorPos(ImVec2(10, 40));
-					ImGui::ColorEdit3("Background color", (float*)&data.clear_color); 
+					ImGui::ColorEdit4("Background color", (float*)&std::get<5>(chosen_color_sheme));
 					//ImGui::SetCursorPos(ImVec2(10, 70));
 					ImGui::Text("Selected Object: %d", currentselectedobj);
 					//ImGui::SetCursorPos(ImVec2(10, 100));
@@ -1815,8 +1886,15 @@ namespace UI
 							{
 								currentselectedlight = i + 1 + scene.GetModelCount() + 1;
 							}
-							
 
+							if (ImGui::Selectable(("Delete##Object" + std::to_string(i)).c_str()))
+							{
+								scene.DeleteLight(i,import_shader);
+								std::string logtemp = "A light is deleted!";
+								logs.push_back(logtemp);
+								currentselectedlight = 0;
+							}
+							
 
 							ImGui::TreePop();
 

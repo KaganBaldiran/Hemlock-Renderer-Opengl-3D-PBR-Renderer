@@ -54,7 +54,7 @@ int main()
     Shader SSAOblurShader("Shaders/SSAO.vs", "Shaders/SSAOblur.fs");
     Shader PBRShader("Shaders/PBR.vs", "Shaders/PBR.fs");
 
-
+    
     scene scene;
 
     FBO screen_fbo;
@@ -76,6 +76,11 @@ int main()
     };
 
     CubeMap Cubemap(cube_map_faces, "Shaders/CubeMap.vert", "Shaders/CubeMap.frag");
+
+    Textures zeroPointButton("resources/buttons/zero_point_scaled_v2.png", 4, GL_TEXTURE_2D, GL_UNSIGNED_BYTE, GL_LINEAR, GL_LINEAR, true);
+    Textures GridButton("resources/buttons/grid_button.png", 4, GL_TEXTURE_2D, GL_UNSIGNED_BYTE, GL_LINEAR, GL_LINEAR, true);
+    Textures SplashScreenImage("resources/SplashScreenImage.png", 4, GL_TEXTURE_2D, GL_UNSIGNED_BYTE, GL_LINEAR, GL_LINEAR, true);
+
 
     GBUFFER::gBuffer SceneGbuffer;
 
@@ -210,13 +215,14 @@ int main()
             UI::HandleSliderMaxValues(data, window);
 
             UI::ConfigureUI(currentselectedobj, data, scene, logs, PBRShader.GetID(), lightcolor, lightpos, window, auto_rotate_on,
-                           ShadowMap.GetShadowMapImage(), lightshader.GetID(), currentselectedlight,threads,Cubemap,HDRIShader.GetID());
+                           ShadowMap.GetShadowMapImage(), lightshader.GetID(), currentselectedlight,threads,
+                           Cubemap,HDRIShader.GetID(), SplashScreenImage);
             
             scene.DeleteModelKeyboardAction(currentselectedobj, window, logs);
 
             scene.CopyModelKeyboardAction(currentselectedobj, defaultshader.GetID(), window, logs, lightcolor, lightpos);
 
-            
+            scene.DeleteLightKeyboardAction(currentselectedlight, window, logs,PBRShader.GetID());
 
             UI::IncrementRotationDegree(data);
 
@@ -260,12 +266,12 @@ int main()
 
                 }
 
-
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-                scene.RenderGrid(lightshader.GetID(), grid, camera);
-
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                if (data.RenderGrid)
+                {
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                    scene.RenderGrid(lightshader.GetID(), grid, camera);
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                }
 
                 if (data.takesreenshot)
                 {
@@ -276,7 +282,7 @@ int main()
 
                 if (data.render_cube_map)
                 {
-                    Cubemap.Draw(camera);
+                    Cubemap.Draw(camera,{(float)width,(float)height});
                 }
 
                 UseShaderProgram(PBRShader.GetID());
@@ -285,7 +291,6 @@ int main()
                 glUniform1f(glGetUniformLocation(PBRShader.GetID(), "metallic"), data.metallic);
                 glUniform1f(glGetUniformLocation(PBRShader.GetID(), "roughness"), data.roughness);
                 glUniform1f(glGetUniformLocation(PBRShader.GetID(), "ao"), data.ao);
-                //glUniform1f(glGetUniformLocation(PBRShader.GetID(), "LightIntensity"), data.LightIntensity);
 
                 for (int i = 0; i < scene.GetModelCount() + 1; i++) {
                     glStencilFunc(GL_ALWAYS, i + 1, -1);
@@ -367,12 +372,13 @@ int main()
                 ssao.Draw(SSAOShader.GetID(), SSAOblurShader.GetID(), SceneGbuffer, camera);
             }
 
+           
             scene.DrawScreenQuad(FrameBufferShader.GetID(), screen_fbo.GetScreenImage(), SceneGbuffer,
                 UI::current_win_size.Cast<float>(), UI::current_viewport_size.y, RenderPass, pickingtex,
                 pickingshader.GetID(),pickingBuffertex,ssao,data.EnableSSAO, *window);
 
             
-            UI::DrawOnViewportSettings({windowwidth,windowheight}, RenderPass);
+            UI::DrawOnViewportSettings({width,height}, RenderPass, *zeroPointButton.GetTexture(),*GridButton.GetTexture(), camera, data);
             UI::Render();
 
 
@@ -471,6 +477,9 @@ int main()
     DeleteShaderProgram(SSAOblurShader.GetID());
     DeleteShaderProgram(PBRShader.GetID());
 
+    zeroPointButton.DeleteTexture();
+    GridButton.DeleteTexture();
+    SplashScreenImage.DeleteTexture();
 
     UI::EndUI();
 

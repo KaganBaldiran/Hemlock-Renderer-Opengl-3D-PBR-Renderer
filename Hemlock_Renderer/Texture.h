@@ -18,6 +18,7 @@ struct GLFWwindow;
    public:
 
 	   Textures(const char* filepath, GLenum slot, GLenum texturetype, GLenum pixeltype , unsigned int texture_type_for_pbr , std::string texture_type_for_pbr_str);
+	   Textures(const char* filepath, GLenum slot, GLenum texturetype, GLenum pixeltype, GLenum MAG_FILTER, GLenum MIN_FILTER, bool FlipTexture);
 	   ~Textures();
 
 	   void Bind();
@@ -29,6 +30,9 @@ struct GLFWwindow;
 	   GLuint* GetTexture() { return &this->texture; };
 
 	   std::string GetPathData();
+
+	   int GetTextureWidth() { return this->width; };
+	   int GetTextureHeight() { return this->height; };
 
 	   void texunit(GLuint shader_program, const char* uniform, GLuint unit);
 

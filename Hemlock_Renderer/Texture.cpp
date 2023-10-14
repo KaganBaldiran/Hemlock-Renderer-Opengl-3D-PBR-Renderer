@@ -65,6 +65,64 @@ Textures::Textures(const char* filepath , GLenum slot , GLenum texturetype , GLe
 
 }
 
+Textures::Textures(const char* filepath, GLenum slot, GLenum texturetype, GLenum pixeltype,GLenum MAG_FILTER , GLenum MIN_FILTER , bool FlipTexture)
+{
+	std::string temp(filepath);
+	path = temp;
+	std::cout << "TEST OF PATH STRING: " << path << "\n";
+
+	type = texturetype;
+	stbi_set_flip_vertically_on_load(FlipTexture);
+	int channels;
+	unsigned char* pixels = stbi_load(filepath, &width, &height, &channels, 0);
+	if (!pixels)
+	{
+
+		std::cerr << "Failed to load texture :: " << filepath << "\n";
+		return;
+
+	}
+
+	this->channels = channels;
+
+	GLenum formattex = NULL;
+	if (channels == 1)
+	{
+		formattex = GL_RED;
+	}
+	else if (channels == 3)
+	{
+		formattex = GL_RGB;
+
+	}
+	else if (channels == 4)
+	{
+		formattex = GL_RGBA;
+
+	}
+
+	std::cout << "Texture channel count : " << channels << "\n";
+
+	glGenTextures(1, &texture);
+	glActiveTexture(GL_TEXTURE0 + slot);
+	unit = slot;
+	glBindTexture(texturetype, texture);
+
+	glTexParameteri(texturetype, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(texturetype, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(texturetype, GL_TEXTURE_MIN_FILTER, MIN_FILTER);
+	glTexParameteri(texturetype, GL_TEXTURE_MAG_FILTER, MAG_FILTER);
+
+	glTexImage2D(texturetype, 0, formattex, width, height, 0, formattex, pixeltype, pixels);
+	glGenerateMipmap(texturetype);
+
+	stbi_image_free(pixels);
+
+	glBindTexture(texturetype, 0);
+
+}
+
+
 Textures::~Textures()
 {
 }
