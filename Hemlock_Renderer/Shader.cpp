@@ -53,7 +53,7 @@ GLuint CompileFragShader(const char* fragmentsource)
 
     GLint status;
     glGetShaderiv(fragmentshader, GL_COMPILE_STATUS, &status);
-    if (status != GL_TRUE);
+    if (status != GL_TRUE)
     {
 
         char buffer[512];

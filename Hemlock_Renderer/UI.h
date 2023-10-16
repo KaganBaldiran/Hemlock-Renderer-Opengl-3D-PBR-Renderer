@@ -82,7 +82,8 @@ namespace UI
 
 	UIcolorShemePack current_color_sheme;
 	color_sheme_t chosen_color_sheme = GITHUB_STYLE_THEME;
-
+	std::string DropDownFilePath;
+	bool DropDownImport = false;
 	//CPU usage counter
 	
 
@@ -649,6 +650,48 @@ namespace UI
 
 	}
 
+	void DropDownFile(GLFWwindow* window, int count, const char** paths)
+	{
+		int i;
+		for (i = 0; i < count; i++)
+		{
+			LOG(paths[i]);
+			DropDownFilePath = paths[i];
+			DropDownImport = true;
+		}
+	}
+
+	void DropDownImportModel(GLuint import_shader , scene& scene , std::vector<std::string>& logs)
+	{
+		if (DropDownImport)
+		{
+			std::string path(DropDownFilePath);
+
+			for (size_t i = 0; i < path.size(); i++)
+			{
+				if (path.at(i) == '\\')
+				{
+					path.at(i) = '/';
+				}
+			}
+
+			std::cout << "NEW PATH: " << path << "\n";
+
+			std::string temp(path);
+			scene.ImportModel(temp, import_shader);
+			scene.handlelights(import_shader);
+
+			UseShaderProgram(import_shader);
+
+			scene.GetModel(scene.GetModelCount() - 1)->transformation.scale(glm::vec3(0.05f, 0.05f, 0.05f));
+
+			std::string logtemp = "A new object is imported!";
+
+			logs.push_back(logtemp);
+
+			DropDownImport = false;
+		}
+	}
 
 	void ConfigureUI(int &currentselectedobj ,UIdataPack &data , scene &scene , std::vector<std::string>& logs ,GLuint import_shader , glm::vec4 lightcolor , glm::vec3 lightpos , GLFWwindow* window , std::vector<uint> &auto_rotate_on , GLuint screen_image,GLuint light_shader, int &currentselectedlight , ThreadPool& threads , CubeMap &Cubemap , GLuint HDRItoCubeMapShader , Textures& SplashScreenImage)
 	{

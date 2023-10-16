@@ -186,6 +186,7 @@ int main()
     Vec2<double> mousepos;
     int width, height;
 
+    glfwSetDropCallback(window, UI::DropDownFile);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -217,6 +218,8 @@ int main()
             UI::ConfigureUI(currentselectedobj, data, scene, logs, PBRShader.GetID(), lightcolor, lightpos, window, auto_rotate_on,
                            ShadowMap.GetShadowMapImage(), lightshader.GetID(), currentselectedlight,threads,
                            Cubemap,HDRIShader.GetID(), SplashScreenImage);
+
+            UI::DropDownImportModel(PBRShader.GetID(), scene, logs);
             
             scene.DeleteModelKeyboardAction(currentselectedobj, window, logs);
 
