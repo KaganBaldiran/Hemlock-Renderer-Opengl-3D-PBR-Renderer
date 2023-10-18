@@ -12,7 +12,12 @@
 #include "Shader.h"
 
 #include "VectorMath.h"
+#include "Log.h"
 
+#define CAMERA_LAYOUT_FIRST_PERSON 0X100
+#define CAMERA_LAYOUT_INDUSTRY_STANDARD 0X101
+
+extern Vec2<double> ScrollAmount;
 
   class Camera
   {
@@ -41,13 +46,16 @@
 
 	  void Matrix(GLuint shaderprogram, const char* uniform);
 
-	  void HandleInputs(GLFWwindow* window, Vec2<int> menu_size);
+	  void HandleInputs(GLFWwindow* window, Vec2<int> menu_size, Vec2<int> WindowSize, int cameraLayout);
 
 	  glm::vec3 Get_Position() { return Position; };
 
 	  glm::vec3 Get_Orientation() { return Orientation; };
 
-
+	  static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) 
+	  {
+		  ScrollAmount({ xoffset, yoffset });
+	  }
   };
 
 

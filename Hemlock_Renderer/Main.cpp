@@ -54,15 +54,10 @@ int main()
     Shader SSAOblurShader("Shaders/SSAO.vs", "Shaders/SSAOblur.fs");
     Shader PBRShader("Shaders/PBR.vs", "Shaders/PBR.fs");
 
-    
     scene scene;
-
     FBO screen_fbo;
-
     const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-
     SSAO ssao({ (float)mode->width,(float)mode->height });
-
     CreateCustomFrameBuffer(screen_fbo , mode->width, mode->height);
 
     vector<std::string> cube_map_faces
@@ -85,10 +80,8 @@ int main()
     GBUFFER::gBuffer SceneGbuffer;
 
     NFD_Init();
-    
-    //glUniform4f(glGetUniformLocation(defaultshader.GetID(), "colorpr"), 1.0f, 0.0f, 0.0f, 1.0f);
-    glUniform4f(glGetUniformLocation(PBRShader.GetID(), "colorpr"), 1.0f, 0.0f, 0.0f, 1.0f);
 
+    glUniform4f(glGetUniformLocation(PBRShader.GetID(), "colorpr"), 1.0f, 0.0f, 0.0f, 1.0f);
 
     Meshs grid = scene.SetGrid(lightshader.GetID());
 
@@ -96,15 +89,9 @@ int main()
     scene.ImportModel("resources/gizmo_arrow.obj", lightshader.GetID());
  
     glm::vec3 lightpos = glm::vec3(-0.5f, 0.9f, 0.5f);
-    
-
     glm::vec4 lightcolor = glm::vec4(1.0f,1.0f,1.0f,1.0f);
-
     glm::vec3 lightpos2 = glm::vec3(0.75f, 1.5f, 0.0f);
-
-
     glm::vec4 lightcolor2 = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
-
     glm::vec3 lightpos3 = glm::vec3(-1.0f, 0.9f, -2.0f);
     glm::vec4 lightcolor3 = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -180,17 +167,21 @@ int main()
     ThreadPool threads(1, 15);
 
     std::vector<uint> auto_rotate_on;
-
     int RenderPass = RENDER_PASS_COMBINED;
 
     Vec2<double> mousepos;
     int width, height;
 
+
     glfwSetDropCallback(window, UI::DropDownFile);
+    SAVEFILE::ReadSaveFile("Preferences.json", data.saveFileData);
+    UI::SetPreferences(data);
+    glfwSetScrollCallback(window, camera.scrollCallback);
+    data.IsPreferencesFileEmpty = data.saveFileData.empty();
 
 	while (!glfwWindowShouldClose(window))
 	{
-            
+     
             glfwGetCursorPos(&*window, &mousepos.x, &mousepos.y);
 
             glfwGetWindowSize(&*window, &width, &height);
@@ -209,7 +200,7 @@ int main()
             UI::CreateNewFrame();
 
 
-            camera.HandleInputs(window, UI::current_win_size);
+            camera.HandleInputs(window, UI::current_win_size ,{width,height}, data.cameraLayout);
 
             camera.updateMatrix(45.0f, 0.1f, 100.0f, window, UI::current_viewport_size);
 
@@ -488,5 +479,6 @@ int main()
 
     NFD_Quit();
     DeinitializeWindow();
+    SAVEFILE::WriteSaveFile("Preferences.json", data.saveFileData);
 	return 0;
 }

@@ -45,6 +45,25 @@ GLuint CompileVertShader(const char* vertexsource)
 
 }
 
+GLuint CompileGeoShader(const char* Geosource)
+{
+    GLuint Geoshader = glCreateShader(GL_GEOMETRY_SHADER);
+    glShaderSource(Geoshader, 1, &Geosource, nullptr);
+    glCompileShader(Geoshader);
+
+    GLint status;
+    glGetShaderiv(Geoshader, GL_COMPILE_STATUS, &status);
+    if (status != GL_TRUE)
+    {
+        char buffer[512];
+        glGetShaderInfoLog(Geoshader, 512, nullptr, buffer);
+        std::cerr << "Failed to compile vertex shader :: " << buffer << "\n";
+
+    }
+
+    return Geoshader;
+}
+
 GLuint CompileFragShader(const char* fragmentsource)
 {
     GLuint fragmentshader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -73,7 +92,6 @@ GLuint CompileShaderProgram(GLuint vertexshader , GLuint fragmentshader)
     glAttachShader(m_program, fragmentshader);
     glLinkProgram(m_program);
 
-
     glDeleteShader(vertexshader);
     glDeleteShader(fragmentshader);
 
@@ -85,10 +103,33 @@ GLuint CompileShaderProgram(GLuint vertexshader , GLuint fragmentshader)
         std::cerr << "Failed to link program :: " << buffer << "\n";
     }
 
+    return m_program;
+}
 
+GLuint CompileShaderProgram(GLuint vertexshader , GLuint geoshader, GLuint fragmentshader)
+{
+    GLuint m_program;
+    m_program = glCreateProgram();
+    glAttachShader(m_program, vertexshader);
+    glAttachShader(m_program, fragmentshader);
+    glAttachShader(m_program, geoshader);
+    glLinkProgram(m_program);
+
+    glDeleteShader(vertexshader);
+    glDeleteShader(fragmentshader);
+    glDeleteShader(geoshader);
+
+    GLint status;
+    glGetProgramiv(m_program, GL_LINK_STATUS, &status);
+    if (status != GL_TRUE) {
+        char buffer[512];
+        glGetProgramInfoLog(m_program, 512, nullptr, buffer);
+        std::cerr << "Failed to link program :: " << buffer << "\n";
+    }
 
     return m_program;
 }
+
 
 void UseShaderProgram(GLuint program)
 {
@@ -111,6 +152,19 @@ Shader::Shader(const char* vertsourcepath, const char* fragsourcepath)
     shaderID = CompileShaderProgram(vertexshader, fragmentshader);
 
 }
+
+Shader::Shader(const char* vertsourcepath, const char* Geosourcepath, const char* fragsourcepath)
+{
+    std::string vertsource = ReadTextFile(vertsourcepath);
+    std::string geosource = ReadTextFile(Geosourcepath);
+    std::string fragsource = ReadTextFile(fragsourcepath);
+
+    GLuint vertexshader = CompileVertShader(vertsource.c_str());
+    GLuint geoshader = CompileGeoShader(geosource.c_str());
+    GLuint fragmentshader = CompileFragShader(fragsource.c_str());
+    shaderID = CompileShaderProgram(vertexshader, geoshader, fragmentshader);
+}
+
 
 GLuint Shader::GetID()
 {

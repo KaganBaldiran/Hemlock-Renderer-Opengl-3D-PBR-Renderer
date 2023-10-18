@@ -18,6 +18,7 @@
 #include "SystemData.h"
 #include "Thread.h"
 #include "Cubemap.h"
+#include "SaveFile.h"
 
 typedef std::tuple<ImVec4, ImVec4, ImVec4 , ImVec4, ImVec4 , ImVec4> color_sheme_t;
 // Dark theme color values
@@ -38,6 +39,24 @@ typedef std::tuple<ImVec4, ImVec4, ImVec4 , ImVec4, ImVec4 , ImVec4> color_sheme
 #define VINTAGE_THEME color_sheme_t(ImVec4(0.95f, 0.92f, 0.82f, 1.0f), ImVec4(0.51f, 0.39f, 0.31f, 1.0f), ImVec4(0.42f, 0.32f, 0.25f, 1.0f), ImVec4(0.35f, 0.26f, 0.20f, 1.0f), ImVec4(0.66f, 0.50f, 0.40f, 1.0f), ImVec4(0.82f, 0.64f, 0.51f, 1.0f))
 #define MINTY_FRESH_THEME color_sheme_t(ImVec4(0.87f, 0.98f, 0.93f, 1.0f), ImVec4(0.21f, 0.55f, 0.40f, 1.0f), ImVec4(0.17f, 0.46f, 0.33f, 1.0f), ImVec4(0.13f, 0.36f, 0.26f, 1.0f), ImVec4(0.31f, 0.73f, 0.56f, 1.0f), ImVec4(0.48f, 0.85f, 0.65f, 1.0f))
 #define ROYAL_PURPLE_THEME color_sheme_t(ImVec4(0.85f, 0.80f, 0.95f, 1.0f), ImVec4(0.37f, 0.20f, 0.54f, 1.0f), ImVec4(0.31f, 0.22f, 0.45f, 1.0f), ImVec4(0.25f, 0.16f, 0.35f, 1.0f), ImVec4(0.47f, 0.41f, 0.68f, 1.0f), ImVec4(0.61f, 0.56f, 0.89f, 1.0f))
+
+#define DARK_THEME_ID 0x80
+#define LIGHT_THEME_ID 0x81
+#define BLUE_THEME_ID 0x82 
+#define CUSTOM_THEME_ID 0x83 
+#define PINK_THEME_ID 0x84
+#define CYAN_THEME_ID 0x85 
+#define ORANGE_THEME_ID 0x86 
+#define GREEN_THEME_ID 0x87
+#define NORDIC_THEME_ID 0x88
+#define GITHUB_STYLE_THEME_ID 0x89
+#define INTELLIJ_STYLE_THEME_ID 0x90
+#define CHATGPT_LIGHT_THEME_ID 0x91
+#define SUNSET_THEME_ID 0x92 
+#define OCEANIC_THEME_ID 0x93 
+#define VINTAGE_THEME_ID 0x94 
+#define MINTY_FRESH_THEME_ID 0x95 
+#define ROYAL_PURPLE_THEME_ID 0x96
 
 static float lines[120];
 
@@ -133,6 +152,12 @@ namespace UI
 		bool RenderGrid = true;
 		bool SplashScreenEnabled = true;
 
+		SAVEFILE::SaveFileData saveFileData;
+
+		int cameraLayout = CAMERA_LAYOUT_INDUSTRY_STANDARD;
+
+		bool IsPreferencesFileEmpty;
+
     };
 
 	
@@ -158,10 +183,92 @@ namespace UI
 		ImGui::NewFrame();
 	}
 
+	void SetPreferences(UIdataPack& data)
+	{
+		if (data.saveFileData.ViewportTheme != -1)
+		{
+			int savedViewportTheme = data.saveFileData.ViewportTheme;
+
+			if (savedViewportTheme == DARK_THEME_ID)
+			{
+				chosen_color_sheme = DARK_THEME;
+			}
+			else if (savedViewportTheme == LIGHT_THEME_ID)
+			{
+				chosen_color_sheme = LIGHT_THEME;
+			}
+			else if (savedViewportTheme == BLUE_THEME_ID)
+			{
+				chosen_color_sheme = BLUE_THEME;
+			}
+			else if (savedViewportTheme == CUSTOM_THEME_ID)
+			{
+				chosen_color_sheme = BLUE_THEME;
+			}
+			else if (savedViewportTheme == PINK_THEME_ID)
+			{
+				chosen_color_sheme = PINK_THEME;
+			}
+			else if (savedViewportTheme == CYAN_THEME_ID)
+			{
+				chosen_color_sheme = CYAN_THEME;
+			}
+			else if (savedViewportTheme == ORANGE_THEME_ID)
+			{
+				chosen_color_sheme = ORANGE_THEME;
+			}
+			else if (savedViewportTheme == GREEN_THEME_ID)
+			{
+				chosen_color_sheme = GREEN_THEME;
+			}
+			else if (savedViewportTheme == NORDIC_THEME_ID)
+			{
+				chosen_color_sheme = NORDIC_THEME;
+			}
+			else if (savedViewportTheme == GITHUB_STYLE_THEME_ID)
+			{
+				chosen_color_sheme = GITHUB_STYLE_THEME;
+			}
+			else if (savedViewportTheme == INTELLIJ_STYLE_THEME_ID)
+			{
+				chosen_color_sheme = INTELLIJ_STYLE_THEME;
+			}
+			else if (savedViewportTheme == CHATGPT_LIGHT_THEME_ID)
+			{
+				chosen_color_sheme = CHATGPT_LIGHT_THEME;
+			}
+			else if (savedViewportTheme == SUNSET_THEME_ID)
+			{
+				chosen_color_sheme = SUNSET_THEME;
+			}
+			else if (savedViewportTheme == OCEANIC_THEME_ID)
+			{
+				chosen_color_sheme = OCEANIC_THEME;
+			}
+			else if (savedViewportTheme == VINTAGE_THEME_ID)
+			{
+				chosen_color_sheme = VINTAGE_THEME;
+			}
+			else if (savedViewportTheme == MINTY_FRESH_THEME_ID)
+			{
+				chosen_color_sheme = MINTY_FRESH_THEME;
+			}
+			else if (savedViewportTheme == ROYAL_PURPLE_THEME_ID)
+			{
+				chosen_color_sheme = ROYAL_PURPLE_THEME;
+			}
+		}
+		if (data.saveFileData.CameraLayout != -1)
+		{
+			data.cameraLayout = data.saveFileData.CameraLayout;
+		}
+	}
+
 	void SetStyle(UI::UIdataPack &data)
 	{
 		ImGuiStyle &style = ImGui::GetStyle();
 
+		
 		current_color_sheme(chosen_color_sheme);
 
 		data.clear_color = current_color_sheme.ViewportBackgroundColor;
@@ -693,6 +800,132 @@ namespace UI
 		}
 	}
 
+	void UIthemeComboBox(UIdataPack& data)
+	{
+		static bool showDropdown = false;
+
+		if (ImGui::BeginCombo("Set Application Color Theme", "Select an option"))
+		{
+
+			if (ImGui::Selectable("DARK THEME"))
+			{
+
+				chosen_color_sheme = DARK_THEME;
+				data.saveFileData.ViewportTheme = DARK_THEME_ID;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("LIGHT THEME"))
+			{
+
+				chosen_color_sheme = LIGHT_THEME;
+				data.saveFileData.ViewportTheme = LIGHT_THEME_ID;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("BLUE THEME"))
+			{
+
+				chosen_color_sheme = BLUE_THEME;
+				data.saveFileData.ViewportTheme = BLUE_THEME_ID;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("CUSTOM THEME"))
+			{
+
+				chosen_color_sheme = CUSTOM_THEME;
+				data.saveFileData.ViewportTheme = CUSTOM_THEME_ID;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("PINK THEME"))
+			{
+
+				chosen_color_sheme = PINK_THEME;
+				data.saveFileData.ViewportTheme = PINK_THEME_ID;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("CYAN THEME"))
+			{
+				chosen_color_sheme = CYAN_THEME;
+				data.saveFileData.ViewportTheme = CYAN_THEME_ID;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("ORANGE THEME"))
+			{
+				chosen_color_sheme = ORANGE_THEME;
+				data.saveFileData.ViewportTheme = ORANGE_THEME_ID;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("GREEN THEME"))
+			{
+				chosen_color_sheme = GREEN_THEME;
+				data.saveFileData.ViewportTheme = GREEN_THEME_ID;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("NORDIC THEME"))
+			{
+				chosen_color_sheme = NORDIC_THEME;
+				data.saveFileData.ViewportTheme = NORDIC_THEME_ID;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("GITHUB STYLED THEME"))
+			{
+				chosen_color_sheme = GITHUB_STYLE_THEME;
+				data.saveFileData.ViewportTheme = GITHUB_STYLE_THEME_ID;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("INTELLIJ STYLED THEME"))
+			{
+				chosen_color_sheme = INTELLIJ_STYLE_THEME;
+				data.saveFileData.ViewportTheme = INTELLIJ_STYLE_THEME_ID;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("CHATGPT LIGHT MODE STYLED THEME"))
+			{
+				chosen_color_sheme = CHATGPT_LIGHT_THEME;
+				data.saveFileData.ViewportTheme = CHATGPT_LIGHT_THEME_ID;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("SUNSET THEME"))
+			{
+				chosen_color_sheme = SUNSET_THEME;
+				data.saveFileData.ViewportTheme = SUNSET_THEME_ID;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("OCEANIC THEME"))
+			{
+				chosen_color_sheme = OCEANIC_THEME;
+				data.saveFileData.ViewportTheme = OCEANIC_THEME_ID;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("VINTAGE THEME"))
+			{
+				chosen_color_sheme = VINTAGE_THEME;
+				data.saveFileData.ViewportTheme = VINTAGE_THEME_ID;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("MINTY FRESH THEME"))
+			{
+				chosen_color_sheme = MINTY_FRESH_THEME;
+				data.saveFileData.ViewportTheme = MINTY_FRESH_THEME_ID;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("ROYAL PURPLE THEME"))
+			{
+				chosen_color_sheme = ROYAL_PURPLE_THEME;
+				data.saveFileData.ViewportTheme = ROYAL_PURPLE_THEME_ID;
+				showDropdown = false;
+			}
+
+
+			ImGui::EndCombo();
+		}
+
+
+		if (!ImGui::IsPopupOpen("##Dropdown"))
+		{
+			showDropdown = false;
+		}
+	}
+
 	void ConfigureUI(int &currentselectedobj ,UIdataPack &data , scene &scene , std::vector<std::string>& logs ,GLuint import_shader , glm::vec4 lightcolor , glm::vec3 lightpos , GLFWwindow* window , std::vector<uint> &auto_rotate_on , GLuint screen_image,GLuint light_shader, int &currentselectedlight , ThreadPool& threads , CubeMap &Cubemap , GLuint HDRItoCubeMapShader , Textures& SplashScreenImage)
 	{
 
@@ -957,116 +1190,28 @@ namespace UI
 				ImGui::EndCombo();
 			}
 
-			static bool showDropdown = false; 
-			
-			if (ImGui::BeginCombo("Set Application Color Theme", "Select an option", ImGuiComboFlags_NoPreview))
+			static bool CameraLayoutSettingShowDropdown = false;
+
+			if (ImGui::BeginCombo("Camera Layout", "Select an option"))
 			{
-				
-				if (ImGui::Selectable("DARK THEME"))
+				if (ImGui::Selectable("Industry Standard"))
 				{
-					
-					chosen_color_sheme = DARK_THEME;
-					
-					showDropdown = false; 
+					data.cameraLayout = CAMERA_LAYOUT_INDUSTRY_STANDARD;
+					data.saveFileData.CameraLayout = CAMERA_LAYOUT_INDUSTRY_STANDARD;
+					CameraLayoutSettingShowDropdown = false;
 				}
-				if (ImGui::Selectable("LIGHT THEME"))
+				if (ImGui::Selectable("First Person"))
 				{
-					
-					chosen_color_sheme = LIGHT_THEME;
-					
-					showDropdown = false; 
-				}
-				if (ImGui::Selectable("BLUE THEME"))
-				{
-					
-					chosen_color_sheme = BLUE_THEME;
-					
-					showDropdown = false; 
-				}
-				if (ImGui::Selectable("CUSTOM THEME"))
-				{
-					
-					chosen_color_sheme = CUSTOM_THEME;
-					
-					showDropdown = false; 
-				}
-				if (ImGui::Selectable("PINK THEME"))
-				{
-					
-					chosen_color_sheme = PINK_THEME;
-					
-					showDropdown = false; 
-				}
-				if (ImGui::Selectable("CYAN THEME"))
-				{
-					chosen_color_sheme = CYAN_THEME;
-					showDropdown = false; 
-				}
-				if (ImGui::Selectable("ORANGE THEME"))
-				{
-					chosen_color_sheme = ORANGE_THEME;
-					showDropdown = false;
-				}
-				if (ImGui::Selectable("GREEN THEME"))
-				{
-					chosen_color_sheme = GREEN_THEME;
-					showDropdown = false;
-				}
-				if (ImGui::Selectable("NORDIC THEME"))
-				{
-					chosen_color_sheme = NORDIC_THEME;
-					showDropdown = false;
-				}
-				if (ImGui::Selectable("GITHUB STYLED THEME"))
-				{
-					chosen_color_sheme = GITHUB_STYLE_THEME;
-					showDropdown = false;
-				}
-				if (ImGui::Selectable("INTELLIJ STYLED THEME"))
-				{
-					chosen_color_sheme = INTELLIJ_STYLE_THEME;
-					showDropdown = false;
-				}
-				if (ImGui::Selectable("CHATGPT LIGHT MODE STYLED THEME"))
-				{
-					chosen_color_sheme = CHATGPT_LIGHT_THEME;
-					showDropdown = false;
-				}
-				if (ImGui::Selectable("SUNSET THEME"))
-				{
-					chosen_color_sheme = SUNSET_THEME;
-					showDropdown = false;
-				}
-				if (ImGui::Selectable("OCEANIC THEME"))
-				{
-					chosen_color_sheme = OCEANIC_THEME;
-					showDropdown = false;
-				}
-				if (ImGui::Selectable("VINTAGE THEME"))
-				{
-					chosen_color_sheme = VINTAGE_THEME;
-					showDropdown = false;
-				}
-				if (ImGui::Selectable("MINTY FRESH THEME"))
-				{
-					chosen_color_sheme = MINTY_FRESH_THEME;
-					showDropdown = false;
-				}
-				if (ImGui::Selectable("ROYAL PURPLE THEME"))
-				{
-					chosen_color_sheme = ROYAL_PURPLE_THEME;
-					showDropdown = false;
+					data.cameraLayout = CAMERA_LAYOUT_FIRST_PERSON;
+					data.saveFileData.CameraLayout = CAMERA_LAYOUT_FIRST_PERSON;
+					CameraLayoutSettingShowDropdown = false;
 				}
 				
-				
+
 				ImGui::EndCombo();
 			}
 
-			
-			if (!ImGui::IsPopupOpen("##Dropdown"))
-			{
-				showDropdown = false;
-			}
+			UIthemeComboBox(data);
 
 			ImGui::Spacing();
 			ImGui::Spacing();
@@ -1116,6 +1261,33 @@ namespace UI
 
 
 			//ImGui::GetFont()->FontSize = fontSize;
+
+			if (data.IsPreferencesFileEmpty)
+			{
+				static bool CameraLayoutSettingShowDropdown = false;
+
+				if (ImGui::BeginCombo("Camera Layout", "Select an option"))
+				{
+					if (ImGui::Selectable("Industry Standard"))
+					{
+						data.cameraLayout = CAMERA_LAYOUT_INDUSTRY_STANDARD;
+						data.saveFileData.CameraLayout = CAMERA_LAYOUT_INDUSTRY_STANDARD;
+						CameraLayoutSettingShowDropdown = false;
+					}
+					if (ImGui::Selectable("First Person"))
+					{
+						data.cameraLayout = CAMERA_LAYOUT_FIRST_PERSON;
+						data.saveFileData.CameraLayout = CAMERA_LAYOUT_FIRST_PERSON;
+						CameraLayoutSettingShowDropdown = false;
+					}
+
+
+					ImGui::EndCombo();
+				}
+
+				UIthemeComboBox(data);
+
+			}
 
 
 			if (!ImGui::IsMouseHoveringRect(Min, Max) && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)

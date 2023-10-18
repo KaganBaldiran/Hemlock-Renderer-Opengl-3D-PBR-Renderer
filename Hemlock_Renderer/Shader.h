@@ -13,15 +13,13 @@ typedef unsigned int GLuint;
 #if SHADER
 
   std::string ReadTextFile(const char* filepath);
-
   GLuint CompileVertShader(const char* vertexsource);
-
+  GLuint CompileGeoShader(const char* Geosource);
   GLuint CompileFragShader(const char* fragmentsource);
-
   GLuint CompileShaderProgram(GLuint vertexshader, GLuint fragmentshader);
+  GLuint CompileShaderProgram(GLuint vertexshader, GLuint geoshader, GLuint fragmentshader);
 
   void UseShaderProgram(GLuint program);
-
   void DeleteShaderProgram(GLuint program);
 
 
@@ -29,7 +27,8 @@ typedef unsigned int GLuint;
   {
   public:
 
-	  Shader(const char* vertsource , const char* fragsource);
+	  Shader(const char* vertsourcepath, const char* fragsourcepath);
+	  Shader(const char* vertsourcepath, const char* Geosourcepath, const char* fragsourcepath);
 
 	  GLuint GetID();
 

@@ -152,6 +152,7 @@
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="nativefiledialog-extended-master\src\nfd_win.cpp" />
     <ClCompile Include="PickingTexture.cpp" />
+    <ClCompile Include="SaveFile.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="SSAO.cpp" />
     <ClCompile Include="StopWatch.cpp" />
@@ -167,6 +168,7 @@
     <ClInclude Include="Log.h" />
     <ClInclude Include="post_process.h" />
     <ClInclude Include="G_Buffer.h" />
+    <ClInclude Include="SaveFile.h" />
     <ClInclude Include="SSAO.h" />
     <ClInclude Include="StopWatch.h" />
     <ClInclude Include="SystemData.h" />
