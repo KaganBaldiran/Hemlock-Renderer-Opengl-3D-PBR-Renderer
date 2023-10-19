@@ -10,6 +10,8 @@ Camera::Camera(int window_width, int window_height, glm::vec3 position)
 	w_width = window_width;
 	w_height = window_height;
 	Position = position;
+
+	targetPosition = glm::vec3(0.0f);
 }
 
 void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane , GLFWwindow* window, Vec2<int> menu_size)
@@ -117,11 +119,6 @@ void Camera::HandleInputs(GLFWwindow* window, Vec2<int> menu_size , Vec2<int> Wi
 			int height = NULL, width = NULL;
 			glfwGetWindowSize(window, &width, &height);
 
-			//w_width = width - menu_size.x;
-			//w_height = menu_size.y;
-			//w_width = 1000 - 175.438;
-			//w_height = 1000 - 18;
-
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
 			if (firstclick)
@@ -167,9 +164,12 @@ void Camera::HandleInputs(GLFWwindow* window, Vec2<int> menu_size , Vec2<int> Wi
 	}
 	else if (cameraLayout == CAMERA_LAYOUT_INDUSTRY_STANDARD)
 	{
+		float CameraSensitivity = 10.0f;
 		speed = 0.5;
 		Vec2<double> CurrentMousePos;
 		glfwGetCursorPos(window, &CurrentMousePos.x, &CurrentMousePos.y);
+
+		Vec2<double> deltaMouse(CurrentMousePos - MousePosCamera);
 
 		if (ScrollAmount.y == 1)
 		{
@@ -183,27 +183,39 @@ void Camera::HandleInputs(GLFWwindow* window, Vec2<int> menu_size , Vec2<int> Wi
 
 		}
 
+		if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+		{
+			Position += (float)deltaMouse.y * (speed * 0.5f) * Orientation;
+		}
+
 		if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS && glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
 		{
-			Vec2<double> deltaMouse(CurrentMousePos - MousePosCamera);
+			glm::vec3 PositionVecLength(this->Position.length());
 
 			if (deltaMouse.x > 0)
 			{
-				Position += glm::vec3(deltaMouse.x / WindowSize.x) * -glm::normalize(glm::cross(Orientation, Up));
+				glm::vec3 deltaPosition(PositionVecLength* glm::vec3(deltaMouse.x / WindowSize.x) * -glm::normalize(glm::cross(Orientation, Up)));
+				Position += deltaPosition;
+				targetPosition += deltaPosition;
 			}
 			if (deltaMouse.x < 0)
 			{
-				Position += glm::vec3(-deltaMouse.x / WindowSize.x) * glm::normalize(glm::cross(Orientation, Up));;
+				glm::vec3 deltaPosition(PositionVecLength* glm::vec3(-deltaMouse.x / WindowSize.x)* glm::normalize(glm::cross(Orientation, Up)));
+				Position += deltaPosition;
+			    targetPosition += deltaPosition;
 			}
 			if (deltaMouse.y < 0)
 			{
-				Position += glm::vec3(-deltaMouse.y / WindowSize.y) * -Up;
+				glm::vec3 deltaPosition(PositionVecLength* glm::vec3(-deltaMouse.y / WindowSize.y) * -Up);
+				Position += deltaPosition;
+				targetPosition += deltaPosition;
 			}
 			if (deltaMouse.y > 0)
 			{
-				Position += glm::vec3(deltaMouse.y / WindowSize.y) * Up;
+				glm::vec3 deltaPosition(PositionVecLength* glm::vec3(deltaMouse.y / WindowSize.y)* Up);
+				Position += deltaPosition;
+				targetPosition += deltaPosition;
 			}
-
 		}
 
 		
@@ -221,26 +233,20 @@ void Camera::HandleInputs(GLFWwindow* window, Vec2<int> menu_size , Vec2<int> Wi
 			}
 
 			Vec2<double> mousepos;
-
 			glfwGetCursorPos(window, &mousepos.x, &mousepos.y);
 
 			Vec2<float> rot;
 
-			rot.x = sensitivity * (float)(mousepos.y - (w_height / 2)) / w_height;
-			rot.y = sensitivity * (float)(mousepos.x - (w_width / 2)) / w_width;
+			rot.x = CameraSensitivity * (float)(mousepos.y - (w_height / 2)) / w_height;
+			rot.y = CameraSensitivity * (float)(mousepos.x - (w_width / 2)) / w_width;
 
-			glm::vec3 newOrientation = glm::rotate(Orientation, glm::radians(-rot.x), glm::normalize(glm::cross(Orientation, Up)));
+			glm::vec3 cameraToTarget = targetPosition - Position;
+			float distanceToTarget = glm::length(cameraToTarget);
+			glm::quat rotation = glm::quat(glm::vec3(-rot.x, -rot.y, 0.0f));
+			cameraToTarget = glm::rotate(rotation, cameraToTarget);
+			Position = targetPosition - distanceToTarget * glm::normalize(cameraToTarget);
+			Orientation = glm::normalize(targetPosition - Position);
 
-			if (abs(glm::angle(newOrientation, Up) - glm::radians(90.0f)) <= glm::radians(85.0f))
-			{
-
-				Orientation = newOrientation;
-
-			}
-
-			Orientation = glm::rotate(Orientation, glm::radians(-rot.y), Up);
-
-			
 			glfwSetCursorPos(window, (w_width / 2), (w_height / 2));
 		}
 

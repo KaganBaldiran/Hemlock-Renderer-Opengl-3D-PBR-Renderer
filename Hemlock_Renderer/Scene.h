@@ -1344,6 +1344,17 @@ public:
 
 	}
 
+	void FocusKeyboardAction(int currentSelectedObj, Camera& camera , int CameraLayout, GLFWwindow* window)
+	{
+		if (CameraLayout == CAMERA_LAYOUT_INDUSTRY_STANDARD)
+		{
+			if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS && CURRENT_OBJECT(currentSelectedObj) >= 0)
+			{
+				camera.targetPosition = models[CURRENT_OBJECT(currentSelectedObj)]->transformation.Position;
+			}
+		}
+	}
+
 };
 
 

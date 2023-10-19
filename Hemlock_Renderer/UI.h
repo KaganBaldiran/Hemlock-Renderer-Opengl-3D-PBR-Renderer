@@ -203,7 +203,7 @@ namespace UI
 			}
 			else if (savedViewportTheme == CUSTOM_THEME_ID)
 			{
-				chosen_color_sheme = BLUE_THEME;
+				chosen_color_sheme = CUSTOM_THEME;
 			}
 			else if (savedViewportTheme == PINK_THEME_ID)
 			{
@@ -492,7 +492,7 @@ namespace UI
 		}
 
 
-		ImGui::SetCursorPos(ImVec2((viewportSettingsSize.x * 0.01f) , viewportSettingsSize.y * 0.1f));
+		ImGui::SetCursorPos(ImVec2((viewportSettingsSize.x * 0.005f) , viewportSettingsSize.y * 0.1f));
 
 		if (ImGui::ImageButton((void*)(intptr_t)gridButton, { viewportSettingsSize.y * 0.7f,viewportSettingsSize.y * 0.7f }, uv0, uv1))
 		{

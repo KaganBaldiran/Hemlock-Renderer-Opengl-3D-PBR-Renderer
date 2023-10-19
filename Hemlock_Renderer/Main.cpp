@@ -218,6 +218,8 @@ int main()
 
             scene.DeleteLightKeyboardAction(currentselectedlight, window, logs,PBRShader.GetID());
 
+            scene.FocusKeyboardAction(currentselectedobj, camera, data.cameraLayout, window);
+
             UI::IncrementRotationDegree(data);
 
             Vec2<double> temp_mouse_pos = scene.UseGizmo(window, currentselectedgizmo, currentselectedobj, enablegizmo_p, PrevMousePos, camera, currentselectedlight, defaultshader.GetID() , PBRShader.GetID(), mousepos);

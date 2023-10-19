@@ -39,6 +39,9 @@ extern Vec2<double> ScrollAmount;
 	  float speed = 0.03f;
 	  float sensitivity = 100.0f;
 
+	  glm::vec3 targetPosition;
+
+
 	  Camera(int window_width, int window_height, glm::vec3 position);
 
 

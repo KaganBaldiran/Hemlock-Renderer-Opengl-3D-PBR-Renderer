@@ -32,12 +32,19 @@ public:
 
     glm::mat4 transformmatrix = glm::mat4(1.0f);
     glm::vec3 ObjectScales;
+    glm::vec3 Position;
     float scale_avg;
     float dynamic_scale_avg;
+
+    worldtransform()
+    {
+        Position = glm::vec3(0.0f);
+    }
 
     void translate(glm::vec3 position)
     {
         transformmatrix = glm::translate(transformmatrix, position);
+        Position += position;
     }
 
     void scale(glm::vec3 scale)
