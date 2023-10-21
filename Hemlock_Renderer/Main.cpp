@@ -16,6 +16,7 @@
 #include "post_process.h"
 #include "Cubemap.h"
 #include "Entity.h"
+#include "Shadow_Map.h"
 
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -53,6 +54,7 @@ int main()
     Shader SSAOShader("Shaders/SSAO.vs", "Shaders/SSAO.fs");
     Shader SSAOblurShader("Shaders/SSAO.vs", "Shaders/SSAOblur.fs");
     Shader PBRShader("Shaders/PBR.vs", "Shaders/PBR.fs");
+    Shader OmniShadowShader("Shaders/OmniShadow.vs", "Shaders/OmniShadow.gs", "Shaders/OmniShadow.fs");
 
     scene scene;
     FBO screen_fbo;
@@ -69,6 +71,8 @@ int main()
         "resources/skybox/front.jpg",
         "resources/skybox/back.jpg"
     };
+
+    OmniShadowMap OmnishadowMap(1024, 1024);
 
     CubeMap Cubemap(cube_map_faces, "Shaders/CubeMap.vert", "Shaders/CubeMap.frag");
 
@@ -234,8 +238,9 @@ int main()
             ShadowMap.LightProjection(scene.LightPositions[0], ShadowMapShader.GetID(), window, scene.models, scene.globalscale, camera, UI::current_viewport_size);
 
           
-            scene.DrawShadowMap(&ShadowMap, ShadowMapShader.GetID(), camera, window, glm::vec4(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w));
-
+            //scene.DrawShadowMap(&ShadowMap, ShadowMapShader.GetID(), camera, window, glm::vec4(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w));
+            //ShadowMap.Draw(scene, ShadowMapShader.GetID(), camera, window, glm::vec4(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w));
+            OmnishadowMap.Draw(OmniShadowShader.GetID(), scene, camera);
            
             WindowSizeRecall(window, UI::current_viewport_size);
 
@@ -304,7 +309,12 @@ int main()
 
 
                         scene.GetModel(i - 1)->transformation.SendUniformToShader(PBRShader.GetID(), "model");
-                        scene.DrawModels(PBRShader.GetID(), camera, i - 1, ShadowMap.GetShadowMapImage(), Cubemap.GetCubeMapTexture());
+                        
+
+                        glUniform1f(glGetUniformLocation(PBRShader.GetID(), "farPlane"), OmnishadowMap.GetFarPlane());
+
+                        scene.DrawModels(PBRShader.GetID(), camera, i - 1, NULL, OmnishadowMap.GetShadowMap());
+
 
 
                         glActiveTexture(GL_TEXTURE0);
@@ -359,7 +369,7 @@ int main()
                 Vec2<int> screensize;
                 glfwGetWindowSize(window, &screensize.x, &screensize.y);
 
-                scene.Takescreenshot(&ShadowMap, screensize.x, screensize.y, data.screenshotPathstr.c_str(), RenderPass, SceneGbuffer, screen_fbo);
+                scene.Takescreenshot(screensize.x, screensize.y, data.screenshotPathstr.c_str(), RenderPass, SceneGbuffer, screen_fbo);
                 data.takesreenshot = false;
             }
 
@@ -472,6 +482,7 @@ int main()
     DeleteShaderProgram(SSAOShader.GetID());
     DeleteShaderProgram(SSAOblurShader.GetID());
     DeleteShaderProgram(PBRShader.GetID());
+    DeleteShaderProgram(OmniShadowShader.GetID());
 
     zeroPointButton.DeleteTexture();
     GridButton.DeleteTexture();

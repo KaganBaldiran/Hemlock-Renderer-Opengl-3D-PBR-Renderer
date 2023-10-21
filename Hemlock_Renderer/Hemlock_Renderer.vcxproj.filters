@@ -278,5 +278,14 @@
     <None Include="Shaders\PBR.vs">
       <Filter>shaders</Filter>
     </None>
+    <None Include="Shaders\OmniShadow.vs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\OmniShadow.fs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\OmniShadow.gs">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

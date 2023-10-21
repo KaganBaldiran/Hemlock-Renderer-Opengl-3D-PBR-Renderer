@@ -9,7 +9,6 @@
 
 #include "Mesh.h"
 #include <memory>
-#include "Shadow_Map.h"
 #include "Entity.h"
 
 class Light

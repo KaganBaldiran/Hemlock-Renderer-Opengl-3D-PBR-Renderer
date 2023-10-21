@@ -209,6 +209,9 @@
     <None Include="Shaders\HDRI.vs" />
     <None Include="Shaders\light.frag" />
     <None Include="Shaders\light.vert" />
+    <None Include="Shaders\OmniShadow.fs" />
+    <None Include="Shaders\OmniShadow.gs" />
+    <None Include="Shaders\OmniShadow.vs" />
     <None Include="Shaders\Outlinefrag.frag" />
     <None Include="Shaders\Outlinefrag.vert" />
     <None Include="Shaders\PBR.fs" />

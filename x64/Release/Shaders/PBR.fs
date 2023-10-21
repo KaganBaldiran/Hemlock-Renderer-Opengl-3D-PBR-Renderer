@@ -83,6 +83,8 @@
 
   uniform float LightIntensity;
 
+  float farPlane;
+
  
   float ShadowCalculation(vec4 fragPosLightSpace , vec3 lightDir ,vec3 normal)
   {
@@ -116,6 +118,19 @@
     return shadow;
   }
 
+  float ShadowCalculationOmni(vec3 fragPos)
+  {
+      vec3 fragTolight = fragPos - lightpositions[0];
+      float closestDepth = texture(skybox,fragTolight).r;
+      closestDepth *= 25.0f;
+
+      float currentDepth = length(fragTolight);
+
+      float bias = 0.05;
+      float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+      
+      return shadow;
+  }
 
   float DistributionGGX(vec3 N , vec3 H, float roughness)
   {
@@ -209,12 +224,9 @@
 
      float shadow;
 
-     for(int i = 0; i < numberoflights;++i)
-     {
-        // shadow += ShadowCalculation(fragPosLightSpace,lightpositions[i],Normal);
-     }
+     shadow = ShadowCalculationOmni(currentpos);
 
-     shadow /= numberoflights;
+     //shadow /= numberoflights;
 
       vec3 N = normalize(resultnormal);
       vec3 V = normalize(campos - currentpos);
@@ -244,7 +256,15 @@
           vec3 specular = numerator / denominator;
 
           float NdotL = max(dot(N,L),0.0);
-          Lo += (Kd * texturecolor / PI + specular) * radiance * lightIntensities[i] * NdotL;
+          if(i == 0)
+          {
+               
+              Lo += (1.0 - shadow) * (Kd * texturecolor / PI + specular) * radiance * lightIntensities[i] * NdotL;
+          }
+          else
+          {
+              Lo += (Kd * texturecolor / PI + specular) * radiance * lightIntensities[i] * NdotL;
+          }
       }
      
       vec3 ambient = vec3(0.03) * texturecolor * ao;

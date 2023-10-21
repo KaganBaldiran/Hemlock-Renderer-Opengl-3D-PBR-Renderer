@@ -4,7 +4,6 @@
 #include "Mesh.h"
 #include <memory>
 #include <FreeImage.h>
-#include "Shadow_Map.h"
 #include "Entity.h"
 #include "Light.h"
 #include "PickingTexture.h"
@@ -271,7 +270,7 @@ public:
 
 	}
 
-	void Takescreenshot(shadowmap* ShadowMap, int width, int height, const char* path , int renderPass , GBUFFER::gBuffer& gbuffer , FBO& screenFBO)
+	void Takescreenshot(int width, int height, const char* path , int renderPass , GBUFFER::gBuffer& gbuffer , FBO& screenFBO)
 	{
 		
 		BYTE* pixels;
@@ -409,6 +408,7 @@ public:
 		models.push_back(newmodel);
 
 	}
+	/*
 	void DrawShadowMap(shadowmap* ShadowMap, GLuint shadow_map_shader, Camera& camera, GLFWwindow* window, glm::vec4 background_color)
 	{
 
@@ -450,6 +450,7 @@ public:
 
 
 	}
+	*/
 
 	void DrawGbuffer(GBUFFER::gBuffer& SceneGbuffer, GLuint GbufferShader, Camera& camera, Vec2<float> menuSize, GLFWwindow& window , int currentselectedobj , std::pair<uint,bool> enablegizmo_p, int currentselectedlight , GLuint pickingtextureShader , pickingtexture& pickingtex , bool Drawlights)
 	{
