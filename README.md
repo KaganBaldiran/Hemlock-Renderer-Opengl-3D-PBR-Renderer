@@ -14,6 +14,7 @@ Here are some of the key features
 - HDRI support along with simple cubemaps.
 - Screen based post processing(Limited but I'll be adding features like DOF soon)
 - Linear Shadow Mapping for directional lights(Soon to be replaced)
+- Omnidirectional shadow mapping for point lights
 
 # To-Do
 
