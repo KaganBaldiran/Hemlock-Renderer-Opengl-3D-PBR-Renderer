@@ -1,3 +1,4 @@
+#pragma once
 #ifndef MODEL_H
 #define MODEL_H
 
@@ -24,7 +25,7 @@
 using namespace std;
 using namespace newwww;
 
-unsigned int TextureFromFile(const char* path, const string& directory, bool gamma = false);
+inline unsigned int TextureFromFile(const char* path, const string& directory, bool gamma = false);
 
 class worldtransform
 {
@@ -38,13 +39,15 @@ public:
 
     worldtransform()
     {
-        Position = glm::vec3(0.0f);
+        Position = glm::vec3(1.0f);
     }
 
     void translate(glm::vec3 position)
     {
         transformmatrix = glm::translate(transformmatrix, position);
+        //glm::vec4 temp = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) * glm::translate(glm::mat4(1.0f), position);
         Position += position;
+        //LOG("POSITION: " << temp.x << " " << temp.y << " " << temp.z);
     }
 
     void scale(glm::vec3 scale)
@@ -104,6 +107,7 @@ public:
     bool Selected = false;
     std::string ModelName;
     int SameModelInstances;
+    std::string ModelImportPath;
 
     glm::vec3 dynamic_origin;
 
@@ -203,7 +207,7 @@ private:
     
     void loadModel(string const& path)
     {
-        
+        ModelImportPath = path;
         Assimp::Importer importer;
         const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_PreTransformVertices);
         

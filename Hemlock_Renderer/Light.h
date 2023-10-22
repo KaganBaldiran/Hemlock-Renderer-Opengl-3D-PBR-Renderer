@@ -1,3 +1,4 @@
+#pragma once
 #ifndef LIGHTHEADER
 #define LIGHTHEADER
 
@@ -10,6 +11,7 @@
 #include "Mesh.h"
 #include <memory>
 #include "Entity.h"
+#include "Model.h"
 
 class Light
 {

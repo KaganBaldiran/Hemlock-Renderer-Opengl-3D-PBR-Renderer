@@ -6,12 +6,10 @@
 #include <bitset>
 #include "initialize.h"
 //#include "Mesh.h"
-#include "Model.h"
 #include "Camera.h"
 #include "Buffers.h"
 #include "glm/glm.hpp"
 #include "Mesh.h"
-#include "Scene.h"
 #include "PickingTexture.h"
 #include "post_process.h"
 #include "Cubemap.h"
@@ -26,10 +24,13 @@
 #include "Imgui/imgui_impl_glfw.h"
 #include "nativefiledialog-extended-master/src/include/nfd.h"
 
-#include"UI.h"
 #include "Log.h"
 #include "StopWatch.h"
 #include "Thread.h"
+#include"UI.h"
+#include "Scene.h"
+//#include "SaveFile.h"
+
 
 
 const int windowwidth = 1000;
@@ -150,7 +151,7 @@ int main()
 
     float time = NULL;
 
-    UI::UIdataPack data;
+    SAVEFILE::UIdataPack data;
     UI::InitNewUIwindow();
     UI::SetStyle(data);
     UI::SetPlatformBackEnd("#version 130", window);
@@ -183,6 +184,8 @@ int main()
     glfwSetScrollCallback(window, camera.scrollCallback);
     data.IsPreferencesFileEmpty = data.saveFileData.empty();
 
+    //SAVEFILE::ReadHMLfile("demo.hml", scene, PBRShader.GetID(),lightshader.GetID(),data,camera,RenderPass, logs);
+
 	while (!glfwWindowShouldClose(window))
 	{
      
@@ -212,7 +215,7 @@ int main()
 
             UI::ConfigureUI(currentselectedobj, data, scene, logs, PBRShader.GetID(), lightcolor, lightpos, window, auto_rotate_on,
                            ShadowMap.GetShadowMapImage(), lightshader.GetID(), currentselectedlight,threads,
-                           Cubemap,HDRIShader.GetID(), SplashScreenImage);
+                           Cubemap,HDRIShader.GetID(), SplashScreenImage,RenderPass, camera);
 
             UI::DropDownImportModel(PBRShader.GetID(), scene, logs);
             
@@ -235,7 +238,7 @@ int main()
             scene.DrawGbuffer(SceneGbuffer, GbufferPassShader.GetID(), camera, UI::current_win_size.Cast<float>(),*window,currentselectedobj,
                 enablegizmo_p,currentselectedlight, PickingBufferTextureShader.GetID(), pickingBuffertex,data.renderlights);
 
-            ShadowMap.LightProjection(scene.LightPositions[0], ShadowMapShader.GetID(), window, scene.models, scene.globalscale, camera, UI::current_viewport_size);
+            //ShadowMap.LightProjection(scene.LightPositions[0], ShadowMapShader.GetID(), window, scene.models, scene.globalscale, camera, UI::current_viewport_size);
 
           
             //scene.DrawShadowMap(&ShadowMap, ShadowMapShader.GetID(), camera, window, glm::vec4(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w));
@@ -303,19 +306,15 @@ int main()
                     if (i > 1)
                     {
 
-                        ShadowMap.LightProjection(scene.LightPositions[0], PBRShader.GetID(), window, scene.models, scene.globalscale, camera, UI::current_viewport_size);
+                        //ShadowMap.LightProjection(scene.LightPositions[0], PBRShader.GetID(), window, scene.models, scene.globalscale, camera, UI::current_viewport_size);
 
                         glUniform1i(glGetUniformLocation(PBRShader.GetID(), "enablehighlight"), data.enablehighlight);
 
-
                         scene.GetModel(i - 1)->transformation.SendUniformToShader(PBRShader.GetID(), "model");
                         
-
                         glUniform1f(glGetUniformLocation(PBRShader.GetID(), "farPlane"), OmnishadowMap.GetFarPlane());
 
-                        scene.DrawModels(PBRShader.GetID(), camera, i - 1, NULL, OmnishadowMap.GetShadowMap());
-
-
+                        scene.DrawModels(PBRShader.GetID(), camera, i - 1, OmnishadowMap.GetShadowMap(), OmnishadowMap.GetShadowMap());
 
                         glActiveTexture(GL_TEXTURE0);
 
@@ -493,5 +492,6 @@ int main()
     NFD_Quit();
     DeinitializeWindow();
     SAVEFILE::WriteSaveFile("Preferences.json", data.saveFileData);
+    //SAVEFILE::WriteHMLfile("demo.hml", scene,data,camera,RenderPass,logs);
 	return 0;
 }

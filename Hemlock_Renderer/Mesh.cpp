@@ -45,8 +45,6 @@ void Meshs::Draw(GLuint shaderprogram, Camera& camera , GLenum drawmode)
 {
     UseShaderProgram(shaderprogram);
 
-    
-
     unsigned int numDiffuse = 0;
     unsigned int numSpecular = 0;
 

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef SCENE 
 #define SCENE 
 

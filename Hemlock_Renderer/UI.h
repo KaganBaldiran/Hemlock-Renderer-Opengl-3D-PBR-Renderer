@@ -1,3 +1,4 @@
+#pragma once
 #ifndef UI_HEADER
 #define UI_HEADER
 
@@ -19,6 +20,7 @@
 #include "Thread.h"
 #include "Cubemap.h"
 #include "SaveFile.h"
+
 
 typedef std::tuple<ImVec4, ImVec4, ImVec4 , ImVec4, ImVec4 , ImVec4> color_sheme_t;
 // Dark theme color values
@@ -106,59 +108,7 @@ namespace UI
 	//CPU usage counter
 	
 
-    struct UIdataPack
-    {
-        bool renderlights = false;
-        ImVec4 clear_color = ImVec4(0.041f, 0.041f, 0.044f, 0.00f);
-
-        bool autorotate = false;
-        float rotationamount = NULL;
-        float keepoldrotation = NULL;
-        Vec3<float> moveamount = { NULL,NULL,NULL };
-        Vec3<float> maxmove = { 20.0f,20.0f,20.0f };
-        Vec3<float> newtreshold = { 20.0f,20.0f,20.0f };
-        float scaleamount = 1.0f;
-        float maxscale = 2.0f;
-
-		GLuint CubeMapSize = 1024;
-
-        bool logbutton = false;
-        bool propertiesbutton = false;
-
-        nfdchar_t* outPath = nullptr;
-        nfdchar_t* screenshotPath = nullptr;
-        std::string screenshotPathstr;
-        bool takesreenshot = false;
-
-
-        char filepath[200];
-        bool imported = false;
-
-        bool enablehighlight = false;
-
-		bool EnableSSAO = false;
-
-        float degree = NULL;
-
-		bool render_cube_map = false;
-
-		Vec3<float> albedo = { 1.0f,1.0f,1.0f };
-		float metallic = 0.0f;
-		float roughness = 0.5f;
-		float ao = 0.1f;
-
-		float LightIntensity = 1.0f;
-
-		bool RenderGrid = true;
-		bool SplashScreenEnabled = true;
-
-		SAVEFILE::SaveFileData saveFileData;
-
-		int cameraLayout = CAMERA_LAYOUT_INDUSTRY_STANDARD;
-
-		bool IsPreferencesFileEmpty;
-
-    };
+    
 
 	
 	void InitNewUIwindow()
@@ -183,7 +133,7 @@ namespace UI
 		ImGui::NewFrame();
 	}
 
-	void SetPreferences(UIdataPack& data)
+	void SetPreferences(SAVEFILE::UIdataPack &data)
 	{
 		if (data.saveFileData.ViewportTheme != -1)
 		{
@@ -264,7 +214,7 @@ namespace UI
 		}
 	}
 
-	void SetStyle(UI::UIdataPack &data)
+	void SetStyle(SAVEFILE::UIdataPack &data)
 	{
 		ImGuiStyle &style = ImGui::GetStyle();
 
@@ -301,7 +251,7 @@ namespace UI
         ImGui::DestroyContext();
     }
 
-    void UseSelectedObjectData(UIdataPack &data , UIproperties &obj_data)
+    void UseSelectedObjectData(SAVEFILE::UIdataPack&data , UIproperties &obj_data)
     {
         data.autorotate = obj_data.autorotate;
         data.keepoldrotation = obj_data.keepoldrotation;
@@ -315,7 +265,7 @@ namespace UI
        
     }
 
-    void ReturnSelectedObjectData(UIdataPack& data, UIproperties& obj_data)
+    void ReturnSelectedObjectData(SAVEFILE::UIdataPack& data, UIproperties& obj_data)
     {
         obj_data.autorotate = data.autorotate;
         obj_data.keepoldrotation = data.keepoldrotation;
@@ -469,7 +419,7 @@ namespace UI
 
 	}
 
-	void DrawOnViewportSettings(Vec2<int> winsize, int& renderPass , GLuint zeroPointButton, GLuint gridButton, Camera& camera , UIdataPack& data)
+	void DrawOnViewportSettings(Vec2<int> winsize, int& renderPass , GLuint zeroPointButton, GLuint gridButton, Camera& camera , SAVEFILE::UIdataPack& data)
 	{
 		static bool showDropdown = true;
 
@@ -590,7 +540,7 @@ namespace UI
 		ImGui::End();
 	}
 
-	void DoUIobjectTransformations(size_t currentselectedobj, scene& scene, UI::UIdataPack& data)
+	void DoUIobjectTransformations(size_t currentselectedobj, scene& scene, SAVEFILE::UIdataPack& data)
 	{
 		if (currentselectedobj >= 2)
 		{
@@ -627,7 +577,7 @@ namespace UI
 
 	}
 
-	void DoUIobjectReTransformations(size_t currentselectedobj , scene &scene , UI::UIdataPack &data)
+	void DoUIobjectReTransformations(size_t currentselectedobj , scene &scene , SAVEFILE::UIdataPack&data)
 	{
 		if (currentselectedobj >= 2)
 		{
@@ -652,7 +602,7 @@ namespace UI
 
 	}
 
-	void HandleSliderMaxValues(UI::UIdataPack &data , GLFWwindow *window)
+	void HandleSliderMaxValues(SAVEFILE::UIdataPack &data , GLFWwindow *window)
 	{
 
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
@@ -737,7 +687,7 @@ namespace UI
 
 	}
 
-	void IncrementRotationDegree(UI::UIdataPack &data)
+	void IncrementRotationDegree(SAVEFILE::UIdataPack &data)
 	{
 		if (data.autorotate)
 		{
@@ -800,7 +750,7 @@ namespace UI
 		}
 	}
 
-	void UIthemeComboBox(UIdataPack& data)
+	void UIthemeComboBox(SAVEFILE::UIdataPack & data)
 	{
 		static bool showDropdown = false;
 
@@ -926,10 +876,12 @@ namespace UI
 		}
 	}
 
-	void ConfigureUI(int &currentselectedobj ,UIdataPack &data , scene &scene , std::vector<std::string>& logs ,GLuint import_shader , glm::vec4 lightcolor , glm::vec3 lightpos , GLFWwindow* window , std::vector<uint> &auto_rotate_on , GLuint screen_image,GLuint light_shader, int &currentselectedlight , ThreadPool& threads , CubeMap &Cubemap , GLuint HDRItoCubeMapShader , Textures& SplashScreenImage)
+	void ConfigureUI(int &currentselectedobj , SAVEFILE::UIdataPack &data , scene &scene , std::vector<std::string>& logs ,GLuint import_shader , glm::vec4 lightcolor , glm::vec3 lightpos , GLFWwindow* window , std::vector<uint> &auto_rotate_on , GLuint screen_image,GLuint light_shader, int &currentselectedlight , ThreadPool& threads , CubeMap &Cubemap , GLuint HDRItoCubeMapShader , Textures& SplashScreenImage , int &renderPass , Camera& camera)
 	{
 
 		static bool importmodel_menu = false;
+		static bool OpenHMLfile = false;
+		static bool SaveHMLfile = false;
 		static bool ApplicationMenuEnabled = false;
 
 		Vec2<int> win_size = { NULL,NULL };
@@ -942,10 +894,115 @@ namespace UI
         {
             if (ImGui::BeginMenu("File"))
             {
-                // Add File menu items here
-               // if (ImGui::MenuItem("Open", "Ctrl+O")) { /* Do something */ }
-                //if (ImGui::MenuItem("Save", "Ctrl+S")) { /* Do something */ }
-				//if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S")) { /* Do something */ }
+               
+				if (ImGui::MenuItem("Open HML file", "Ctrl+H+M"))
+				{
+					if (!OpenHMLfile)
+					{
+
+						OpenHMLfile = true;
+						data.imported = false;
+
+						nfdfilteritem_t filterItem[1] = { { "hml file", "hml" } };
+						nfdresult_t result = NFD_OpenDialog(&data.outPath, filterItem, 1, NULL);
+						if (result == NFD_OKAY)
+						{
+							puts("Success!");
+							puts(data.outPath);
+						}
+						else if (result == NFD_CANCEL)
+						{
+							puts("User pressed cancel.");
+							data.imported = true;
+							OpenHMLfile = false;
+						}
+						else
+						{
+							printf("Error: %s\n", NFD_GetError());
+						}
+
+					}
+				}
+
+				if (OpenHMLfile)
+				{
+
+					if (data.outPath != nullptr)
+					{
+						std::string path(data.outPath);
+
+						for (size_t i = 0; i < path.size(); i++)
+						{
+							if (path.at(i) == '\\')
+							{
+								path.at(i) = '/';
+							}
+						}
+
+						LOG_INF("Reading HML file... :: " << path);
+						SAVEFILE::ReadHMLfile(path.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs);
+
+						data.imported = true;
+						OpenHMLfile = false;
+					}
+
+
+				}
+
+				if (ImGui::MenuItem("Save HML file", "Ctrl+H+S"))
+				{
+					if (!SaveHMLfile)
+					{
+
+						SaveHMLfile = true;
+						data.imported = false;
+
+						nfdfilteritem_t filterItem[1] = { { "hml file", "hml" } };
+						nfdresult_t result = NFD_SaveDialog(&data.outPath, filterItem, 1, NULL , "Project");
+						if (result == NFD_OKAY)
+						{
+							puts("Success!");
+							puts(data.outPath);
+						}
+						else if (result == NFD_CANCEL)
+						{
+							puts("User pressed cancel.");
+							data.imported = true;
+							SaveHMLfile = false;
+						}
+						else
+						{
+							printf("Error: %s\n", NFD_GetError());
+						}
+
+					}
+				}
+
+				if (SaveHMLfile)
+				{
+
+					if (data.outPath != nullptr)
+					{
+						std::string path(data.outPath);
+
+						for (size_t i = 0; i < path.size(); i++)
+						{
+							if (path.at(i) == '\\')
+							{
+								path.at(i) = '/';
+							}
+						}
+
+						LOG_INF("Writing HML file... :: " << path);
+						SAVEFILE::WriteHMLfile(path.c_str(), scene, data, camera, renderPass, logs);
+
+						data.imported = true;
+						SaveHMLfile = false;
+					}
+
+
+				}
+
 
 				if (ImGui::MenuItem("Import Model", "Ctrl+M"))
 				{
@@ -2154,14 +2211,14 @@ namespace UI
 			ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.MidMenuColor));
 			ImGui::BeginChildFrame(88, ChildMenuSize, ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
 
-			for (size_t i = 0; i < 119; i++)
+			/*for (size_t i = 0; i < 119; i++)
 			{
 				lines[i] = lines[i + 1];
 			}
 			lines[119] = cpu_clock_measure(2, 0);
 
 			ImGui::PlotLines("CPU usage", lines, 120);
-			ImGui::Text("THIS IS LOG TAB");
+			ImGui::Text("THIS IS LOG TAB");*/
 
 			ImGui::Spacing();
 

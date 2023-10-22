@@ -15,7 +15,7 @@ Textures::Textures(const char* filepath , GLenum slot , GLenum texturetype , GLe
 	this->texture_type_of_pbr = texture_type_for_pbr;
 	this->texture_type_of_pbr_str = texture_type_for_pbr_str;
 	type = texturetype;
-	//stbi_set_flip_vertically_on_load(true);
+	stbi_set_flip_vertically_on_load(false);
 	int channels;
 	unsigned char* pixels = stbi_load(filepath, &width, &height, &channels,0);
 	if (!pixels)
