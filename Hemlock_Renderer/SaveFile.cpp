@@ -1,5 +1,6 @@
 #include "SaveFile.h"
 #include <fstream>
+#include "Texture.h"
 
 bool IsFileEmpty(std::ifstream& file) {
 	return file.peek() == std::ifstream::traits_type::eof();
@@ -84,6 +85,20 @@ void SAVEFILE::WriteHMLfile(const char* fileName, scene& scene ,UIdataPack& data
 		{
 			HMLfile["models"][i]["directory"] = scene.models[i]->ModelImportPath;
 
+
+			for (size_t meshid = 0; meshid < scene.models[i]->meshes.size(); meshid++)
+			{
+				std::string meshidname("mesh" + std::to_string(meshid));
+
+				HMLfile["models"][i][meshidname]["textureCount"] = scene.models[i]->meshes[meshid].textures.size();
+
+				for (size_t textureid = 0; textureid < scene.models[i]->meshes[meshid].textures.size(); textureid++)
+				{
+					HMLfile["models"][i][meshidname]["textures"][textureid]["directory"] = scene.models[i]->meshes[meshid].textures[textureid].path;
+					HMLfile["models"][i][meshidname]["textures"][textureid]["type"] = scene.models[i]->meshes[meshid].textures[textureid].type;
+				}
+			}
+
 			for (int row = 0; row < 4; row++) {
 				for (int col = 0; col < 4; col++) {
 					cout << "Element [" << row << "][" << col << "]: " << scene.models[i]->transformation.transformmatrix[row][col] << endl;
@@ -158,6 +173,26 @@ void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,G
 		for (size_t i = 1; i < HMLfile["modelCount"]; i++)
 		{
 			scene.ImportModel(HMLfile["models"][i]["directory"], shader);
+
+			for (size_t meshid = 0; meshid < scene.models[i]->meshes.size(); meshid++)
+			{
+				std::string meshidname("mesh" + std::to_string(meshid));
+
+				for (size_t textureid = 0; textureid < HMLfile["models"][i][meshidname]["textureCount"]; textureid++)
+				{
+					std::string texturePath(HMLfile["models"][i][meshidname]["textures"][textureid]["directory"]);
+					std::string textureType(HMLfile["models"][i][meshidname]["textures"][textureid]["type"]);
+
+					Textures newTexture(texturePath.c_str(), textureid, GL_TEXTURE_2D, GL_UNSIGNED_BYTE, NULL, textureType);
+					Texture newTexturePush;
+					newTexturePush.id = *newTexture.GetTexture();
+					newTexturePush.path = newTexture.GetPathData();
+					newTexturePush.type = textureType;
+
+					scene.models[i]->meshes[meshid].textures.push_back(newTexturePush);
+					scene.models[i]->textures_loaded.push_back(newTexturePush);
+				}
+			}
 
 			glm::vec3 position;
 			glm::vec3 scale;

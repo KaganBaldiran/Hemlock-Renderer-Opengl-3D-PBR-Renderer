@@ -83,7 +83,7 @@
 
   uniform float LightIntensity;
 
-  float farPlane;
+  uniform float farPlane;
 
  
   float ShadowCalculation(vec4 fragPosLightSpace , vec3 lightDir ,vec3 normal)
@@ -226,8 +226,6 @@
 
      shadow = ShadowCalculationOmni(currentpos);
 
-     //shadow /= numberoflights;
-
       vec3 N = normalize(resultnormal);
       vec3 V = normalize(campos - currentpos);
 
@@ -256,6 +254,7 @@
           vec3 specular = numerator / denominator;
 
           float NdotL = max(dot(N,L),0.0);
+
           if(i == 0)
           {
                
