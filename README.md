@@ -14,6 +14,7 @@ Here are some of the key features
 - HDRI support along with simple cubemaps.
 - Screen based post processing(Limited but I'll be adding features like DOF soon)
 - Linear Shadow Mapping for directional lights(Soon to be replaced)
+- Omnidirectional shadow mapping for point lights
 
 # To-Do
 
@@ -27,6 +28,7 @@ Here are some of the key features
 # Showcase
 This is how it currently looks(Some of the models don't belong to me):
 
+![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-PBR-Renderer/assets/80681941/2e92fbe1-53e5-43b3-824c-7a145e7ce7d8)
 ![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-PBR-Renderer/assets/80681941/0043e6fa-31d7-4abc-a55d-b1bb7777b90a)
 ![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-Renderer/assets/80681941/f54b5c3a-2790-4524-ac9e-5c31dac62ce4)
 ![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-PBR-Renderer/assets/80681941/486a4163-b193-4ed2-8386-2b0103659365)
