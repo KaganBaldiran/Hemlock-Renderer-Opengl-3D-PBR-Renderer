@@ -114,9 +114,9 @@ void SAVEFILE::WriteHMLfile(const char* fileName, scene& scene ,UIdataPack& data
 			HMLfile["models"][i]["attributes"]["scale"]["z"] = scene.models[i]->transformation.transformmatrix[2][2];
 		}
 
-		HMLfile["lightCount"] = scene.lights.size();
+		HMLfile["lightCount"] = scene.numberoflights;
 
-		for (size_t i = 0; i < scene.lights.size(); i++)
+		for (size_t i = 0; i < scene.numberoflights; i++)
 		{
 			HMLfile["lights"][i]["attributes"]["position"]["x"] = scene.LightPositions[i].x;
 			HMLfile["lights"][i]["attributes"]["position"]["y"] = scene.LightPositions[i].y;
@@ -210,7 +210,10 @@ void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,G
 
 		}
 
-		scene.lights.clear();
+		for (size_t i = 0; i < scene.numberoflights; i++)
+		{
+			scene.DeleteLight(i, shader);
+		}
 
 		for (size_t i = 0; i < HMLfile["lightCount"]; i++)
 		{
@@ -231,6 +234,8 @@ void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,G
 			
 		}
 
+		scene.handlelights(shader);
+
 		data.EnableSSAO = HMLfile["GeneralAttributes"]["enableSSAO"];
 		data.RenderGrid = HMLfile["GeneralAttributes"]["renderGrid"];
 		data.render_cube_map = HMLfile["GeneralAttributes"]["enableSkybox"];
@@ -245,8 +250,6 @@ void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,G
 		camera.Orientation.z = HMLfile["ViewportAttributes"]["cameraOrientation"]["z"];
 
 		renderPass = HMLfile["ViewportAttributes"]["renderPass"];
-
-		scene.handlelights(shader);
 
 		LOG_INF("hml file read :: " << fileName);
 		std::string logtemp = "hml file read :: " + std::string(fileName);
