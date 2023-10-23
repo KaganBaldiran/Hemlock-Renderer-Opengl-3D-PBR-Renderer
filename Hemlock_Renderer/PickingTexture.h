@@ -89,6 +89,7 @@ private:
 	GLuint m_picking_texture = 0;
 	GLuint m_depth_texture = 0;
 	GLuint picking_buffer_texture;
+	GLuint rbo;
 
 };
 

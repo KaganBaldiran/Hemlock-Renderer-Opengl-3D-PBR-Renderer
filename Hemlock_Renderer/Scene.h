@@ -477,6 +477,7 @@ public:
 			UseShaderProgram(pickingtextureShader);
 			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glEnable(GL_DEPTH_TEST);
 
 			for (size_t i = 1; i < models.size(); i++)
 			{

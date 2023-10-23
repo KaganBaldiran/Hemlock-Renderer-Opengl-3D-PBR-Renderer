@@ -14,15 +14,12 @@ pickingtexture::pickingtexture(uint w_width, uint w_height)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_picking_texture, 0);
 
-	/*glGenTextures(1, &picking_buffer_texture);
-	glBindTexture(GL_TEXTURE_2D, picking_buffer_texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, w_width, w_height, 0, GL_RGBA, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, picking_buffer_texture, 0);
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, w_width, w_height);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-	unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-	glDrawBuffers(2, attachments);*/
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
@@ -39,6 +36,7 @@ pickingtexture::pickingtexture(uint w_width, uint w_height)
 
 pickingtexture::~pickingtexture()
 {
+	glDeleteRenderbuffers(1, &rbo);
 	glDeleteFramebuffers(1, &this->m_fbo);
 	glDeleteTextures(1, &this->m_picking_texture);
 	//glDeleteTextures(1, &this->picking_buffer_texture);
