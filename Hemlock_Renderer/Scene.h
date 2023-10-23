@@ -908,9 +908,15 @@ public:
 				                     models.at(Model_index)->transformation.transformmatrix[2][2]);
 
 
-			originpoint = glm::vec3(GetModel(Model_index)->originpoint.x,
-				                    GetModel(Model_index)->originpoint.y,
-				                    GetModel(Model_index)->originpoint.z);
+			//originpoint = glm::vec3(GetModel(Model_index)->transformation.Position.x * GetModel(Model_index)->originpoint.x,
+				                    //GetModel(Model_index)->transformation.Position.y * GetModel(Model_index)->originpoint.y,
+				                    //GetModel(Model_index)->transformation.Position.z * GetModel(Model_index)->originpoint.z);
+
+			originpoint = glm::vec3(GetModel(Model_index)->transformation.Position.x ,
+				                    GetModel(Model_index)->transformation.Position.y,
+				                    GetModel(Model_index)->transformation.Position.z);
+
+
 
 		}
 

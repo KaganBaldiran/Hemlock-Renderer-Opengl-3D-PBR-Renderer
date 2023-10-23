@@ -1799,6 +1799,7 @@ namespace UI
 					{
 						UseShaderProgram(import_shader);
 						GLuint lightcolors = glGetUniformLocation(import_shader, "lightColors");
+						scene.lights[scene.CURRENT_LIGHT(currentselectedlight)]->light_color = *c;
 						glUniform4fv(lightcolors, MAX_LIGHT_COUNT, &scene.LightColors[0][0]);
 						UseShaderProgram(0);
 					};

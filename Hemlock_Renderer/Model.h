@@ -46,7 +46,9 @@ public:
     {
         transformmatrix = glm::translate(transformmatrix, position);
         //glm::vec4 temp = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) * glm::translate(glm::mat4(1.0f), position);
-        Position += position;
+        Position.x = transformmatrix[3][0];
+        Position.y = transformmatrix[3][1];
+        Position.z = transformmatrix[3][2];
         //LOG("POSITION: " << temp.x << " " << temp.y << " " << temp.z);
     }
 

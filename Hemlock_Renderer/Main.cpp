@@ -281,7 +281,7 @@ int main()
                 {
                     glClearColor(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w);
                     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
+                    camera.screenratiodefault = glm::mat4(1.0f);
                 }
 
                 if (data.render_cube_map)
