@@ -5,13 +5,13 @@
 #include "stb_image.h"
 #include <glfw3.h>
 #include <iostream>
+#include "Log.h"
 
 Textures::Textures(const char* filepath , GLenum slot , GLenum texturetype , GLenum pixeltype, unsigned int texture_type_for_pbr, std::string texture_type_for_pbr_str)
 {
 	std::string temp(filepath);
 	path = temp;
-	std::cout << "TEST OF PATH STRING: " << path << "\n";
-
+	
 	this->texture_type_of_pbr = texture_type_for_pbr;
 	this->texture_type_of_pbr_str = texture_type_for_pbr_str;
 	type = texturetype;
@@ -44,7 +44,7 @@ Textures::Textures(const char* filepath , GLenum slot , GLenum texturetype , GLe
 
 	}
 
-	std::cout << "Texture channel count : " << channels << "\n";
+	LOG_INF("Texture loading :: " << path <<" ::Channel count :: " << channels);
 
 	glGenTextures(1, &texture);
 	glActiveTexture(GL_TEXTURE0 + slot);
@@ -69,7 +69,6 @@ Textures::Textures(const char* filepath, GLenum slot, GLenum texturetype, GLenum
 {
 	std::string temp(filepath);
 	path = temp;
-	std::cout << "TEST OF PATH STRING: " << path << "\n";
 
 	type = texturetype;
 	stbi_set_flip_vertically_on_load(FlipTexture);
@@ -101,7 +100,7 @@ Textures::Textures(const char* filepath, GLenum slot, GLenum texturetype, GLenum
 
 	}
 
-	std::cout << "Texture channel count : " << channels << "\n";
+	LOG_INF("Texture loading :: " << path << " ::Channel count :: " << channels);
 
 	glGenTextures(1, &texture);
 	glActiveTexture(GL_TEXTURE0 + slot);

@@ -179,7 +179,7 @@ int main()
 
 
     glfwSetDropCallback(window, UI::DropDownFile);
-    SAVEFILE::ReadSaveFile("Preferences.json", data.saveFileData);
+    SAVEFILE::ReadSaveFile("Preferences.json", data.saveFileData, logs);
     UI::SetPreferences(data);
     glfwSetScrollCallback(window, camera.scrollCallback);
     data.IsPreferencesFileEmpty = data.saveFileData.empty();
@@ -491,7 +491,7 @@ int main()
 
     NFD_Quit();
     DeinitializeWindow();
-    SAVEFILE::WriteSaveFile("Preferences.json", data.saveFileData);
+    SAVEFILE::WriteSaveFile("Preferences.json", data.saveFileData , logs);
     //SAVEFILE::WriteHMLfile("demo.hml", scene,data,camera,RenderPass,logs);
 	return 0;
 }

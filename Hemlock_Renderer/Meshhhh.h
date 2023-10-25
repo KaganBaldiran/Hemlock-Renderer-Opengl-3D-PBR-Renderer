@@ -115,7 +115,7 @@ namespace newwww {
 
 
 
-                std::cout << "TEXTURE UNIFORM: " << (name + number).c_str() << "\n";
+                //std::cout << "TEXTURE UNIFORM: " << (name + number).c_str() << "\n";
 
                 
                 glUniform1i(glGetUniformLocation(shader, (name + number).c_str()), i);

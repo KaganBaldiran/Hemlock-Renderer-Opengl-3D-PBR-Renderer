@@ -10,8 +10,10 @@
 #include "Imgui/imgui.h"
 #include "Imgui/imgui_impl_opengl3.h"
 #include "Imgui/imgui_impl_glfw.h"
-
 using json = nlohmann::json;
+
+#define HML_FILE 0x802
+#define HML_FILE_PACKED 0x803
 
 namespace SAVEFILE
 {
@@ -20,6 +22,8 @@ namespace SAVEFILE
 		int ViewportTheme = -1;
 		int HDRIsize = -1;
 		int CameraLayout = -1;
+
+		std::vector<std::pair<std::string ,int>> RecentProjects;
 
 		bool empty()
 		{
@@ -83,8 +87,10 @@ namespace SAVEFILE
 	};
 
 
-	bool ReadSaveFile(const char* fileName, SaveFileData& data);
-	void WriteSaveFile(const char* fileName, SaveFileData& data);
+	bool ReadSaveFile(const char* fileName, SaveFileData& data, std::vector<std::string>& logs);
+	void WriteSaveFile(const char* fileName, SaveFileData& data, std::vector<std::string>& logs);
+	void WriteHMLfilePacked(const char* fileName, scene& scene, UIdataPack& data, Camera& camera, int renderPass, std::vector<std::string>& logs);
 	void WriteHMLfile(const char* fileName, scene& scene, UIdataPack& data, Camera& camera, int renderPass, std::vector<std::string>& logs);
 	void ReadHMLfile(const char* fileName, scene& scene, GLuint shader, GLuint lightShader, UIdataPack& data, Camera& camera, int &renderPass, std::vector<std::string>& logs);
+	void ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shader, GLuint lightShader, UIdataPack& data, Camera& camera, int& renderPass, std::vector<std::string>& logs);
 }

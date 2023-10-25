@@ -122,6 +122,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;WINDOWS;_WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)dependencies\glew-2.1.0-win32\glew-2.1.0\include\GL;$(SolutionDir)dependencies\assimp\include;$(SolutionDir)dependencies\freeimage\include\Source;$(SolutionDir)dependencies\libcpuid\win64\include;$(SolutionDir)dependencies\glfw-3.3.7.bin.WIN64\glfw-3.3.7.bin.WIN64\include\GLFW;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

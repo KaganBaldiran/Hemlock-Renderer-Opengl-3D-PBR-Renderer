@@ -63,7 +63,7 @@ pickingtexture::pixelinfo pickingtexture::ReadPixel(uint x, uint y , Vec2<int> W
 
 	glReadPixels(x, WindowSize.y-y, 1,1, GL_RGBA, GL_FLOAT, &pixel);
 
-	LOG("PIXEL PICKED: " << pixel[0] << " " << pixel[1] << " " << pixel[2] << " " << pixel[3] << " " << x << " " << y);
+	//LOG("PIXEL PICKED: " << pixel[0] << " " << pixel[1] << " " << pixel[2] << " " << pixel[3] << " " << x << " " << y);
 
 	glReadBuffer(GL_NONE);
 

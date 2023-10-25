@@ -882,6 +882,8 @@ namespace UI
 		static bool importmodel_menu = false;
 		static bool OpenHMLfile = false;
 		static bool SaveHMLfile = false;
+		static bool OpenHMLfilePacked = false;
+		static bool SaveHMLfilePacked = false;
 		static bool ApplicationMenuEnabled = false;
 
 		Vec2<int> win_size = { NULL,NULL };
@@ -907,7 +909,7 @@ namespace UI
 						nfdresult_t result = NFD_OpenDialog(&data.outPath, filterItem, 1, NULL);
 						if (result == NFD_OKAY)
 						{
-							puts("Success!");
+							puts("Successfully fetched the file path to read the hml file from!");
 							puts(data.outPath);
 						}
 						else if (result == NFD_CANCEL)
@@ -942,6 +944,19 @@ namespace UI
 						LOG_INF("Reading HML file... :: " << path);
 						SAVEFILE::ReadHMLfile(path.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs);
 
+						if (data.saveFileData.RecentProjects.size() < 5)
+						{
+							data.saveFileData.RecentProjects.push_back({ path, HML_FILE });
+						}
+						else if (data.saveFileData.RecentProjects.size() >= 5)
+						{
+							for (size_t i = 0; i < data.saveFileData.RecentProjects.size() - 1; i++)
+							{
+								data.saveFileData.RecentProjects[i] = data.saveFileData.RecentProjects[i + 1];
+							}
+							data.saveFileData.RecentProjects[data.saveFileData.RecentProjects.size() - 1] = { path, HML_FILE };
+						}
+
 						data.imported = true;
 						OpenHMLfile = false;
 					}
@@ -949,11 +964,78 @@ namespace UI
 
 				}
 
+				if (ImGui::MenuItem("Open Packed HML file", "Ctrl+H+M"))
+				{
+					if (!OpenHMLfilePacked)
+					{
+
+						OpenHMLfilePacked = true;
+						data.imported = false;
+
+						nfdfilteritem_t filterItem[1] = { { "hml file", "hml" } };
+						nfdresult_t result = NFD_OpenDialog(&data.outPath, filterItem, 1, NULL);
+						if (result == NFD_OKAY)
+						{
+							puts("Successfully fetched the file path to read the packed hml file from!");
+							puts(data.outPath);
+						}
+						else if (result == NFD_CANCEL)
+						{
+							puts("User pressed cancel.");
+							data.imported = true;
+							OpenHMLfilePacked = false;
+						}
+						else
+						{
+							printf("Error: %s\n", NFD_GetError());
+						}
+
+					}
+				}
+
+				if (OpenHMLfilePacked)
+				{
+
+					if (data.outPath != nullptr)
+					{
+						std::string path(data.outPath);
+
+						for (size_t i = 0; i < path.size(); i++)
+						{
+							if (path.at(i) == '\\')
+							{
+								path.at(i) = '/';
+							}
+						}
+
+						LOG_INF("Reading HML file... :: " << path);
+						SAVEFILE::ReadHMLfilePacked(path.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs);
+
+						if (data.saveFileData.RecentProjects.size() < 5)
+						{
+							data.saveFileData.RecentProjects.push_back({ path, HML_FILE_PACKED});
+						}
+						else if (data.saveFileData.RecentProjects.size() >= 5)
+						{
+							for (size_t i = 0; i < data.saveFileData.RecentProjects.size() - 1; i++)
+							{
+								data.saveFileData.RecentProjects[i] = data.saveFileData.RecentProjects[i + 1];
+							}
+							data.saveFileData.RecentProjects[data.saveFileData.RecentProjects.size() - 1] = { path, HML_FILE_PACKED };
+						}
+
+						data.imported = true;
+						OpenHMLfilePacked = false;
+					}
+
+				}
+
+
+
 				if (ImGui::MenuItem("Save HML file", "Ctrl+H+S"))
 				{
 					if (!SaveHMLfile)
 					{
-
 						SaveHMLfile = true;
 						data.imported = false;
 
@@ -961,7 +1043,7 @@ namespace UI
 						nfdresult_t result = NFD_SaveDialog(&data.outPath, filterItem, 1, NULL , "Project");
 						if (result == NFD_OKAY)
 						{
-							puts("Success!");
+							puts("Successfully fetched the file path to save the hml file!");
 							puts(data.outPath);
 						}
 						else if (result == NFD_CANCEL)
@@ -977,7 +1059,6 @@ namespace UI
 
 					}
 				}
-
 				if (SaveHMLfile)
 				{
 
@@ -998,6 +1079,59 @@ namespace UI
 
 						data.imported = true;
 						SaveHMLfile = false;
+					}
+
+				}
+
+				if (ImGui::MenuItem("Save Packed HML file", "Ctrl+H+S"))
+				{
+					if (!SaveHMLfilePacked)
+					{
+
+						SaveHMLfilePacked = true;
+						data.imported = false;
+
+						nfdfilteritem_t filterItem[1] = { { "hml file", "hml" } };
+						nfdresult_t result = NFD_SaveDialog(&data.outPath, filterItem, 1, NULL, "Project");
+						if (result == NFD_OKAY)
+						{
+							puts("Successfully fetched the file path to save the hml packed file!");
+							puts(data.outPath);
+						}
+						else if (result == NFD_CANCEL)
+						{
+							puts("User pressed cancel.");
+							data.imported = true;
+							SaveHMLfilePacked = false;
+						}
+						else
+						{
+							printf("Error: %s\n", NFD_GetError());
+						}
+
+					}
+				}
+
+				if (SaveHMLfilePacked)
+				{
+
+					if (data.outPath != nullptr)
+					{
+						std::string path(data.outPath);
+
+						for (size_t i = 0; i < path.size(); i++)
+						{
+							if (path.at(i) == '\\')
+							{
+								path.at(i) = '/';
+							}
+						}
+
+						LOG_INF("Writing HML file... :: " << path);
+						SAVEFILE::WriteHMLfilePacked(path.c_str(), scene, data, camera, renderPass, logs);
+
+						data.imported = true;
+						SaveHMLfilePacked = false;
 					}
 
 
@@ -1344,6 +1478,29 @@ namespace UI
 
 				UIthemeComboBox(data);
 
+			}
+			else
+			{
+				ImGui::Text("Recent Projects");
+
+				for (size_t i = 0; i < data.saveFileData.RecentProjects.size(); i++)
+				{
+					std::string buttonLabel(strrchr(data.saveFileData.RecentProjects[i].first.c_str(), '/'));
+					buttonLabel = buttonLabel.substr(1);
+					if(ImGui::Button(buttonLabel.c_str(), {ImGui::GetFontSize() * buttonLabel.size() , ImGui::GetFontSize() * 2.0f}))
+					{
+						if (data.saveFileData.RecentProjects[i].second == HML_FILE)
+						{
+							SAVEFILE::ReadHMLfile(data.saveFileData.RecentProjects[i].first.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs);
+						}
+						else if (data.saveFileData.RecentProjects[i].second == HML_FILE_PACKED)
+						{
+							SAVEFILE::ReadHMLfilePacked(data.saveFileData.RecentProjects[i].first.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs);
+						}
+
+						data.SplashScreenEnabled = false;
+					}
+				}
 			}
 
 
