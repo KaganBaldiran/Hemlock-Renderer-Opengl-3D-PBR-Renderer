@@ -66,6 +66,9 @@
 
 
   uniform samplerCube skybox;
+  
+  uniform samplerCube OmniShadowMaps[MAX_LIGHT_COUNT];
+
   in vec3 inverse_normal;
 
 
@@ -82,8 +85,9 @@
   uniform float ao;
 
   uniform float LightIntensity;
-
   uniform float farPlane;
+  uniform bool RenderShadows;
+  uniform int ShadowCastingLightCount;
 
  
   float ShadowCalculation(vec4 fragPosLightSpace , vec3 lightDir ,vec3 normal)
@@ -118,10 +122,10 @@
     return shadow;
   }
 
-  float ShadowCalculationOmni(vec3 fragPos)
+  float ShadowCalculationOmni(vec3 fragPos , samplerCube OmnishadowMap , vec3 LightPosition)
   {
-      vec3 fragTolight = fragPos - lightpositions[0];
-      float closestDepth = texture(skybox,fragTolight).r;
+      vec3 fragTolight = fragPos - LightPosition;
+      float closestDepth = texture(OmnishadowMap,fragTolight).r;
       closestDepth *= 25.0f;
 
       float currentDepth = length(fragTolight);
@@ -224,8 +228,6 @@
 
      float shadow;
 
-     shadow = ShadowCalculationOmni(currentpos);
-
       vec3 N = normalize(resultnormal);
       vec3 V = normalize(campos - currentpos);
 
@@ -255,15 +257,16 @@
 
           float NdotL = max(dot(N,L),0.0);
 
-          if(i == 0)
+          if(RenderShadows && i < ShadowCastingLightCount)
           {
-               
-              Lo += (1.0 - shadow) * (Kd * texturecolor / PI + specular) * radiance * lightIntensities[i] * NdotL;
+             shadow = ShadowCalculationOmni(currentpos,OmniShadowMaps[i],lightpositions[i]);
+             Lo += (1.0 - shadow) * (Kd * texturecolor / PI + specular) * radiance * lightIntensities[i] * NdotL;
           }
           else
           {
-              Lo += (Kd * texturecolor / PI + specular) * radiance * lightIntensities[i] * NdotL;
+             Lo += (Kd * texturecolor / PI + specular) * radiance * lightIntensities[i] * NdotL;
           }
+          
       }
      
       vec3 ambient = vec3(0.03) * texturecolor * ao;

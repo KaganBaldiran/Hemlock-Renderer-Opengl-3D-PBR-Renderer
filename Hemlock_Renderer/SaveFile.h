@@ -83,6 +83,8 @@ namespace SAVEFILE
 		int cameraLayout = CAMERA_LAYOUT_INDUSTRY_STANDARD;
 
 		bool IsPreferencesFileEmpty;
+		bool RenderShadows = false;
+		int ShadowCastingLightCount = MAX_LIGHT_COUNT;
 
 	};
 

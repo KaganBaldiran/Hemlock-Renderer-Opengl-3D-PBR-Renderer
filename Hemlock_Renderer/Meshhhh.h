@@ -159,16 +159,16 @@ namespace newwww {
             camera.Matrix(shader, "cameramatrix");
 
             
-            glActiveTexture(GL_TEXTURE0 + 7);
+            //glActiveTexture(GL_TEXTURE0 + 7);
 
-            glBindTexture(GL_TEXTURE_2D, shadowMap);
+            //glBindTexture(GL_TEXTURE_2D, shadowMap);
 
-            glUniform1i(glGetUniformLocation(shader, "shadowMap"), 7);
+            //glUniform1i(glGetUniformLocation(shader, "shadowMap"), 7);
 
-            glActiveTexture(GL_TEXTURE0 + 10);
+            //glActiveTexture(GL_TEXTURE0 + 10);
 
-            glBindTexture(GL_TEXTURE_CUBE_MAP, cube_map_texture);
-            glUniform1i(glGetUniformLocation(shader, "skybox"), 10);
+            //glBindTexture(GL_TEXTURE_CUBE_MAP, cube_map_texture);
+            //glUniform1i(glGetUniformLocation(shader, "skybox"), 10);
 
             // draw mesh
             glBindVertexArray(VAO);

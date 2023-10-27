@@ -11,6 +11,7 @@
 #include "post_process.h"
 #include "SSAO.h"
 #include <algorithm>
+#include "Shadow_Map.h"
 
 
 #define CURRENT_OBJECT(Current_obj) (Current_obj - 2)
@@ -705,6 +706,13 @@ public:
 	{
 
 		models[model_index_to_draw]->Draw(shader, camera, shadowMap,cube_map_texture);
+
+	}
+
+	void DrawModelsMultipleShadowMaps(GLuint shader, Camera& camera, size_t model_index_to_draw,  std::function<void()> ShaderPreperation, GLuint cube_map_texture)
+	{
+
+		models[model_index_to_draw]->DrawMultipleShadowMaps(shader, camera, ShaderPreperation, cube_map_texture);
 
 	}
 

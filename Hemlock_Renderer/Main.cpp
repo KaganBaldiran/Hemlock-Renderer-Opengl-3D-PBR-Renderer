@@ -38,7 +38,6 @@ const int windowheight = 1000;
 
 int main()
 {
-    
 	GLFWwindow*window = initializeWindow(windowwidth,windowheight , "Hemlock Standalone Renderer");
 
     glViewport(0, 0, windowwidth, windowheight);
@@ -73,7 +72,11 @@ int main()
         "resources/skybox/back.jpg"
     };
 
-    OmniShadowMap OmnishadowMap(1024, 1024);
+    std::unique_ptr<OmniShadowMap> OmnishadowMaps[MAX_LIGHT_COUNT];
+    for (size_t i = 0; i < MAX_LIGHT_COUNT; i++)
+    {
+        OmnishadowMaps[i] = std::make_unique<OmniShadowMap>(1024, 1024);
+    }
 
     CubeMap Cubemap(cube_map_faces, "Shaders/CubeMap.vert", "Shaders/CubeMap.frag");
 
@@ -108,9 +111,7 @@ int main()
         scene.GetModel(i)->transformation.scale(glm::vec3(0.05f, 0.05f, 0.05f));
     }
    
-    
     scene.handlelights(PBRShader.GetID());
-
     UseShaderProgram(PBRShader.GetID());
 
     //glUniformMatrix4fv(glGetUniformLocation(defaultshader.GetID(), "model"), 1, GL_FALSE, glm::value_ptr(pyramidmodel));
@@ -239,12 +240,15 @@ int main()
                 enablegizmo_p,currentselectedlight, PickingBufferTextureShader.GetID(), pickingBuffertex,data.renderlights);
 
             //ShadowMap.LightProjection(scene.LightPositions[0], ShadowMapShader.GetID(), window, scene.models, scene.globalscale, camera, UI::current_viewport_size);
-
-          
             //scene.DrawShadowMap(&ShadowMap, ShadowMapShader.GetID(), camera, window, glm::vec4(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w));
             //ShadowMap.Draw(scene, ShadowMapShader.GetID(), camera, window, glm::vec4(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w));
-            OmnishadowMap.Draw(OmniShadowShader.GetID(), scene, camera);
-           
+            if (data.RenderShadows)
+            {
+                for (size_t i = 0; i < data.ShadowCastingLightCount; i++)
+                {
+                    OmnishadowMaps[i]->Draw(OmniShadowShader.GetID(), scene.LightPositions[i], scene.models, camera);
+                }
+            }
             WindowSizeRecall(window, UI::current_viewport_size);
 
 
@@ -307,22 +311,41 @@ int main()
                     {
 
                         //ShadowMap.LightProjection(scene.LightPositions[0], PBRShader.GetID(), window, scene.models, scene.globalscale, camera, UI::current_viewport_size);
+                        UseShaderProgram(PBRShader.GetID());
 
                         glUniform1i(glGetUniformLocation(PBRShader.GetID(), "enablehighlight"), data.enablehighlight);
 
                         scene.GetModel(i - 1)->transformation.SendUniformToShader(PBRShader.GetID(), "model");
                         
-                        glUniform1f(glGetUniformLocation(PBRShader.GetID(), "farPlane"), OmnishadowMap.GetFarPlane());
+                        auto ShaderPrep = [&]() {
 
-                        scene.DrawModels(PBRShader.GetID(), camera, i - 1, OmnishadowMap.GetShadowMap(), OmnishadowMap.GetShadowMap());
+                            glUniform1i(glGetUniformLocation(PBRShader.GetID(), "RenderShadows"), data.RenderShadows);
+
+                            if (data.RenderShadows)
+                            {
+                                glUniform1f(glGetUniformLocation(PBRShader.GetID(), "farPlane"), 25.0f);
+                                glUniform1i(glGetUniformLocation(PBRShader.GetID(), "ShadowCastingLightCount"), data.ShadowCastingLightCount);
+
+                                for (size_t i = 0; i < scene.numberoflights; i++)
+                                {
+                                    glActiveTexture(GL_TEXTURE0 + 4 + i);
+                                    glBindTexture(GL_TEXTURE_CUBE_MAP, OmnishadowMaps[i]->GetShadowMap());
+                                    glUniform1i(glGetUniformLocation(PBRShader.GetID(), ("OmniShadowMaps[" + std::to_string(i) + "]").c_str()), 4 + i);
+                                }
+                            }
+
+                        };
+
+                        scene.DrawModelsMultipleShadowMaps(PBRShader.GetID(), camera, i - 1, ShaderPrep, NULL);
 
                         glActiveTexture(GL_TEXTURE0);
 
-                        UseShaderProgram(0);
                     }
 
 
                 }
+                UseShaderProgram(0);
+
 
                 if (data.renderlights)
                 {

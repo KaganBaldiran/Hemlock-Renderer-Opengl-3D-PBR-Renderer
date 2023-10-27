@@ -12,9 +12,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include <array>
 #include "Camera.h"
-#include "Scene.h"
-
-  
+#include "Model.h"
 
   class shadowmap
   {
@@ -117,7 +115,7 @@
 
 	  };
 
-	  void Draw(scene& scene, GLuint shadow_map_shader, Camera& camera, GLFWwindow* window, glm::vec4 background_colo)
+	  void Draw(std::vector<Model*>& models, GLuint shadow_map_shader, Camera& camera, GLFWwindow* window, glm::vec4 background_colo)
 	  {
 		  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -137,10 +135,10 @@
 		  glBindTexture(GL_TEXTURE_2D, shadowMap);
 
 
-		  for (size_t i = 1; i < scene.models.size(); i++)
+		  for (size_t i = 1; i < models.size(); i++)
 		  {
-			  scene.models.at(i)->transformation.SendUniformToShader(shadow_map_shader, "model");
-			  scene.models[i]->Draw(shadow_map_shader, camera, shadowMap, NULL);
+			  models.at(i)->transformation.SendUniformToShader(shadow_map_shader, "model");
+			  models[i]->Draw(shadow_map_shader, camera, shadowMap, NULL);
 		  }
 
 		  UseShaderProgram(0);
@@ -228,7 +226,7 @@
 		  }
 	  }
 
-	  void Draw(GLuint shader ,scene& scene , Camera& camera)
+	  void Draw(GLuint shader , glm::vec3 lightPos_i,std::vector<Model*> &models, Camera& camera)
 	  {
 		  glUseProgram(shader);
 		  glBindFramebuffer(GL_FRAMEBUFFER, this->depthMapFBO);
@@ -238,7 +236,7 @@
 		  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		  glBindTexture(GL_TEXTURE_CUBE_MAP, this->ShadowMapId);
 
-		  glm::vec3 lightPos = scene.LightPositions[0];
+		  glm::vec3 lightPos = lightPos_i;
 
 		  LightMatrix(lightPos, shader);
 
@@ -246,10 +244,10 @@
 		  glUniform3f(glGetUniformLocation(shader, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 		  glUniform1f(glGetUniformLocation(shader, "farPlane"), far);
 
-		  for (size_t i = 1; i < scene.models.size(); i++)
+		  for (size_t i = 1; i < models.size(); i++)
 		  {
-			  scene.models.at(i)->transformation.SendUniformToShader(shader, "model");
-			  scene.models[i]->Draw(shader, camera, ShadowMapId, NULL);
+			  models.at(i)->transformation.SendUniformToShader(shader, "model");
+			  models[i]->Draw(shader, camera, ShadowMapId, NULL);
 		  }
 
 		  glBindFramebuffer(GL_FRAMEBUFFER, 0);

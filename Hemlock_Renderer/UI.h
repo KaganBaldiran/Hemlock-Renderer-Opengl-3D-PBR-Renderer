@@ -1487,7 +1487,7 @@ namespace UI
 				{
 					std::string buttonLabel(strrchr(data.saveFileData.RecentProjects[i].first.c_str(), '/'));
 					buttonLabel = buttonLabel.substr(1);
-					if(ImGui::Button(buttonLabel.c_str(), {ImGui::GetFontSize() * buttonLabel.size() , ImGui::GetFontSize() * 2.0f}))
+					if (ImGui::Button(buttonLabel.c_str(), { (ImGui::GetFontSize() * buttonLabel.size()) , ImGui::GetFontSize() * 2.0f }))
 					{
 						if (data.saveFileData.RecentProjects[i].second == HML_FILE)
 						{
@@ -2012,6 +2012,7 @@ namespace UI
 					//ImGui::SetCursorPos(ImVec2(10, 10));
 					ImGui::Checkbox(" Enable Skybox", &data.render_cube_map);
 
+
 					static bool ImportHDRI = false;
 
 					if (ImGui::Button("Import HDRI", ImVec2(100, 40)) && !ImportHDRI)
@@ -2057,6 +2058,8 @@ namespace UI
 						ImportHDRI = false;
 					}
 				
+
+
 					ImGui::Spacing();
 					ImGui::Spacing();
 
@@ -2065,6 +2068,11 @@ namespace UI
 					ImGui::Spacing();
 
 					ImGui::Checkbox("Enable SSAO", &data.EnableSSAO);
+					ImGui::Checkbox(" Enable Shadows", &data.RenderShadows);
+					if (data.RenderShadows)
+					{
+						ImGui::SliderInt("Shadow casting light count", &data.ShadowCastingLightCount, 0, MAX_LIGHT_COUNT);
+					}
 
 					ImGui::Spacing();
 

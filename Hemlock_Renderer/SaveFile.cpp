@@ -84,8 +84,21 @@ void SAVEFILE::WriteSaveFile(const char* fileName, SaveFileData& data, std::vect
 				for (size_t i = 0; i < data.RecentProjects.size(); i++)
 				{
 					std::string projectName("project" + std::to_string(i));
-					SaveFile["RecentProjects"][projectName]["directory"] = data.RecentProjects.at(i).first;
-					SaveFile["RecentProjects"][projectName]["type"] = data.RecentProjects.at(i).second;
+					bool allow = true;
+
+					for (size_t y = i + 1; y < data.RecentProjects.size(); y++)
+					{
+						if (data.RecentProjects.at(i).first == data.RecentProjects.at(y).first)
+						{
+							allow = false;
+							break;
+						}
+					}
+					if (allow)
+					{
+						SaveFile["RecentProjects"][projectName]["directory"] = data.RecentProjects.at(i).first;
+						SaveFile["RecentProjects"][projectName]["type"] = data.RecentProjects.at(i).second;
+					}	
 				}
 
 				File << SaveFile;
@@ -194,6 +207,7 @@ void SAVEFILE::WriteHMLfilePacked(const char* fileName, scene& scene, UIdataPack
 			HMLfile["GeneralAttributes"]["renderGrid"] = data.RenderGrid;
 			HMLfile["GeneralAttributes"]["enableSkybox"] = data.render_cube_map;
 			HMLfile["GeneralAttributes"]["showLightMeshes"] = data.renderlights;
+			HMLfile["GeneralAttributes"]["renderShadows"] = data.RenderShadows;
 
 			HMLfile["ViewportAttributes"]["cameraPosition"]["x"] = camera.Position.x;
 			HMLfile["ViewportAttributes"]["cameraPosition"]["y"] = camera.Position.y;
@@ -297,6 +311,7 @@ void SAVEFILE::WriteHMLfile(const char* fileName, scene& scene ,UIdataPack& data
 			HMLfile["GeneralAttributes"]["renderGrid"] = data.RenderGrid;
 			HMLfile["GeneralAttributes"]["enableSkybox"] = data.render_cube_map;
 			HMLfile["GeneralAttributes"]["showLightMeshes"] = data.renderlights;
+			HMLfile["GeneralAttributes"]["renderShadows"] = data.RenderShadows;
 
 			HMLfile["ViewportAttributes"]["cameraPosition"]["x"] = camera.Position.x;
 			HMLfile["ViewportAttributes"]["cameraPosition"]["y"] = camera.Position.y;
@@ -413,6 +428,7 @@ void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,G
 			data.RenderGrid = HMLfile["GeneralAttributes"]["renderGrid"];
 			data.render_cube_map = HMLfile["GeneralAttributes"]["enableSkybox"];
 			data.renderlights = HMLfile["GeneralAttributes"]["showLightMeshes"];
+			data.RenderShadows = HMLfile["GeneralAttributes"]["renderShadows"];
 
 			camera.Position.x = HMLfile["ViewportAttributes"]["cameraPosition"]["x"];
 			camera.Position.y = HMLfile["ViewportAttributes"]["cameraPosition"]["y"];
@@ -435,6 +451,12 @@ void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,G
 			std::string logtemp = "Exception while reading hml file :: " + std::string(e.what()) + " :: " + std::string(fileName);
 			logs.push_back(logtemp);
 			File.close();
+
+			for (size_t i = 0; i < scene.numberoflights; i++)
+			{
+				scene.DeleteLight(i, shader);
+			}
+
 		}
 	}
 	else
@@ -560,6 +582,7 @@ void SAVEFILE::ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shad
 			data.RenderGrid = HMLfile["GeneralAttributes"]["renderGrid"];
 			data.render_cube_map = HMLfile["GeneralAttributes"]["enableSkybox"];
 			data.renderlights = HMLfile["GeneralAttributes"]["showLightMeshes"];
+			data.RenderShadows = HMLfile["GeneralAttributes"]["renderShadows"];
 
 			camera.Position.x = HMLfile["ViewportAttributes"]["cameraPosition"]["x"];
 			camera.Position.y = HMLfile["ViewportAttributes"]["cameraPosition"]["y"];

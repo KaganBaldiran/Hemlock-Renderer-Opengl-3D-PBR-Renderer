@@ -21,6 +21,7 @@
 #include <map>
 #include <vector>
 #include "VectorMath.h"
+#include <functional>
 
 using namespace std;
 using namespace newwww;
@@ -172,14 +173,27 @@ public:
 
     }
 
-    
     void Draw(GLuint shader , Camera& camera, GLuint shadowMap , GLuint cube_map_texture)
     {
         UseShaderProgram(shader);
         glUniform1f(glGetUniformLocation(shader, "modelID"), this->GetModelID());
 
+        glUniform1f(glGetUniformLocation(shader, "farPlane"), 25.0f);
+
         for (unsigned int i = 0; i < meshes.size(); i++)
             meshes[i].Draw(shader , camera,shadowMap,cube_map_texture);
+    }
+
+    void DrawMultipleShadowMaps(GLuint shader, Camera& camera, std::function<void()> ShaderPreperation, GLuint cube_map_texture)
+    {
+        UseShaderProgram(shader);
+
+        ShaderPreperation();
+
+        glUniform1f(glGetUniformLocation(shader, "modelID"), this->GetModelID());
+
+        for (unsigned int i = 0; i < meshes.size(); i++)
+            meshes[i].Draw(shader, camera, NULL, cube_map_texture);
     }
 
     void Draw(GLuint shader, Camera& camera, GLuint shadowMap, GLuint cube_map_texture , GLuint SSAOmap)
