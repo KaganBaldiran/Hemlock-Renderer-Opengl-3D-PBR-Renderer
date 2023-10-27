@@ -29,7 +29,7 @@ Here are some of the key features
 # Showcase
 This is how it currently looks(Some of the models don't belong to me):
 
-![SplashScreenImage](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-PBR-Renderer/assets/80681941/dead8ab9-d580-4ce9-ab4f-4425063b8a30)
+![SplashScreenImage](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-PBR-Renderer/assets/80681941/610263c1-ad97-4c1f-815d-d63c8cd551ee)
 ![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-PBR-Renderer/assets/80681941/2e92fbe1-53e5-43b3-824c-7a145e7ce7d8)
 ![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-PBR-Renderer/assets/80681941/0043e6fa-31d7-4abc-a55d-b1bb7777b90a)
 ![image](https://github.com/KaganBaldiran/Hemlock-Renderer-Opengl-3D-Renderer/assets/80681941/f54b5c3a-2790-4524-ac9e-5c31dac62ce4)
