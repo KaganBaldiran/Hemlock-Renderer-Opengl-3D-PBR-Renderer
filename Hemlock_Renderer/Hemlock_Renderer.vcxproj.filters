@@ -287,5 +287,17 @@
     <None Include="Shaders\OmniShadow.gs">
       <Filter>shaders</Filter>
     </None>
+    <None Include="Shaders\ConvolutationCubeMap.fs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\ConvolutationCubeMap.vs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\PreFilterCubeMap.vs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\PreFilterCubeMap.fs">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

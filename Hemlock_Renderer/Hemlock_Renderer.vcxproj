@@ -199,6 +199,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="nativefiledialog-extended-master\src\nfd_cocoa.m" />
+    <None Include="Shaders\ConvolutationCubeMap.fs" />
+    <None Include="Shaders\ConvolutationCubeMap.vs" />
     <None Include="Shaders\CubeMap.frag" />
     <None Include="Shaders\CubeMap.vert" />
     <None Include="Shaders\fragsource.frag" />
@@ -221,6 +223,8 @@
     <None Include="Shaders\picking.vert" />
     <None Include="Shaders\PickingBufferTexture.fs" />
     <None Include="Shaders\PickingBufferTexture.vs" />
+    <None Include="Shaders\PreFilterCubeMap.fs" />
+    <None Include="Shaders\PreFilterCubeMap.vs" />
     <None Include="Shaders\ShadowMap.frag" />
     <None Include="Shaders\ShadowMap.vert" />
     <None Include="Shaders\SSAO.fs" />

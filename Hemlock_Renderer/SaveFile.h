@@ -86,6 +86,8 @@ namespace SAVEFILE
 		bool RenderShadows = false;
 		int ShadowCastingLightCount = MAX_LIGHT_COUNT;
 
+		GLuint ConvDiffCubeMap;
+
 	};
 
 
@@ -93,6 +95,6 @@ namespace SAVEFILE
 	void WriteSaveFile(const char* fileName, SaveFileData& data, std::vector<std::string>& logs);
 	void WriteHMLfilePacked(const char* fileName, scene& scene, UIdataPack& data, Camera& camera, int renderPass, std::vector<std::string>& logs);
 	void WriteHMLfile(const char* fileName, scene& scene, UIdataPack& data, Camera& camera, int renderPass, std::vector<std::string>& logs);
-	void ReadHMLfile(const char* fileName, scene& scene, GLuint shader, GLuint lightShader, UIdataPack& data, Camera& camera, int &renderPass, std::vector<std::string>& logs);
-	void ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shader, GLuint lightShader, UIdataPack& data, Camera& camera, int& renderPass, std::vector<std::string>& logs);
+	void ReadHMLfile(const char* fileName, scene& scene, GLuint shader, GLuint lightShader, UIdataPack& data, Camera& camera, int &renderPass, std::vector<std::string>& logs, GLFWwindow* window);
+	void ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shader, GLuint lightShader, UIdataPack& data, Camera& camera, int& renderPass, std::vector<std::string>& logs, GLFWwindow* window);
 }

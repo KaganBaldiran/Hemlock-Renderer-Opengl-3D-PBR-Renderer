@@ -347,7 +347,7 @@ void SAVEFILE::WriteHMLfile(const char* fileName, scene& scene ,UIdataPack& data
 
 }
 
-void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,GLuint lightShader, UIdataPack& data, Camera& camera, int& renderPass, std::vector<std::string> &logs)
+void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,GLuint lightShader, UIdataPack& data, Camera& camera, int& renderPass, std::vector<std::string> &logs , GLFWwindow *window)
 {
 	std::ifstream File(fileName);
 
@@ -443,6 +443,7 @@ void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,G
 			LOG_INF("hml file read :: " << fileName);
 			std::string logtemp = "hml file read :: " + std::string(fileName);
 			logs.push_back(logtemp);
+			glfwSetWindowTitle(window,("Hemlock Standalone Renderer - " + std::string(fileName)).c_str());
 			File.close();
 		}
 		catch (const std::exception& e)
@@ -468,7 +469,7 @@ void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,G
 
 }
 
-void SAVEFILE::ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shader, GLuint lightShader, UIdataPack& data, Camera& camera, int& renderPass, std::vector<std::string>& logs)
+void SAVEFILE::ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shader, GLuint lightShader, UIdataPack& data, Camera& camera, int& renderPass, std::vector<std::string>& logs, GLFWwindow* window)
 {
 
 	std::string HMLfileDirectory(fileName);
@@ -597,6 +598,7 @@ void SAVEFILE::ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shad
 			LOG_INF("hml file read :: " << fileName);
 			std::string logtemp = "hml file read :: " + std::string(fileName);
 			logs.push_back(logtemp);
+			glfwSetWindowTitle(window, ("Hemlock Standalone Renderer - " + std::string(fileName)).c_str());
 			File.close();
 		}
 		catch (const std::exception& e)

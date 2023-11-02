@@ -876,7 +876,7 @@ namespace UI
 		}
 	}
 
-	void ConfigureUI(int &currentselectedobj , SAVEFILE::UIdataPack &data , scene &scene , std::vector<std::string>& logs ,GLuint import_shader , glm::vec4 lightcolor , glm::vec3 lightpos , GLFWwindow* window , std::vector<uint> &auto_rotate_on , GLuint screen_image,GLuint light_shader, int &currentselectedlight , ThreadPool& threads , CubeMap &Cubemap , GLuint HDRItoCubeMapShader , Textures& SplashScreenImage , int &renderPass , Camera& camera)
+	void ConfigureUI(int &currentselectedobj , SAVEFILE::UIdataPack &data , scene &scene , std::vector<std::string>& logs ,GLuint import_shader , glm::vec4 lightcolor , glm::vec3 lightpos , GLFWwindow* window , std::vector<uint> &auto_rotate_on , GLuint screen_image,GLuint light_shader, int &currentselectedlight , ThreadPool& threads , CubeMap &Cubemap , GLuint HDRItoCubeMapShader , Textures& SplashScreenImage , int &renderPass , Camera& camera , GLuint ConvolutateCubeMapShader)
 	{
 
 		static bool importmodel_menu = false;
@@ -942,7 +942,7 @@ namespace UI
 						}
 
 						LOG_INF("Reading HML file... :: " << path);
-						SAVEFILE::ReadHMLfile(path.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs);
+						SAVEFILE::ReadHMLfile(path.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs,window);
 
 						if (data.saveFileData.RecentProjects.size() < 5)
 						{
@@ -1009,7 +1009,7 @@ namespace UI
 						}
 
 						LOG_INF("Reading HML file... :: " << path);
-						SAVEFILE::ReadHMLfilePacked(path.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs);
+						SAVEFILE::ReadHMLfilePacked(path.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs,window);
 
 						if (data.saveFileData.RecentProjects.size() < 5)
 						{
@@ -1408,8 +1408,13 @@ namespace UI
 			ImGui::Spacing();
 			ImGui::Spacing();
 
+			std::string firstString("Hemlock Renderer is an Open-Source project");
+			float Position = ApplicationSettingSizes.x * 0.5f - (ImGui::CalcTextSize(firstString.c_str()).x * 0.5f);
+			ImGui::SetCursorPosX(Position);
 			ImGui::Text("Hemlock Renderer is an Open-Source project");
+			ImGui::SetCursorPosX(Position);
 			ImGui::Text("For more details 'Github/KaganBaldiran'");
+			ImGui::SetCursorPosX(Position);
 			ImGui::Text("Hemlock Renderer 2023");
 
 			ImGui::End();
@@ -1481,26 +1486,38 @@ namespace UI
 			}
 			else
 			{
+				float RecentPrPosition = ApplicationSettingSizes.x * 0.1f;
+				ImGui::SetCursorPosX(RecentPrPosition);
 				ImGui::Text("Recent Projects");
+
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, current_color_sheme.ChildMenuColor);
+				ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 
 				for (size_t i = 0; i < data.saveFileData.RecentProjects.size(); i++)
 				{
 					std::string buttonLabel(strrchr(data.saveFileData.RecentProjects[i].first.c_str(), '/'));
 					buttonLabel = buttonLabel.substr(1);
-					if (ImGui::Button(buttonLabel.c_str(), { (ImGui::GetFontSize() * buttonLabel.size()) , ImGui::GetFontSize() * 2.0f }))
+					ImGui::SetCursorPosX(RecentPrPosition);
+					if (ImGui::Button(buttonLabel.c_str(), { ImGui::CalcTextSize((buttonLabel + " ").c_str()).x , ImGui::GetFontSize() * 2.0f}))
 					{
 						if (data.saveFileData.RecentProjects[i].second == HML_FILE)
 						{
-							SAVEFILE::ReadHMLfile(data.saveFileData.RecentProjects[i].first.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs);
+							SAVEFILE::ReadHMLfile(data.saveFileData.RecentProjects[i].first.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs,window);
 						}
 						else if (data.saveFileData.RecentProjects[i].second == HML_FILE_PACKED)
 						{
-							SAVEFILE::ReadHMLfilePacked(data.saveFileData.RecentProjects[i].first.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs);
+							SAVEFILE::ReadHMLfilePacked(data.saveFileData.RecentProjects[i].first.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs,window);
 						}
 
 						data.SplashScreenEnabled = false;
 					}
 				}
+
+				ImGui::PopStyleColor();
+				ImGui::PopStyleColor();
+				ImGui::PopStyleColor();
+
 			}
 
 
@@ -2040,10 +2057,13 @@ namespace UI
 					if (ImportHDRI)
 					{
 						std::pair<GLuint , int> CubeMapTexture = HDRItoCubeMap(data.outPath, data.CubeMapSize, HDRItoCubeMapShader);
-
+						
 						if (CubeMapTexture.second == HDRI_COMPLETE)
 						{
+							data.ConvDiffCubeMap = ConvolutateCubeMap(CubeMapTexture.first, ConvolutateCubeMapShader).first;
+							//Cubemap.SetCubeMapTexture(data.ConvDiffCubeMap);
 							Cubemap.SetCubeMapTexture(CubeMapTexture.first);
+
 							logs.push_back("Imported HDRI :: " + std::string(data.outPath));
 						}
 						else if (CubeMapTexture.second == HDRI_INCOMPATIBLE_FILE)

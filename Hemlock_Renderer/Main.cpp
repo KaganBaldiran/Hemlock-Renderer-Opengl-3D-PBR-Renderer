@@ -55,12 +55,16 @@ int main()
     Shader SSAOblurShader("Shaders/SSAO.vs", "Shaders/SSAOblur.fs");
     Shader PBRShader("Shaders/PBR.vs", "Shaders/PBR.fs");
     Shader OmniShadowShader("Shaders/OmniShadow.vs", "Shaders/OmniShadow.gs", "Shaders/OmniShadow.fs");
+    Shader ConvolutateCubeMapShader("Shaders/ConvolutationCubeMap.vs", "Shaders/ConvolutationCubeMap.fs");
+    Shader PreFilterCubeMapShader("Shaders/PreFilterCubeMap.vs", "Shaders/PreFilterCubeMap.fs");
 
     scene scene;
     FBO screen_fbo;
     const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
     SSAO ssao({ (float)mode->width,(float)mode->height });
     CreateCustomFrameBuffer(screen_fbo , mode->width, mode->height);
+
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
     vector<std::string> cube_map_faces
     {
@@ -73,9 +77,10 @@ int main()
     };
 
     std::unique_ptr<OmniShadowMap> OmnishadowMaps[MAX_LIGHT_COUNT];
+    GLuint ShadowMapSize = 1024;
     for (size_t i = 0; i < MAX_LIGHT_COUNT; i++)
     {
-        OmnishadowMaps[i] = std::make_unique<OmniShadowMap>(1024, 1024);
+        OmnishadowMaps[i] = std::make_unique<OmniShadowMap>(ShadowMapSize, ShadowMapSize);
     }
 
     CubeMap Cubemap(cube_map_faces, "Shaders/CubeMap.vert", "Shaders/CubeMap.frag");
@@ -185,7 +190,9 @@ int main()
     glfwSetScrollCallback(window, camera.scrollCallback);
     data.IsPreferencesFileEmpty = data.saveFileData.empty();
 
-    //SAVEFILE::ReadHMLfile("demo.hml", scene, PBRShader.GetID(),lightshader.GetID(),data,camera,RenderPass, logs);
+    data.ConvDiffCubeMap = ConvolutateCubeMap(Cubemap.GetCubeMapTexture(), ConvolutateCubeMapShader.GetID()).first;
+    GLuint preFilteredCubeMap = PreFilterCubeMap(Cubemap.GetCubeMapTexture(), PreFilterCubeMapShader.GetID()).first;
+    Cubemap.SetCubeMapTexture(preFilteredCubeMap);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -216,7 +223,7 @@ int main()
 
             UI::ConfigureUI(currentselectedobj, data, scene, logs, PBRShader.GetID(), lightcolor, lightpos, window, auto_rotate_on,
                            ShadowMap.GetShadowMapImage(), lightshader.GetID(), currentselectedlight,threads,
-                           Cubemap,HDRIShader.GetID(), SplashScreenImage,RenderPass, camera);
+                           Cubemap,HDRIShader.GetID(), SplashScreenImage,RenderPass, camera,ConvolutateCubeMapShader.GetID());
 
             UI::DropDownImportModel(PBRShader.GetID(), scene, logs);
             
@@ -244,7 +251,7 @@ int main()
             //ShadowMap.Draw(scene, ShadowMapShader.GetID(), camera, window, glm::vec4(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w));
             if (data.RenderShadows)
             {
-                for (size_t i = 0; i < data.ShadowCastingLightCount; i++)
+                for (size_t i = 0; i < glm::min(data.ShadowCastingLightCount,scene.numberoflights); i++)
                 {
                     OmnishadowMaps[i]->Draw(OmniShadowShader.GetID(), scene.LightPositions[i], scene.models, camera);
                 }
@@ -321,16 +328,20 @@ int main()
 
                             glUniform1i(glGetUniformLocation(PBRShader.GetID(), "RenderShadows"), data.RenderShadows);
 
+                            glActiveTexture(GL_TEXTURE0 + 4);
+                            glBindTexture(GL_TEXTURE_CUBE_MAP, data.ConvDiffCubeMap);
+                            glUniform1i(glGetUniformLocation(PBRShader.GetID(),"ConvCubeMap"), 4);
+
                             if (data.RenderShadows)
                             {
                                 glUniform1f(glGetUniformLocation(PBRShader.GetID(), "farPlane"), 25.0f);
                                 glUniform1i(glGetUniformLocation(PBRShader.GetID(), "ShadowCastingLightCount"), data.ShadowCastingLightCount);
 
-                                for (size_t i = 0; i < scene.numberoflights; i++)
+                                for (size_t i = 0; i < glm::min(data.ShadowCastingLightCount, scene.numberoflights); i++)
                                 {
-                                    glActiveTexture(GL_TEXTURE0 + 4 + i);
+                                    glActiveTexture(GL_TEXTURE0 + 5 + i);
                                     glBindTexture(GL_TEXTURE_CUBE_MAP, OmnishadowMaps[i]->GetShadowMap());
-                                    glUniform1i(glGetUniformLocation(PBRShader.GetID(), ("OmniShadowMaps[" + std::to_string(i) + "]").c_str()), 4 + i);
+                                    glUniform1i(glGetUniformLocation(PBRShader.GetID(), ("OmniShadowMaps[" + std::to_string(i) + "]").c_str()), 5 + i);
                                 }
                             }
 
@@ -505,6 +516,8 @@ int main()
     DeleteShaderProgram(SSAOblurShader.GetID());
     DeleteShaderProgram(PBRShader.GetID());
     DeleteShaderProgram(OmniShadowShader.GetID());
+    DeleteShaderProgram(ConvolutateCubeMapShader.GetID());
+    DeleteShaderProgram(PreFilterCubeMapShader.GetID());
 
     zeroPointButton.DeleteTexture();
     GridButton.DeleteTexture();

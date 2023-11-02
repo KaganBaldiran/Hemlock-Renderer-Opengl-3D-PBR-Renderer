@@ -65,7 +65,7 @@
   uniform vec3 campos;
 
 
-  uniform samplerCube skybox;
+  uniform samplerCube ConvCubeMap;
   
   uniform samplerCube OmniShadowMaps[MAX_LIGHT_COUNT];
 
@@ -176,6 +176,11 @@
       return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta,0.0,1.0),5.0);
   }
 
+  vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+  {
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+  } 
+
   
   void main() 
   {
@@ -269,7 +274,13 @@
           
       }
      
-      vec3 ambient = vec3(0.03) * texturecolor * ao;
+      vec3 irradiance = texture(ConvCubeMap, N).rgb;
+      //vec3 ambient = vec3(0.03) * texturecolor * ao;
+      //vec3 ambient = vec3(0.03) * texturecolor * ao;
+      vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughnessmap); 
+      vec3 kD = 1.0 - kS;
+      vec3 diffuse    = irradiance * texturecolor;
+      vec3 ambient    = (kD * diffuse) * ao; 
       vec3 color = ambient + Lo;
 
       color = color / (color + vec3(1.0));

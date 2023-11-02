@@ -208,7 +208,7 @@
 	  void LightMatrix(glm::vec3 lightPos, GLuint shader)
 	  {
 		  float aspect = ShadowMapSize.x / ShadowMapSize.y;
-		  float near = 1.0f;
+		  float near = 0.1f;
 		 
 		  this->shadowProj = glm::perspective(glm::radians(90.0f), aspect, near, far);
 
