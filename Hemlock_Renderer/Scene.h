@@ -228,12 +228,12 @@ public:
 			lights.at(i)->transformation.ObjectScales.z = lights.at(i)->transformation.ObjectScales.z;
 
 
-			std::cout << "Light width: " << lights.at(i)->transformation.ObjectScales.x << " Light height: " << lights.at(i)->transformation.ObjectScales.y << " Light Depth: " << lights.at(i)->transformation.ObjectScales.z << "\n";
-			std::cout << "Scale avg: " << lights.at(i)->transformation.scale_avg << "\n";
+			//std::cout << "Light width: " << lights.at(i)->transformation.ObjectScales.x << " Light height: " << lights.at(i)->transformation.ObjectScales.y << " Light Depth: " << lights.at(i)->transformation.ObjectScales.z << "\n";
+			//std::cout << "Scale avg: " << lights.at(i)->transformation.scale_avg << "\n";
 
 		}
 
-		std::cout << "GLOBAL SCALE: " << globalScale << "\n";
+		//std::cout << "GLOBAL SCALE: " << globalScale << "\n";
 
 	}
 
@@ -247,7 +247,7 @@ public:
 		if (prev_scale != scale)
 		{
 			
-			std::cout << "Old global scale: " << globalscale << "\n";
+			//std::cout << "Old global scale: " << globalscale << "\n";
 
 			glm::vec3 scaled;
 			scaled = models.at(CURRENT_OBJECT(selected_obj))->transformation.ObjectScales * scale;
@@ -264,7 +264,7 @@ public:
 				globalscale = std::max(models.at(i)->transformation.dynamic_scale_avg, globalscale);
 			}
 
-			std::cout << "New global scale: " << globalscale << "\n";
+			//std::cout << "New global scale: " << globalscale << "\n";
 
 
 			prev_scale = scale;

@@ -3,7 +3,8 @@
 #include <glew.h>
 #include <glfw3.h>
 #include "VectorMath.h"
-
+#include "stb_image.h"
+#include "Log.h"
 
 void WindowSizeRecall(GLFWwindow* window , Vec2<int> menu_size)
 {
@@ -22,6 +23,8 @@ GLFWwindow* initializeWindow(int windowwidth , int windowheight , const char*win
 		std::cerr << "Error initializing glfw" << std::endl;
 	
 	}
+
+    LOG_INF("GLFW initialized!");
 
 	glfwWindowHint(GLFW_SAMPLES, 4);
 
@@ -114,7 +117,9 @@ GLFWwindow* initializeWindow(int windowwidth , int windowheight , const char*win
 		
 
 	}
-	
+
+    LOG_INF("Window Created!");
+
 	glfwMakeContextCurrent(window);
 
 	if (glewInit() != GLEW_OK)
@@ -125,6 +130,14 @@ GLFWwindow* initializeWindow(int windowwidth , int windowheight , const char*win
 		
 
 	}
+
+    LOG_INF("Glew initialized!");
+
+
+    GLFWimage images[1];
+    images[0].pixels = stbi_load("resources/Hemlock_Logo.png", &images[0].width, &images[0].height, 0, 4);  
+    glfwSetWindowIcon(window, 1, images);
+    stbi_image_free(images[0].pixels);
 
 	return window;
 

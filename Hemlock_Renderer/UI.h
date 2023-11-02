@@ -211,6 +211,15 @@ namespace UI
 		if (data.saveFileData.CameraLayout != -1)
 		{
 			data.cameraLayout = data.saveFileData.CameraLayout;
+
+			if (data.cameraLayout == CAMERA_LAYOUT_INDUSTRY_STANDARD)
+			{
+				data.cameraLayOutNameStr = "Industry Standard";
+			}
+			else if (data.cameraLayout == CAMERA_LAYOUT_FIRST_PERSON)
+			{
+				data.cameraLayOutNameStr = "First Person";
+			}
 		}
 	}
 
@@ -1383,19 +1392,21 @@ namespace UI
 
 			static bool CameraLayoutSettingShowDropdown = false;
 
-			if (ImGui::BeginCombo("Camera Layout", "Select an option"))
+			if (ImGui::BeginCombo("Camera Layout", data.cameraLayOutNameStr.c_str()))
 			{
 				if (ImGui::Selectable("Industry Standard"))
 				{
 					data.cameraLayout = CAMERA_LAYOUT_INDUSTRY_STANDARD;
 					data.saveFileData.CameraLayout = CAMERA_LAYOUT_INDUSTRY_STANDARD;
 					CameraLayoutSettingShowDropdown = false;
+					data.cameraLayOutNameStr = "Industry Standard";
 				}
 				if (ImGui::Selectable("First Person"))
 				{
 					data.cameraLayout = CAMERA_LAYOUT_FIRST_PERSON;
 					data.saveFileData.CameraLayout = CAMERA_LAYOUT_FIRST_PERSON;
 					CameraLayoutSettingShowDropdown = false;
+					data.cameraLayOutNameStr = "First Person";
 				}
 				
 
@@ -1405,6 +1416,12 @@ namespace UI
 			UIthemeComboBox(data);
 
 			ImGui::Spacing();
+			ImGui::Spacing();
+			ImGui::Spacing();
+
+			ImVec2 p = ImGui::GetCursorScreenPos();
+			ImGui::GetWindowDrawList()->AddLine(ImVec2(p.x + (ApplicationSettingSizes.x * 0.03f), p.y), ImVec2(p.x + (ApplicationSettingSizes.x * 0.94f), p.y), ImGui::GetColorU32(current_color_sheme.ChildMenuColor), 2.0f);
+
 			ImGui::Spacing();
 			ImGui::Spacing();
 
@@ -1448,33 +1465,25 @@ namespace UI
 
 			ImGui::Image((void*)(intptr_t)*SplashScreenImage.GetTexture(), ImVec2(SplashScreenImage.GetTextureWidth()* ScreenScaleRatio.x * 0.5f, SplashScreenImage.GetTextureHeight()* ScreenScaleRatio.x * 0.5f), uv0, uv1);
 
-			//ImGui::SetCursorPos({ ApplicationSettingSizes.x / 2 ,
-				 //(SplashScreenImage.GetTextureHeight() * ScreenScaleRatio.x * 0.5f) + ((win_size.y * 0.2f) * 0.5f) });
-
-			//auto fontSize = ImGui::GetFontSize();
-			
-			//ImGui::GetFont()->FontSize = fontSize / 2.0f;
-
-
-			//ImGui::GetFont()->FontSize = fontSize;
-
 			if (data.IsPreferencesFileEmpty)
 			{
 				static bool CameraLayoutSettingShowDropdown = false;
 
-				if (ImGui::BeginCombo("Camera Layout", "Select an option"))
+				if (ImGui::BeginCombo("Camera Layout", data.cameraLayOutNameStr.c_str()))
 				{
 					if (ImGui::Selectable("Industry Standard"))
 					{
 						data.cameraLayout = CAMERA_LAYOUT_INDUSTRY_STANDARD;
 						data.saveFileData.CameraLayout = CAMERA_LAYOUT_INDUSTRY_STANDARD;
 						CameraLayoutSettingShowDropdown = false;
+						data.cameraLayOutNameStr = "Industry Standard";
 					}
 					if (ImGui::Selectable("First Person"))
 					{
 						data.cameraLayout = CAMERA_LAYOUT_FIRST_PERSON;
 						data.saveFileData.CameraLayout = CAMERA_LAYOUT_FIRST_PERSON;
 						CameraLayoutSettingShowDropdown = false;
+						data.cameraLayOutNameStr = "First Person";
 					}
 
 
@@ -1490,9 +1499,14 @@ namespace UI
 				ImGui::SetCursorPosX(RecentPrPosition);
 				ImGui::Text("Recent Projects");
 
+				ImVec2 p = ImGui::GetCursorScreenPos();
+				ImGui::GetWindowDrawList()->AddLine(ImVec2(p.x + (ApplicationSettingSizes.x * 0.03f), p.y), ImVec2(p.x + (ApplicationSettingSizes.x * 0.5f), p.y), ImGui::GetColorU32(current_color_sheme.ChildMenuColor), 2.0f);
+
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, current_color_sheme.ChildMenuColor);
 				ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+				
+				ImGui::Spacing();
 
 				for (size_t i = 0; i < data.saveFileData.RecentProjects.size(); i++)
 				{
@@ -2397,15 +2411,6 @@ namespace UI
 			ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.MidMenuColor));
 			ImGui::BeginChildFrame(88, ChildMenuSize, ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
 
-			/*for (size_t i = 0; i < 119; i++)
-			{
-				lines[i] = lines[i + 1];
-			}
-			lines[119] = cpu_clock_measure(2, 0);
-
-			ImGui::PlotLines("CPU usage", lines, 120);
-			ImGui::Text("THIS IS LOG TAB");*/
-
 			ImGui::Spacing();
 
 			if (logs.size() >= 1)
@@ -2416,6 +2421,10 @@ namespace UI
 
 					if (i == 4)
 					{
+						ImGui::Spacing();
+						ImVec2 p = ImGui::GetCursorScreenPos();
+						ImGui::GetWindowDrawList()->AddLine(ImVec2(p.x + (current_win_size.x * 0.01f), p.y), ImVec2(p.x + (current_win_size.x * 0.9f), p.y), ImGui::GetColorU32(current_color_sheme.ChildMenuColor), 2.0f);
+						ImGui::Spacing();
 						ImGui::Spacing();
 					}
 				}

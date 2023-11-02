@@ -31,8 +31,6 @@
 #include "Scene.h"
 //#include "SaveFile.h"
 
-
-
 const int windowwidth = 1000;
 const int windowheight = 1000;
 

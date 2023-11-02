@@ -88,6 +88,8 @@ namespace SAVEFILE
 
 		GLuint ConvDiffCubeMap;
 
+		std::string cameraLayOutNameStr;
+
 	};
 
 
