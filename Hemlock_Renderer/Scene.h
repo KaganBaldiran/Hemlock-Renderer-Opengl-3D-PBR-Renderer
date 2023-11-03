@@ -593,7 +593,7 @@ public:
 		
 		GLuint renderpass = buffertexture;
 
-		if (RenderPass == RENDER_PASS_COMBINED)
+		if (RenderPass == RENDER_PASS_COMBINED || RenderPass == RENDER_PASS_WIREFRAME)
 		{
 			renderpass = buffertexture;
 			glUniform1i(glGetUniformLocation(shader, "RenderPass"), 1);

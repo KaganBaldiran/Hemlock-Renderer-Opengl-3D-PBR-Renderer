@@ -260,7 +260,7 @@ int main()
             screen_fbo.Bind(GL_FRAMEBUFFER);
             glViewport(0, 0, screen_fbo.FboSize.x, screen_fbo.FboSize.y);
 
-            if (RenderPass == RENDER_PASS_COMBINED)
+            if (RenderPass == RENDER_PASS_COMBINED || RenderPass == RENDER_PASS_WIREFRAME)
             {
 
                 glClearColor(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w);
@@ -316,38 +316,55 @@ int main()
                     {
 
                         //ShadowMap.LightProjection(scene.LightPositions[0], PBRShader.GetID(), window, scene.models, scene.globalscale, camera, UI::current_viewport_size);
-                        UseShaderProgram(PBRShader.GetID());
+                        if (RenderPass == RENDER_PASS_COMBINED)
+                        {
+                            UseShaderProgram(PBRShader.GetID());
 
-                        glUniform1i(glGetUniformLocation(PBRShader.GetID(), "enablehighlight"), data.enablehighlight);
+                            glUniform1i(glGetUniformLocation(PBRShader.GetID(), "enablehighlight"), data.enablehighlight);
 
-                        scene.GetModel(i - 1)->transformation.SendUniformToShader(PBRShader.GetID(), "model");
-                        
-                        auto ShaderPrep = [&]() {
+                            scene.GetModel(i - 1)->transformation.SendUniformToShader(PBRShader.GetID(), "model");
 
-                            glUniform1i(glGetUniformLocation(PBRShader.GetID(), "RenderShadows"), data.RenderShadows);
+                            auto ShaderPrep = [&]() {
 
-                            glActiveTexture(GL_TEXTURE0 + 4);
-                            glBindTexture(GL_TEXTURE_CUBE_MAP, data.ConvDiffCubeMap);
-                            glUniform1i(glGetUniformLocation(PBRShader.GetID(),"ConvCubeMap"), 4);
+                                glUniform1i(glGetUniformLocation(PBRShader.GetID(), "RenderShadows"), data.RenderShadows);
 
-                            if (data.RenderShadows)
-                            {
-                                glUniform1f(glGetUniformLocation(PBRShader.GetID(), "farPlane"), 25.0f);
-                                glUniform1i(glGetUniformLocation(PBRShader.GetID(), "ShadowCastingLightCount"), data.ShadowCastingLightCount);
+                                glActiveTexture(GL_TEXTURE0 + 4);
+                                glBindTexture(GL_TEXTURE_CUBE_MAP, data.ConvDiffCubeMap);
+                                glUniform1i(glGetUniformLocation(PBRShader.GetID(), "ConvCubeMap"), 4);
 
-                                for (size_t i = 0; i < glm::min(data.ShadowCastingLightCount, scene.numberoflights); i++)
+                                if (data.RenderShadows)
                                 {
-                                    glActiveTexture(GL_TEXTURE0 + 5 + i);
-                                    glBindTexture(GL_TEXTURE_CUBE_MAP, OmnishadowMaps[i]->GetShadowMap());
-                                    glUniform1i(glGetUniformLocation(PBRShader.GetID(), ("OmniShadowMaps[" + std::to_string(i) + "]").c_str()), 5 + i);
+                                    glUniform1f(glGetUniformLocation(PBRShader.GetID(), "farPlane"), 25.0f);
+                                    glUniform1i(glGetUniformLocation(PBRShader.GetID(), "ShadowCastingLightCount"), data.ShadowCastingLightCount);
+
+                                    for (size_t i = 0; i < glm::min(data.ShadowCastingLightCount, scene.numberoflights); i++)
+                                    {
+                                        glActiveTexture(GL_TEXTURE0 + 5 + i);
+                                        glBindTexture(GL_TEXTURE_CUBE_MAP, OmnishadowMaps[i]->GetShadowMap());
+                                        glUniform1i(glGetUniformLocation(PBRShader.GetID(), ("OmniShadowMaps[" + std::to_string(i) + "]").c_str()), 5 + i);
+                                    }
                                 }
-                            }
 
-                        };
+                                };
 
-                        scene.DrawModelsMultipleShadowMaps(PBRShader.GetID(), camera, i - 1, ShaderPrep, NULL);
+                            scene.DrawModelsMultipleShadowMaps(PBRShader.GetID(), camera, i - 1, ShaderPrep, NULL);
 
-                        glActiveTexture(GL_TEXTURE0);
+                            glActiveTexture(GL_TEXTURE0);
+                        }
+                        else if (RenderPass == RENDER_PASS_WIREFRAME)
+                        {
+                            UseShaderProgram(lightshader.GetID());
+                            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+                            glUniform4f(glGetUniformLocation(lightshader.GetID(), "lightColor"), 1.0f, 1.0f, 1.0f, 1.0f);
+
+                            scene.GetModel(i - 1)->transformation.SendUniformToShader(lightshader.GetID(), "model");
+                            scene.DrawModels(lightshader.GetID(), camera, i - 1, NULL, NULL);
+
+                            UseShaderProgram(0);
+                            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+                        }
 
                     }
 

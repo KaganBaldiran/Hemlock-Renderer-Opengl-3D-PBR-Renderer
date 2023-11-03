@@ -488,7 +488,11 @@ namespace UI
 		}
 		else if (renderPass == RENDER_PASS_SPECULAR)
 		{
-			RenderPassUIText = "AO";
+			RenderPassUIText = "Specular";
+		}
+		else if (renderPass == RENDER_PASS_WIREFRAME)
+		{
+			RenderPassUIText = "Wireframe";
 		}
 
 		if (ImGui::BeginCombo(RenderPassUIText.c_str(), "Select an option", ImGuiComboFlags_NoPreview))
@@ -529,6 +533,11 @@ namespace UI
 			if (ImGui::Selectable("Specular"))
 			{
 				renderPass = RENDER_PASS_SPECULAR;
+				showDropdown = false;
+			}
+			if (ImGui::Selectable("Wireframe"))
+			{
+				renderPass = RENDER_PASS_WIREFRAME;
 				showDropdown = false;
 			}
 
@@ -1500,7 +1509,7 @@ namespace UI
 				ImGui::Text("Recent Projects");
 
 				ImVec2 p = ImGui::GetCursorScreenPos();
-				ImGui::GetWindowDrawList()->AddLine(ImVec2(p.x + (ApplicationSettingSizes.x * 0.03f), p.y), ImVec2(p.x + (ApplicationSettingSizes.x * 0.5f), p.y), ImGui::GetColorU32(current_color_sheme.ChildMenuColor), 2.0f);
+				ImGui::GetWindowDrawList()->AddLine(ImVec2(p.x + (ApplicationSettingSizes.x * 0.03f), p.y), ImVec2(p.x + (ApplicationSettingSizes.x * 0.94f), p.y), ImGui::GetColorU32(current_color_sheme.ChildMenuColor), 2.0f);
 
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, current_color_sheme.ChildMenuColor);
