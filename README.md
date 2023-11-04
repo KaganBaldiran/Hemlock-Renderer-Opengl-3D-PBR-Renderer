@@ -1,6 +1,5 @@
 # Hemlock-Renderer-Opengl-3D-Renderer
-Re-committed as a new repo to clean up the code and to continue developping.
-Hemlock Renderer is a personal project I've been working on for the past two months. It's an Opengl based 3D PBR renderer written in C++.
+Hemlock Renderer is an Opengl based 3D PBR renderer written in C++.
 Still is in an early stage of development and requires a considerable amount of work in order to bring it to life completely.
 I'm mostly following widely used techniques and algorithms.
 
