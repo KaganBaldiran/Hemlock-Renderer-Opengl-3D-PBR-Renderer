@@ -210,6 +210,16 @@ public:
     }
 
 
+    void Draw(GLuint shader, std::function<void()> ShaderPreperation)
+    {
+        UseShaderProgram(shader);
+        glUniform1f(glGetUniformLocation(shader, "modelID"), this->GetModelID());
+
+        for (unsigned int i = 0; i < meshes.size(); i++)
+            meshes[i].Draw(shader, ShaderPreperation);
+    }
+
+
     int GetModelID() { return modelid; };
 
     int *GetModelIDptr() { return &modelid; };
@@ -232,7 +242,6 @@ private:
             cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
             return;
         }
-
 
 
         std::vector<glm::vec3> originPoints;

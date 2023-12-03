@@ -12,6 +12,7 @@
 
 #include <string>
 #include <vector>
+#include <functional>
 using namespace std;
 
 #define MAX_BONE_INFLUENCE 4
@@ -192,6 +193,35 @@ namespace newwww {
 
             glUniform1iv(boolArrayLocation, 4, disableclaymaterial);
             
+        }
+
+        void Draw(GLuint shader,std::function<void()> ShaderPrep)
+        {
+
+            ShaderPrep();
+
+            // draw mesh
+            glBindVertexArray(VAO);
+            glUniform1i(glGetUniformLocation(shader, "RenderStep"), 1);
+
+            glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
+            glBindVertexArray(0);
+
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+            glActiveTexture(GL_TEXTURE0);
+
+
+            for (size_t h = 0; h < 4; h++)
+            {
+                disableclaymaterial[h] = 0;
+
+            }
+
+            GLuint boolArrayLocation = glGetUniformLocation(shader, "disableclaymaterial");
+
+            glUniform1iv(boolArrayLocation, 4, disableclaymaterial);
+
         }
 
         

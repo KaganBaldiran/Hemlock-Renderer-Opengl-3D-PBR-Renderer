@@ -17,6 +17,7 @@ extern std::vector<std::string> logTraceBack;
 #define LOG_VERBOSE(message) std::cout << "VERBOSE:: " << __FUNCTION__ << " :: " << message << "\n"
 #define LOG_TIMESTAMP(message) std::cout << "[" << __TIME__ << "] " << __FUNCTION__ << " :: " << message << "\n"
 #define LOG_PARAMETERS(...) std::cout << "PARAMETERS:: " << __FUNCTION__ << " :: " << #__VA_ARGS__ << " = " << __VA_ARGS__ << "\n"
+#define LOG_TIMEDATESTAMP(message) std::cout << "[" << __TIME__ << "]["<<__DATE__<<"]"<< __FUNCTION__ << " :: " << message << "\n"
 
 #define LOG_ASSERT(condition, message) \
     if (!(condition)) { \
@@ -46,6 +47,11 @@ extern std::vector<std::string> logTraceBack;
         logFile << "LOG:: " << __FUNCTION__ << " :: " << message << "\n"; \
         logFile.close(); \
     }
+
+#define LOG_EXCEPTION(filename, message) \
+   { \
+      LOG_TO_FILE(filename,message << " :: " << __TIME__ << " :: " << __DATE__) \
+   }
 
 #define LOG_TRACEBACK_PRINT_FILE(filename) \
     { \

@@ -444,9 +444,9 @@ std::pair<GLuint, int> ConvolutateCubeMap(GLuint CubeMap, GLuint ConvolutateCube
     for (size_t i = 0; i < 6; i++)
     {
 
-        //glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 32, 32, 0, GL_RGB, GL_FLOAT, nullptr);
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-            0, GL_RGB, 32, 32, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 32, 32, 0, GL_RGB, GL_FLOAT, nullptr);
+       // glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+            //0, GL_RGB, 32, 32, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 
     }
 

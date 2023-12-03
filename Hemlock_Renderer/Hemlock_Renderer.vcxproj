@@ -139,6 +139,7 @@
     <ClCompile Include="Cubemap.cpp" />
     <ClCompile Include="G_Buffer.cpp" />
     <ClCompile Include="Log.cpp" />
+    <ClCompile Include="NormalBaker.cpp" />
     <ClCompile Include="post_process.cpp" />
     <ClCompile Include="Imgui\imgui.cpp" />
     <ClCompile Include="Imgui\imgui_demo.cpp" />
@@ -164,9 +165,11 @@
     <ClInclude Include="Buffers.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Cubemap.h" />
+    <ClInclude Include="Data.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Log.h" />
+    <ClInclude Include="NormalBaker.hpp" />
     <ClInclude Include="post_process.h" />
     <ClInclude Include="G_Buffer.h" />
     <ClInclude Include="SaveFile.h" />
@@ -210,6 +213,8 @@
     <None Include="Shaders\Gbuffer.vs" />
     <None Include="Shaders\HDRI.fs" />
     <None Include="Shaders\HDRI.vs" />
+    <None Include="Shaders\HighPolyNormalBake.fs" />
+    <None Include="Shaders\HighPolyNormalBake.vs" />
     <None Include="Shaders\light.frag" />
     <None Include="Shaders\light.vert" />
     <None Include="Shaders\OmniShadow.fs" />
@@ -230,6 +235,8 @@
     <None Include="Shaders\SSAO.fs" />
     <None Include="Shaders\SSAO.vs" />
     <None Include="Shaders\SSAOblur.fs" />
+    <None Include="Shaders\SSGU.fs" />
+    <None Include="Shaders\SSGU.vs" />
     <None Include="Shaders\vertsource.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

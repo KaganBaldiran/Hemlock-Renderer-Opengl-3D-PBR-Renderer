@@ -1,0 +1,3 @@
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 17:04:19 :: Nov  6 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 23:06:42 :: Nov  6 2023
+LOG:: SAVEFILE::ReadHMLfilePacked :: Unable to open the file :: C:/Users/kbald/Desktop/HelmetPacked/HelmetPacked.hml :: 20:10:52 :: Nov 27 2023

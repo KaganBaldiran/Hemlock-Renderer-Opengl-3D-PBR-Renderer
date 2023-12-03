@@ -133,7 +133,7 @@ namespace UI
 		ImGui::NewFrame();
 	}
 
-	void SetPreferences(SAVEFILE::UIdataPack &data)
+	void SetPreferences(DATA::UIdataPack &data)
 	{
 		if (data.saveFileData.ViewportTheme != -1)
 		{
@@ -223,7 +223,7 @@ namespace UI
 		}
 	}
 
-	void SetStyle(SAVEFILE::UIdataPack &data)
+	void SetStyle(DATA::UIdataPack &data)
 	{
 		ImGuiStyle &style = ImGui::GetStyle();
 
@@ -260,7 +260,7 @@ namespace UI
         ImGui::DestroyContext();
     }
 
-    void UseSelectedObjectData(SAVEFILE::UIdataPack&data , UIproperties &obj_data)
+    void UseSelectedObjectData(DATA::UIdataPack&data , UIproperties &obj_data)
     {
         data.autorotate = obj_data.autorotate;
         data.keepoldrotation = obj_data.keepoldrotation;
@@ -274,7 +274,7 @@ namespace UI
        
     }
 
-    void ReturnSelectedObjectData(SAVEFILE::UIdataPack& data, UIproperties& obj_data)
+    void ReturnSelectedObjectData(DATA::UIdataPack& data, UIproperties& obj_data)
     {
         obj_data.autorotate = data.autorotate;
         obj_data.keepoldrotation = data.keepoldrotation;
@@ -428,7 +428,7 @@ namespace UI
 
 	}
 
-	void DrawOnViewportSettings(Vec2<int> winsize, int& renderPass , GLuint zeroPointButton, GLuint gridButton, Camera& camera , SAVEFILE::UIdataPack& data)
+	void DrawOnViewportSettings(Vec2<int> winsize, int& renderPass , GLuint zeroPointButton, GLuint gridButton, Camera& camera , DATA::UIdataPack& data)
 	{
 		static bool showDropdown = true;
 
@@ -558,7 +558,7 @@ namespace UI
 		ImGui::End();
 	}
 
-	void DoUIobjectTransformations(size_t currentselectedobj, scene& scene, SAVEFILE::UIdataPack& data)
+	void DoUIobjectTransformations(size_t currentselectedobj, scene& scene, DATA::UIdataPack& data)
 	{
 		if (currentselectedobj >= 2)
 		{
@@ -595,7 +595,7 @@ namespace UI
 
 	}
 
-	void DoUIobjectReTransformations(size_t currentselectedobj , scene &scene , SAVEFILE::UIdataPack&data)
+	void DoUIobjectReTransformations(size_t currentselectedobj , scene &scene , DATA::UIdataPack&data)
 	{
 		if (currentselectedobj >= 2)
 		{
@@ -620,7 +620,7 @@ namespace UI
 
 	}
 
-	void HandleSliderMaxValues(SAVEFILE::UIdataPack &data , GLFWwindow *window)
+	void HandleSliderMaxValues(DATA::UIdataPack &data , GLFWwindow *window)
 	{
 
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
@@ -705,7 +705,7 @@ namespace UI
 
 	}
 
-	void IncrementRotationDegree(SAVEFILE::UIdataPack &data)
+	void IncrementRotationDegree(DATA::UIdataPack &data)
 	{
 		if (data.autorotate)
 		{
@@ -768,7 +768,7 @@ namespace UI
 		}
 	}
 
-	void UIthemeComboBox(SAVEFILE::UIdataPack & data)
+	void UIthemeComboBox(DATA::UIdataPack & data)
 	{
 		static bool showDropdown = false;
 
@@ -894,7 +894,7 @@ namespace UI
 		}
 	}
 
-	void ConfigureUI(int &currentselectedobj , SAVEFILE::UIdataPack &data , scene &scene , std::vector<std::string>& logs ,GLuint import_shader , glm::vec4 lightcolor , glm::vec3 lightpos , GLFWwindow* window , std::vector<uint> &auto_rotate_on , GLuint screen_image,GLuint light_shader, int &currentselectedlight , ThreadPool& threads , CubeMap &Cubemap , GLuint HDRItoCubeMapShader , Textures& SplashScreenImage , int &renderPass , Camera& camera , GLuint ConvolutateCubeMapShader)
+	void ConfigureUI(int &currentselectedobj , DATA::UIdataPack &data , scene &scene , std::vector<std::string>& logs ,GLuint import_shader , glm::vec4 lightcolor , glm::vec3 lightpos , GLFWwindow* window , std::vector<uint> &auto_rotate_on , GLuint screen_image,GLuint light_shader, int &currentselectedlight , ThreadPool& threads , CubeMap &Cubemap , GLuint HDRItoCubeMapShader , Textures& SplashScreenImage , int &renderPass , Camera& camera , GLuint ConvolutateCubeMapShader)
 	{
 
 		static bool importmodel_menu = false;
@@ -2118,15 +2118,22 @@ namespace UI
 					}
 
 					ImGui::Spacing();
+					ImVec2 p = ImGui::GetCursorScreenPos();
+					ImGui::GetWindowDrawList()->AddLine(ImVec2(p.x + (current_win_size.x * 0.01f), p.y), ImVec2(p.x + (current_win_size.x * 0.9f), p.y), ImGui::GetColorU32(current_color_sheme.MenuBackgroundColor), 2.0f);
+					ImGui::Spacing();
+					ImGui::Checkbox("Enable DOF", &data.DOFenabled);
+					if (data.DOFenabled)
+					{
+						ImGui::SliderFloat("DOF intensity", &data.DOFintensity, 0.0f, 10.0f);
+						ImGui::SliderFloat("DOF far distance", &data.DOFfarDistance, 0.0f, 1.0f);
+					}
 
-
-					//ImGui::SetCursorPos(ImVec2(10, 40));
 					ImGui::ColorEdit4("Background color", (float*)&std::get<5>(chosen_color_sheme));
-					//ImGui::SetCursorPos(ImVec2(10, 70));
+
+					ImGui::Spacing();
+
 					ImGui::Text("Selected Object: %d", currentselectedobj);
-					//ImGui::SetCursorPos(ImVec2(10, 100));
 					ImGui::Text("Current existing object count: %d", scene.GetModelCount());
-					//ImGui::SetCursorPos(ImVec2(10, 130));
 
 					ImGui::EndChildFrame();
 

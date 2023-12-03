@@ -8,7 +8,7 @@ bool IsFileEmpty(std::ifstream& file) {
 	return file.peek() == std::ifstream::traits_type::eof();
 }
 
-bool SAVEFILE::ReadSaveFile(const char* fileName, SaveFileData& data, std::vector<std::string>& logs)
+bool SAVEFILE::ReadSaveFile(const char* fileName, DATA::SaveFileData& data, std::vector<std::string>& logs)
 {
 	std::ifstream File(fileName);
 
@@ -50,6 +50,7 @@ bool SAVEFILE::ReadSaveFile(const char* fileName, SaveFileData& data, std::vecto
 		{
 			LOG_ERR("Exception while reading the preferences file :: " << e.what());
 			std::string logtemp = "Exception while reading the preferences file :: " + std::string(e.what()) + " :: " + std::string(fileName);
+			LOG_TO_FILE("Exception_log.txt", logtemp << " :: " << __TIME__ << " :: " << __DATE__);
 			logs.push_back(logtemp);
 			File.close();
 		}
@@ -63,7 +64,7 @@ bool SAVEFILE::ReadSaveFile(const char* fileName, SaveFileData& data, std::vecto
 	return true;
 }
 
-void SAVEFILE::WriteSaveFile(const char* fileName, SaveFileData& data, std::vector<std::string>& logs)
+void SAVEFILE::WriteSaveFile(const char* fileName, DATA::SaveFileData& data, std::vector<std::string>& logs)
 {
 	if (!data.empty())
 	{
@@ -110,6 +111,7 @@ void SAVEFILE::WriteSaveFile(const char* fileName, SaveFileData& data, std::vect
 			{
 				LOG_ERR("Exception while writing the preferences file :: " << e.what());
 				std::string logtemp = "Exception while writing the preferences file :: " + std::string(e.what()) + " :: " + std::string(fileName);
+				LOG_TO_FILE("Exception_log.txt", logtemp << " :: " << __TIME__ <<" :: " << __DATE__);
 				logs.push_back(logtemp);
 				File.close();
 			}
@@ -122,7 +124,7 @@ void SAVEFILE::WriteSaveFile(const char* fileName, SaveFileData& data, std::vect
 
 }
 
-void SAVEFILE::WriteHMLfilePacked(const char* fileName, scene& scene, UIdataPack& data, Camera& camera, int renderPass, std::vector<std::string>& logs)
+void SAVEFILE::WriteHMLfilePacked(const char* fileName, scene& scene, DATA::UIdataPack& data, Camera& camera, int renderPass, std::vector<std::string>& logs)
 {
 
 	std::string filePath(fileName);
@@ -230,6 +232,7 @@ void SAVEFILE::WriteHMLfilePacked(const char* fileName, scene& scene, UIdataPack
 		{
 			LOG_ERR("Exception while writing packed hml file :: " << e.what());
 			std::string logtemp = "Exception while writing packed hml file :: " + std::string(e.what()) + " :: " + std::string(fileName);
+			LOG_TO_FILE("Exception_log.txt", logtemp << " :: " << __TIME__ << " :: " << __DATE__);
 			logs.push_back(logtemp);
 			File.close();
 		}
@@ -238,6 +241,7 @@ void SAVEFILE::WriteHMLfilePacked(const char* fileName, scene& scene, UIdataPack
 	{
 		LOG_ERR("Unable to open the file :: " << fileName);
 		std::string logtemp = "Unable to open the file :: " + std::string(fileName);
+		LOG_TO_FILE("Exception_log.txt", logtemp << " :: " << __TIME__ << " :: " << __DATE__);
 		logs.push_back(logtemp);
 	}
 	
@@ -245,7 +249,7 @@ void SAVEFILE::WriteHMLfilePacked(const char* fileName, scene& scene, UIdataPack
 }
 
 
-void SAVEFILE::WriteHMLfile(const char* fileName, scene& scene ,UIdataPack& data,Camera& camera , int renderPass, std::vector<std::string>& logs)
+void SAVEFILE::WriteHMLfile(const char* fileName, scene& scene , DATA::UIdataPack& data,Camera& camera , int renderPass, std::vector<std::string>& logs)
 {
 	std::ofstream File(fileName);
 
@@ -334,6 +338,7 @@ void SAVEFILE::WriteHMLfile(const char* fileName, scene& scene ,UIdataPack& data
 		{
 			LOG_ERR("Exception while writing hml file :: " << e.what());
 			std::string logtemp = "Exception while writing hml file :: " + std::string(e.what()) + " :: " + std::string(fileName);
+			LOG_TO_FILE("Exception_log.txt", logtemp);
 			logs.push_back(logtemp);
 			File.close();
 		}
@@ -342,12 +347,13 @@ void SAVEFILE::WriteHMLfile(const char* fileName, scene& scene ,UIdataPack& data
 	{
 		LOG_ERR("Unable to open the file :: " << fileName);
 		std::string logtemp = "Unable to open the file :: " + std::string(fileName);
+		LOG_TO_FILE("Exception_log.txt", logtemp << " :: " << __TIME__ << " :: " << __DATE__);
 		logs.push_back(logtemp);
 	}
 
 }
 
-void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,GLuint lightShader, UIdataPack& data, Camera& camera, int& renderPass, std::vector<std::string> &logs , GLFWwindow *window)
+void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,GLuint lightShader, DATA::UIdataPack& data, Camera& camera, int& renderPass, std::vector<std::string> &logs , GLFWwindow *window)
 {
 	std::ifstream File(fileName);
 
@@ -450,6 +456,7 @@ void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,G
 		{
 			LOG_ERR("Exception while reading hml file :: " << e.what());
 			std::string logtemp = "Exception while reading hml file :: " + std::string(e.what()) + " :: " + std::string(fileName);
+			LOG_TO_FILE("Exception_log.txt", logtemp);
 			logs.push_back(logtemp);
 			File.close();
 
@@ -463,13 +470,14 @@ void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,G
 	else
 	{
 		LOG_ERR("Unable to open the file :: " << fileName);
+		LOG_TO_FILE("Exception_log.txt", "Unable to open the file :: " << fileName << " :: " << __TIME__ << " :: " << __DATE__);
 		std::string logtemp = "Unable to open the file :: " + std::string(fileName);
 		logs.push_back(logtemp);
 	}
 
 }
 
-void SAVEFILE::ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shader, GLuint lightShader, UIdataPack& data, Camera& camera, int& renderPass, std::vector<std::string>& logs, GLFWwindow* window)
+void SAVEFILE::ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shader, GLuint lightShader, DATA::UIdataPack& data, Camera& camera, int& renderPass, std::vector<std::string>& logs, GLFWwindow* window)
 {
 
 	std::string HMLfileDirectory(fileName);
@@ -612,6 +620,7 @@ void SAVEFILE::ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shad
 	else
 	{
 		LOG_ERR("Unable to open the file :: " << fileName);
+		LOG_TO_FILE("Exception_log.txt", "Unable to open the file :: " << fileName << " :: " << __TIME__ << " :: " << __DATE__);
 		std::string logtemp = "Unable to open the file :: " + std::string(fileName);
 		logs.push_back(logtemp);
 	}

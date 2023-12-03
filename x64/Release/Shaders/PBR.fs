@@ -181,6 +181,19 @@
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
   } 
 
+  float linearizeDepth(float depth)
+  {
+  
+     float z = depth * 2.0 - 1.0;
+     return (2.0 * near * far) / (far + near - z * (far - near));
+
+  }
+
+  vec4 DepthDemonstration()
+  {
+     float depth = linearizeDepth(gl_FragCoord.z) / far;
+     return vec4(vec3(depth),1.0);
+  }
   
   void main() 
   {
@@ -287,4 +300,6 @@
       color = pow(color , vec3(1.0/2.2));
 
       outColor = vec4(color , 1.0);
+      //outColor = texture(ConvCubeMap,inverse_normal);
+      //outColor = DepthDemonstration();
   }

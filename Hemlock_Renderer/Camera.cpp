@@ -26,6 +26,9 @@ void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane , GLFWwi
 	int height = NULL, width = NULL;
 	glfwGetWindowSize(window, &width, &height);
 
+	this->nearPlane = nearPlane;
+	this->farPlane = farPlane;
+
 	//std::cout <<"IN CAMERA: " << "WINSIZE.X: " << width - menu_size.x << "WINSIZE.Y: " << menu_size.y << "\n";
 
 	//float aspect_rat = (float)(width - menu_size.x) / (float)menu_size.y;

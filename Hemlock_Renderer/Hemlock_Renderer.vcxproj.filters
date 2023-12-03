@@ -90,6 +90,9 @@
     <ClCompile Include="SaveFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="NormalBaker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="initialize.h">
@@ -200,6 +203,12 @@
     <ClInclude Include="SaveFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="NormalBaker.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Data.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="nativefiledialog-extended-master\src\nfd_cocoa.m" />
@@ -297,6 +306,18 @@
       <Filter>shaders</Filter>
     </None>
     <None Include="Shaders\PreFilterCubeMap.fs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\HighPolyNormalBake.vs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\HighPolyNormalBake.fs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\SSGU.vs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\SSGU.fs">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

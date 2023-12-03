@@ -31,6 +31,8 @@ extern Vec2<double> ScrollAmount;
 	  glm::mat4 cam_view;
 	  glm::mat4 screenratiodefault;
 
+	  float nearPlane, farPlane;
+
 	  bool firstclick = true;
 
 	  int w_width;

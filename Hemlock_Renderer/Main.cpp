@@ -29,7 +29,10 @@
 #include "Thread.h"
 #include"UI.h"
 #include "Scene.h"
-//#include "SaveFile.h"
+#include "NormalBaker.hpp"
+#include <thread>
+
+#define TARGET_FPS 144.0
 
 const int windowwidth = 1000;
 const int windowheight = 1000;
@@ -55,6 +58,9 @@ int main()
     Shader OmniShadowShader("Shaders/OmniShadow.vs", "Shaders/OmniShadow.gs", "Shaders/OmniShadow.fs");
     Shader ConvolutateCubeMapShader("Shaders/ConvolutationCubeMap.vs", "Shaders/ConvolutationCubeMap.fs");
     Shader PreFilterCubeMapShader("Shaders/PreFilterCubeMap.vs", "Shaders/PreFilterCubeMap.fs");
+    Shader HighPolyBakingShader("Shaders/HighPolyNormalBake.vs", "Shaders/HighPolyNormalBake.fs");
+    Shader ScreenSpaceilluminationShader("Shaders/SSGU.vs", "Shaders/SSGU.fs");
+
 
     scene scene;
     FBO screen_fbo;
@@ -125,8 +131,6 @@ int main()
     glEnable(GL_STENCIL_TEST);
 
 
-
-
     float degree = NULL;
     
     pickingtexture pickingtex(mode->width, mode->height);
@@ -155,7 +159,7 @@ int main()
 
     float time = NULL;
 
-    SAVEFILE::UIdataPack data;
+    DATA::UIdataPack data;
     UI::InitNewUIwindow();
     UI::SetStyle(data);
     UI::SetPlatformBackEnd("#version 130", window);
@@ -188,13 +192,17 @@ int main()
     glfwSetScrollCallback(window, camera.scrollCallback);
     data.IsPreferencesFileEmpty = data.saveFileData.empty();
 
+    //Cubemap.GetCubeMapTexture();
     data.ConvDiffCubeMap = ConvolutateCubeMap(Cubemap.GetCubeMapTexture(), ConvolutateCubeMapShader.GetID()).first;
     GLuint preFilteredCubeMap = PreFilterCubeMap(Cubemap.GetCubeMapTexture(), PreFilterCubeMapShader.GetID()).first;
-    Cubemap.SetCubeMapTexture(preFilteredCubeMap);
+    //data.ConvDiffCubeMap = BAKER::BakeNormal(1024, scene.GetModel(0), nullptr, HighPolyBakingShader.GetID(),NULL,camera).first;
+    //Cubemap.SetCubeMapTexture(data.ConvDiffCubeMap);
+    const double TARGET_FRAME_TIME = 1.0 / TARGET_FPS;
 
 	while (!glfwWindowShouldClose(window))
 	{
-     
+            auto start_time = std::chrono::high_resolution_clock::now();
+
             glfwGetCursorPos(&*window, &mousepos.x, &mousepos.y);
 
             glfwGetWindowSize(&*window, &width, &height);
@@ -247,189 +255,18 @@ int main()
             //ShadowMap.LightProjection(scene.LightPositions[0], ShadowMapShader.GetID(), window, scene.models, scene.globalscale, camera, UI::current_viewport_size);
             //scene.DrawShadowMap(&ShadowMap, ShadowMapShader.GetID(), camera, window, glm::vec4(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w));
             //ShadowMap.Draw(scene, ShadowMapShader.GetID(), camera, window, glm::vec4(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w));
-            if (data.RenderShadows)
-            {
-                for (size_t i = 0; i < glm::min(data.ShadowCastingLightCount,scene.numberoflights); i++)
-                {
-                    OmnishadowMaps[i]->Draw(OmniShadowShader.GetID(), scene.LightPositions[i], scene.models, camera);
-                }
-            }
-            WindowSizeRecall(window, UI::current_viewport_size);
-
-
-            screen_fbo.Bind(GL_FRAMEBUFFER);
-            glViewport(0, 0, screen_fbo.FboSize.x, screen_fbo.FboSize.y);
-
-            if (RenderPass == RENDER_PASS_COMBINED || RenderPass == RENDER_PASS_WIREFRAME)
-            {
-
-                glClearColor(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w);
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-                glEnable(GL_STENCIL_TEST);
-                glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-
-
-                //glEnable(GL_FRAMEBUFFER_SRGB);
-
-                if (currentselectedobj >= 2)
-                {
-                    scene.DrawModelsWithOutline(PBRShader.GetID(), Outlineshader.GetID(), camera, currentselectedobj - 2, currentselectedobj, ShadowMap.GetShadowMapImage());
-
-                }
-
-                if (data.RenderGrid)
-                {
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                    scene.RenderGrid(lightshader.GetID(), grid, camera);
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                }
-
-                if (data.takesreenshot)
-                {
-                    glClearColor(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w);
-                    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-                    camera.screenratiodefault = glm::mat4(1.0f);
-                }
-
-                if (data.render_cube_map)
-                {
-                    Cubemap.Draw(camera,{(float)width,(float)height});
-                }
-
-                UseShaderProgram(PBRShader.GetID());
-
-                glUniform3f(glGetUniformLocation(PBRShader.GetID(), "albedo"), data.albedo.x, data.albedo.y, data.albedo.z);
-                glUniform1f(glGetUniformLocation(PBRShader.GetID(), "metallic"), data.metallic);
-                glUniform1f(glGetUniformLocation(PBRShader.GetID(), "roughness"), data.roughness);
-                glUniform1f(glGetUniformLocation(PBRShader.GetID(), "ao"), data.ao);
-
-                for (int i = 0; i < scene.GetModelCount() + 1; i++) {
-                    glStencilFunc(GL_ALWAYS, i + 1, -1);
-                    if (i == 0)
-                    {
-
-
-                    }
-                    if (i > 1)
-                    {
-
-                        //ShadowMap.LightProjection(scene.LightPositions[0], PBRShader.GetID(), window, scene.models, scene.globalscale, camera, UI::current_viewport_size);
-                        if (RenderPass == RENDER_PASS_COMBINED)
-                        {
-                            UseShaderProgram(PBRShader.GetID());
-
-                            glUniform1i(glGetUniformLocation(PBRShader.GetID(), "enablehighlight"), data.enablehighlight);
-
-                            scene.GetModel(i - 1)->transformation.SendUniformToShader(PBRShader.GetID(), "model");
-
-                            auto ShaderPrep = [&]() {
-
-                                glUniform1i(glGetUniformLocation(PBRShader.GetID(), "RenderShadows"), data.RenderShadows);
-
-                                glActiveTexture(GL_TEXTURE0 + 4);
-                                glBindTexture(GL_TEXTURE_CUBE_MAP, data.ConvDiffCubeMap);
-                                glUniform1i(glGetUniformLocation(PBRShader.GetID(), "ConvCubeMap"), 4);
-
-                                if (data.RenderShadows)
-                                {
-                                    glUniform1f(glGetUniformLocation(PBRShader.GetID(), "farPlane"), 25.0f);
-                                    glUniform1i(glGetUniformLocation(PBRShader.GetID(), "ShadowCastingLightCount"), data.ShadowCastingLightCount);
-
-                                    for (size_t i = 0; i < glm::min(data.ShadowCastingLightCount, scene.numberoflights); i++)
-                                    {
-                                        glActiveTexture(GL_TEXTURE0 + 5 + i);
-                                        glBindTexture(GL_TEXTURE_CUBE_MAP, OmnishadowMaps[i]->GetShadowMap());
-                                        glUniform1i(glGetUniformLocation(PBRShader.GetID(), ("OmniShadowMaps[" + std::to_string(i) + "]").c_str()), 5 + i);
-                                    }
-                                }
-
-                                };
-
-                            scene.DrawModelsMultipleShadowMaps(PBRShader.GetID(), camera, i - 1, ShaderPrep, NULL);
-
-                            glActiveTexture(GL_TEXTURE0);
-                        }
-                        else if (RenderPass == RENDER_PASS_WIREFRAME)
-                        {
-                            UseShaderProgram(lightshader.GetID());
-                            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-                            glUniform4f(glGetUniformLocation(lightshader.GetID(), "lightColor"), 1.0f, 1.0f, 1.0f, 1.0f);
-
-                            scene.GetModel(i - 1)->transformation.SendUniformToShader(lightshader.GetID(), "model");
-                            scene.DrawModels(lightshader.GetID(), camera, i - 1, NULL, NULL);
-
-                            UseShaderProgram(0);
-                            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-                        }
-
-                    }
-
-
-                }
-                UseShaderProgram(0);
-
-
-                if (data.renderlights)
-                {
-
-                    for (int i = 0; i < scene.lights.size(); i++) {
-                        glStencilFunc(GL_ALWAYS, i + 1 + scene.GetModelCount() + 1, -1);
-
-                        scene.lights[i]->Draw(lightshader.GetID(), camera);
-
-                    }
-                }
-                if (CURRENT_OBJECT(currentselectedobj) >= NULL || scene.CURRENT_LIGHT(currentselectedlight) >= NULL)
-                {
-                    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-                    glStencilMask(0xFF);
-                    glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-                    for (int i = 0; i < 3; i++)
-                    {
-                        glStencilFunc(GL_ALWAYS, i + 1 + scene.GetModelCount() + 1 + scene.lights.size() + 2, -1);
-
-                        scene.DrawGizmo(lightshader.GetID(), camera, i, currentselectedobj, enablegizmo_p, currentselectedlight);
-
-                    }
-
-                    glDepthFunc(GL_LESS);
-                    glStencilMask(0xFF);
-                    glStencilFunc(GL_ALWAYS, 1, 0xFF);
-                    glEnable(GL_DEPTH_TEST);
-                }
-
-                //glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, 0);
-            }
-
-
-            glBindFramebuffer(GL_FRAMEBUFFER, NULL);
-           
-            if (data.takesreenshot)
-            {
-                UseShaderProgram(0);
-
-                Vec2<int> screensize;
-                glfwGetWindowSize(window, &screensize.x, &screensize.y);
-
-                scene.Takescreenshot(screensize.x, screensize.y, data.screenshotPathstr.c_str(), RenderPass, SceneGbuffer, screen_fbo);
-                data.takesreenshot = false;
-            }
-
-            if (data.EnableSSAO)
-            {
-                ssao.Draw(SSAOShader.GetID(), SSAOblurShader.GetID(), SceneGbuffer, camera);
-            }
-
+            
+            scene.DrawScene(data, OmnishadowMaps, OmniShadowShader.GetID(), camera, window, PBRShader, lightshader,
+                screen_fbo, RenderPass, currentselectedobj, Outlineshader, Cubemap, currentselectedlight, enablegizmo_p,
+                ssao, SSAOShader, SSAOblurShader, SceneGbuffer, width, height, grid, UI::current_viewport_size);
            
             scene.DrawScreenQuad(FrameBufferShader.GetID(), screen_fbo.GetScreenImage(), SceneGbuffer,
                 UI::current_win_size.Cast<float>(), UI::current_viewport_size.y, RenderPass, pickingtex,
-                pickingshader.GetID(),pickingBuffertex,ssao,data.EnableSSAO, *window);
+                pickingshader.GetID(),pickingBuffertex,ssao,data.EnableSSAO, *window,data,camera);
+
+            //scene.DrawSSGUScreenQuad(ScreenSpaceilluminationShader.GetID(), screen_fbo.GetScreenImage(), SceneGbuffer,
+                //UI::current_win_size.Cast<float>(), UI::current_viewport_size.y, RenderPass, pickingtex,
+                //pickingshader.GetID(), pickingBuffertex, ssao, data.EnableSSAO, *window , camera);
 
             
             UI::DrawOnViewportSettings({width,height}, RenderPass, *zeroPointButton.GetTexture(),*GridButton.GetTexture(), camera, data);
@@ -509,6 +346,12 @@ int main()
 
             PrevMousePos = temp_mouse_pos;
 
+            auto end_time = std::chrono::high_resolution_clock::now();
+            auto elapsed_time = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count() / 1e6;
+
+            if (elapsed_time < TARGET_FRAME_TIME) {
+                std::this_thread::sleep_for(std::chrono::microseconds(static_cast<long long>((TARGET_FRAME_TIME - elapsed_time) * 1e6)));
+            }
 	}
 
     BindVAONull();
@@ -533,6 +376,8 @@ int main()
     DeleteShaderProgram(OmniShadowShader.GetID());
     DeleteShaderProgram(ConvolutateCubeMapShader.GetID());
     DeleteShaderProgram(PreFilterCubeMapShader.GetID());
+    DeleteShaderProgram(HighPolyBakingShader.GetID());
+    DeleteShaderProgram(ScreenSpaceilluminationShader.GetID());
 
     zeroPointButton.DeleteTexture();
     GridButton.DeleteTexture();

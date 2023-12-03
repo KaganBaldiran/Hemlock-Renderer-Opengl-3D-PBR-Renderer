@@ -12,10 +12,13 @@
 #include "SSAO.h"
 #include <algorithm>
 #include "Shadow_Map.h"
+#include "Data.h"
+#include "Cubemap.h"
+#include "initialize.h"
+#include "G_Buffer.h"
 
 
 #define CURRENT_OBJECT(Current_obj) (Current_obj - 2)
-#define MAX_LIGHT_COUNT 20
 
 #define X_GIZMO 0x010
 #define Y_GIZMO 0x011
@@ -550,7 +553,7 @@ public:
 
 	}
 
-	void DrawScreenQuad(GLuint shader, GLuint buffertexture , GBUFFER::gBuffer& screenGbuffer , Vec2<float> menuSize,float viewportHeight , int RenderPass,pickingtexture &pickingTexture,GLuint PickingShader, pickingtexture &pickingBuffertex, SSAO &ssao, bool EnableSSAO,GLFWwindow &window)
+	void DrawScreenQuad(GLuint shader, GLuint buffertexture , GBUFFER::gBuffer& screenGbuffer , Vec2<float> menuSize,float viewportHeight , int RenderPass,pickingtexture &pickingTexture,GLuint PickingShader, pickingtexture &pickingBuffertex, SSAO &ssao, bool EnableSSAO,GLFWwindow &window , DATA::UIdataPack& data , Camera& camera)
 	{
 		int width, height;
 		glfwGetWindowSize(&window, &width, &height);
@@ -597,6 +600,20 @@ public:
 		{
 			renderpass = buffertexture;
 			glUniform1i(glGetUniformLocation(shader, "RenderPass"), 1);
+			glUniform1i(glGetUniformLocation(shader, "DOFenabled"), (int)data.DOFenabled);
+			if (data.DOFenabled)
+			{
+				glUniform1f(glGetUniformLocation(shader, "DOFfarDistance"), data.DOFfarDistance);
+				glUniform1f(glGetUniformLocation(shader, "DOFintensity"), data.DOFintensity);
+				glUniform1f(glGetUniformLocation(shader, "FarPlane"), camera.farPlane);
+				glUniform1f(glGetUniformLocation(shader, "NearPlane"), camera.nearPlane);
+				glUniform3f(glGetUniformLocation(shader, "CameraPosition"), camera.Position.x, camera.Position.y, camera.Position.z);
+				glUniformMatrix4fv(glGetUniformLocation(shader, "ViewMatrix"),1,GL_FALSE,glm::value_ptr(camera.cam_view));
+
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D, screenGbuffer.gPosition);
+				glUniform1i(glGetUniformLocation(shader, "PositionBuffer"), 1);
+			}
 		}
 		else if (RenderPass == RENDER_PASS_NORMAL)
 		{
@@ -636,9 +653,9 @@ public:
 
 		if (EnableSSAO)
 		{
-			glActiveTexture(GL_TEXTURE1);
+			glActiveTexture(GL_TEXTURE2);
 			glBindTexture(GL_TEXTURE_2D, ssao.GetSSAOblurredTexture());
-			glUniform1i(glGetUniformLocation(shader, "SSAO"), 1);
+			glUniform1i(glGetUniformLocation(shader, "SSAO"), 2);
 		}
 
 		glUniform1i(glGetUniformLocation(shader, "EnableSSAO"), EnableSSAO);
@@ -649,6 +666,271 @@ public:
 		glBindVertexArray(0);
 
 	}
+
+	void DrawScene(DATA::UIdataPack &data , std::unique_ptr<OmniShadowMap> OmnishadowMaps[] , GLuint OmniShadowShader , 
+		Camera &camera,GLFWwindow* window , Shader& PBRShader, Shader& lightshader,FBO& screen_fbo,int RenderPass , int &currentselectedobj,
+		Shader& Outlineshader , CubeMap& Cubemap , int &currentselectedlight , std::pair<uint , bool> &enablegizmo_p,SSAO& ssao , Shader & SSAOShader,
+		Shader& SSAOblurShader , GBUFFER::gBuffer& SceneGbuffer ,int width , int height , Meshs& grid , Vec2<int> &current_viewport_size)
+	{
+		if (data.RenderShadows)
+		{
+			for (size_t i = 0; i < glm::min(data.ShadowCastingLightCount, numberoflights); i++)
+			{
+				OmnishadowMaps[i]->Draw(OmniShadowShader, LightPositions[i], models, camera);
+			}
+		}
+		WindowSizeRecall(window, current_viewport_size);
+
+
+		screen_fbo.Bind(GL_FRAMEBUFFER);
+		glViewport(0, 0, screen_fbo.FboSize.x, screen_fbo.FboSize.y);
+
+		if (RenderPass == RENDER_PASS_COMBINED || RenderPass == RENDER_PASS_WIREFRAME)
+		{
+
+			glClearColor(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+			glEnable(GL_STENCIL_TEST);
+			glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+
+			//glEnable(GL_FRAMEBUFFER_SRGB);
+
+			if (currentselectedobj >= 2)
+			{
+				DrawModelsWithOutline(PBRShader.GetID(), Outlineshader.GetID(), camera, currentselectedobj - 2, currentselectedobj, NULL);
+
+			}
+
+			if (data.RenderGrid)
+			{
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				RenderGrid(lightshader.GetID(), grid, camera);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			}
+
+			if (data.takesreenshot)
+			{
+				glClearColor(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+				camera.screenratiodefault = glm::mat4(1.0f);
+			}
+
+			if (data.render_cube_map)
+			{
+				Cubemap.Draw(camera, { (float)width,(float)height });
+			}
+
+			UseShaderProgram(PBRShader.GetID());
+
+			glUniform3f(glGetUniformLocation(PBRShader.GetID(), "albedo"), data.albedo.x, data.albedo.y, data.albedo.z);
+			glUniform1f(glGetUniformLocation(PBRShader.GetID(), "metallic"), data.metallic);
+			glUniform1f(glGetUniformLocation(PBRShader.GetID(), "roughness"), data.roughness);
+			glUniform1f(glGetUniformLocation(PBRShader.GetID(), "ao"), data.ao);
+
+			for (int i = 0; i < GetModelCount() + 1; i++) {
+				glStencilFunc(GL_ALWAYS, i + 1, -1);
+				if (i == 0)
+				{
+
+
+				}
+				if (i > 1)
+				{
+
+					//ShadowMap.LightProjection(scene.LightPositions[0], PBRShader.GetID(), window, scene.models, scene.globalscale, camera, UI::current_viewport_size);
+					if (RenderPass == RENDER_PASS_COMBINED || RenderPass == RENDER_PASS_WIREFRAME)
+					{
+						UseShaderProgram(PBRShader.GetID());
+
+						glUniform1i(glGetUniformLocation(PBRShader.GetID(), "enablehighlight"), data.enablehighlight);
+
+						GetModel(i - 1)->transformation.SendUniformToShader(PBRShader.GetID(), "model");
+
+						auto ShaderPrep = [&]() {
+
+							glUniform1i(glGetUniformLocation(PBRShader.GetID(), "RenderShadows"), data.RenderShadows);
+
+							glActiveTexture(GL_TEXTURE0 + 4);
+							glBindTexture(GL_TEXTURE_CUBE_MAP, data.ConvDiffCubeMap);
+							glUniform1i(glGetUniformLocation(PBRShader.GetID(), "ConvCubeMap"), 4);
+
+							if (data.RenderShadows)
+							{
+								glUniform1f(glGetUniformLocation(PBRShader.GetID(), "farPlane"), 25.0f);
+								glUniform1i(glGetUniformLocation(PBRShader.GetID(), "ShadowCastingLightCount"), data.ShadowCastingLightCount);
+
+								for (size_t i = 0; i < glm::min(data.ShadowCastingLightCount, numberoflights); i++)
+								{
+									glActiveTexture(GL_TEXTURE0 + 5 + i);
+									glBindTexture(GL_TEXTURE_CUBE_MAP, OmnishadowMaps[i]->GetShadowMap());
+									glUniform1i(glGetUniformLocation(PBRShader.GetID(), ("OmniShadowMaps[" + std::to_string(i) + "]").c_str()), 5 + i);
+								}
+							}
+
+							};
+
+						DrawModelsMultipleShadowMaps(PBRShader.GetID(), camera, i - 1, ShaderPrep, NULL);
+
+						glActiveTexture(GL_TEXTURE0);
+
+						if (RenderPass == RENDER_PASS_WIREFRAME)
+						{
+							UseShaderProgram(lightshader.GetID());
+
+							glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+							glEnable(GL_CULL_FACE);
+							glCullFace(GL_BACK);
+							glUniform4f(glGetUniformLocation(lightshader.GetID(), "lightColor"), 1.0f, 1.0f, 1.0f, 1.0f);
+
+							GetModel(i - 1)->transformation.SendUniformToShader(lightshader.GetID(), "model");
+							DrawModels(lightshader.GetID(), camera, i - 1, NULL, NULL);
+
+							UseShaderProgram(0);
+							glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+							glDisable(GL_CULL_FACE);
+						}
+					}
+					
+
+				}
+
+
+			}
+			UseShaderProgram(0);
+
+
+			if (data.renderlights)
+			{
+
+				for (int i = 0; i < lights.size(); i++) {
+					glStencilFunc(GL_ALWAYS, i + 1 + GetModelCount() + 1, -1);
+
+					lights[i]->Draw(lightshader.GetID(), camera);
+
+				}
+			}
+			if (CURRENT_OBJECT(currentselectedobj) >= NULL || CURRENT_LIGHT(currentselectedlight) >= NULL)
+			{
+				glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+				glStencilMask(0xFF);
+				glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+				for (int i = 0; i < 3; i++)
+				{
+					glStencilFunc(GL_ALWAYS, i + 1 + GetModelCount() + 1 + lights.size() + 2, -1);
+
+					DrawGizmo(lightshader.GetID(), camera, i, currentselectedobj, enablegizmo_p, currentselectedlight);
+
+				}
+
+				glDepthFunc(GL_LESS);
+				glStencilMask(0xFF);
+				glStencilFunc(GL_ALWAYS, 1, 0xFF);
+				glEnable(GL_DEPTH_TEST);
+			}
+
+			//glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
+
+
+		glBindFramebuffer(GL_FRAMEBUFFER, NULL);
+
+		if (data.takesreenshot)
+		{
+			UseShaderProgram(0);
+
+			Vec2<int> screensize;
+			glfwGetWindowSize(window, &screensize.x, &screensize.y);
+
+			Takescreenshot(screensize.x, screensize.y, data.screenshotPathstr.c_str(), RenderPass, SceneGbuffer, screen_fbo);
+			data.takesreenshot = false;
+		}
+
+		if (data.EnableSSAO)
+		{
+			ssao.Draw(SSAOShader.GetID(), SSAOblurShader.GetID(), SceneGbuffer, camera);
+		}
+	}
+
+
+	void DrawSSGUScreenQuad(GLuint shader, GLuint buffertexture, GBUFFER::gBuffer& screenGbuffer, Vec2<float> menuSize, float viewportHeight, int RenderPass, pickingtexture& pickingTexture, GLuint PickingShader, pickingtexture& pickingBuffertex, SSAO& ssao, bool EnableSSAO, GLFWwindow& window , Camera &camera)
+	{
+		int width, height;
+		glfwGetWindowSize(&window, &width, &height);
+
+		glViewport(0, 0, width, height);
+
+		glm::vec3 TranslateCoeff(menuSize.x / width, -((height - (height - 18.0f)) / height), 0.0f);
+		glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), TranslateCoeff);
+
+		glm::vec3 ScaleCoeff(((float)width - menuSize.x) / width, (menuSize.y + 18.0f) / height, 1.0f);
+		glm::mat4 ScaleMat = glm::scale(glm::mat4(1.0f), ScaleCoeff);
+
+		pickingTexture.EnableWriting();
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glDisable(GL_DEPTH_TEST);
+		UseShaderProgram(PickingShader);
+
+		glUniformMatrix4fv(glGetUniformLocation(PickingShader, "modelMat"), 1, GL_FALSE, glm::value_ptr(modelMat * ScaleMat));
+
+		glBindVertexArray(quadVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, pickingBuffertex.GetPickingTexture());
+		glUniform1i(glGetUniformLocation(PickingShader, "IDtexture"), 0);
+		glUniform1i(glGetUniformLocation(PickingShader, "RenderStep"), 2);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		UseShaderProgram(0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, width, height);
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		UseShaderProgram(shader);
+		
+	    glUniform3f(glGetUniformLocation(shader, "cameraPosition"), camera.Position.x, camera.Position.y, camera.Position.z);
+		glUniform3f(glGetUniformLocation(shader, "cameraDirection"), camera.Orientation.x, camera.Orientation.y, camera.Orientation.z);
+		glUniform2f(glGetUniformLocation(shader, "WindowSize"), width , height);
+
+		glUniform1f(glGetUniformLocation(shader, "FarNearPlaneDiff"), camera.farPlane - camera.nearPlane);
+
+		glUniformMatrix4fv(glGetUniformLocation(shader, "modelMat"), 1, GL_FALSE, glm::value_ptr(modelMat * ScaleMat));
+		glUniformMatrix4fv(glGetUniformLocation(shader, "inverseViewMatrix"), 1, GL_FALSE, glm::value_ptr(glm::inverse(camera.cam_view)));
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, buffertexture);
+		glUniform1i(glGetUniformLocation(shader, "Viewport"), 0);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, screenGbuffer.gPosition);
+		glUniform1i(glGetUniformLocation(shader, "Position"), 1);
+
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, screenGbuffer.gNormal);
+		glUniform1i(glGetUniformLocation(shader, "Normal"), 2);
+
+		if (EnableSSAO)
+		{
+			glActiveTexture(GL_TEXTURE3);
+			glBindTexture(GL_TEXTURE_2D, ssao.GetSSAOblurredTexture());
+			glUniform1i(glGetUniformLocation(shader, "SSAO"), 3);
+		}
+
+		glUniform1i(glGetUniformLocation(shader, "EnableSSAO"), EnableSSAO);
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		UseShaderProgram(0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindVertexArray(0);
+
+	}
+
 
 	void DrawModelsWithOutline(GLuint shader1, GLuint shader2, Camera& camera, size_t model_index_to_draw, size_t current_selected, GLuint shadowMap)
 	{
@@ -680,6 +962,7 @@ public:
 
 		//models[model_index_to_draw]->transformation.scale(glm::vec3(1.01f, 1.01f, 1.01f));
 		models[model_index_to_draw]->transformation.SendUniformToShader(shader2, "model");
+		glUniformMatrix4fv(glGetUniformLocation(shader2, "ViewMat"), 1, GL_FALSE, glm::value_ptr(camera.cam_view));
 
 		std::cout << "SCALE AVG@; " << models[model_index_to_draw]->transformation.scale_avg << "\n";
 
@@ -1059,7 +1342,6 @@ public:
 		{
 			enablegizmo_p = { NULL,false };
 			currentselectedgizmo = NULL;
-
 		}
 
 		if (currentselectedgizmo == (4 + GetModelCount() + lights.size()) && !enablegizmo_p.second)
