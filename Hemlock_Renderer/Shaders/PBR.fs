@@ -86,10 +86,21 @@
 
   uniform float LightIntensity;
   uniform float farPlane;
+
+  //Camera depth
+  uniform float FarPlane;
+  uniform float NearPlane;
+
+  uniform float FogIntensityUniform;
+  uniform vec3 FogColor;
+  uniform bool FogEnabled;
+  
   uniform bool RenderShadows;
   uniform int ShadowCastingLightCount;
 
- 
+  uniform samplerCube prefilteredMap;
+  uniform sampler2D brdfLUT;
+
   float ShadowCalculation(vec4 fragPosLightSpace , vec3 lightDir ,vec3 normal)
   {
     // perform perspective divide
@@ -286,20 +297,36 @@
           }
           
       }
-     
+
+      vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughnessmap);
+
+      vec3 R = reflect(-V , N);
+      const float MAX_REFLECTION_LOD = 4.0f;
+      vec3 prefilteredColor = textureLod(prefilteredMap,R,roughnessmap * MAX_REFLECTION_LOD).rgb;
+      vec2 EnvLut = texture(brdfLUT,vec2(max(dot(N,V),0.0),roughnessmap)).rg;
+      vec3 specular = prefilteredColor * (F * EnvLut.x + EnvLut.y);
+
       vec3 irradiance = texture(ConvCubeMap, N).rgb;
-      //vec3 ambient = vec3(0.03) * texturecolor * ao;
-      //vec3 ambient = vec3(0.03) * texturecolor * ao;
-      vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughnessmap); 
+      vec3 kS = F; 
       vec3 kD = 1.0 - kS;
-      vec3 diffuse    = irradiance * texturecolor;
-      vec3 ambient    = (kD * diffuse) * ao; 
+      vec3 diffuse = irradiance * texturecolor;
+      vec3 ambient = (kD * diffuse + specular) * ao; 
       vec3 color = ambient + Lo;
 
       color = color / (color + vec3(1.0));
       color = pow(color , vec3(1.0/2.2));
 
-      outColor = vec4(color , 1.0);
-      //outColor = texture(ConvCubeMap,inverse_normal);
-      //outColor = DepthDemonstration();
+      if(FogEnabled)
+      {
+        float DeltaPlane = FarPlane - NearPlane;
+        float distanceFromCamera = distance(campos,currentpos) / DeltaPlane;
+
+        float FogIntensity = distanceFromCamera * distanceFromCamera * FogIntensityUniform;
+        outColor = vec4(color + (FogColor * FogIntensity), 1.0);
+      }
+      else
+      {
+        outColor = vec4(color , 1.0);
+
+      }
   }

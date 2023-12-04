@@ -113,7 +113,7 @@ SSAO::~SSAO()
 	glDeleteTextures(1, &SSAOblurColorAttach);
 }
 
-void SSAO::Draw(GLuint SSAOshader , GLuint SSAOblurShader  ,GBUFFER::gBuffer& sceneGbuffer , Camera &camera)
+void SSAO::Draw(GLuint SSAOshader , GLuint SSAOblurShader  ,GBUFFER::gBuffer& sceneGbuffer , Camera &camera, DATA::UIdataPack& data)
 {
 	glDisable(GL_BLEND);
 	glBindFramebuffer(GL_FRAMEBUFFER, this->ssaofbo);
@@ -135,6 +135,10 @@ void SSAO::Draw(GLuint SSAOshader , GLuint SSAOblurShader  ,GBUFFER::gBuffer& sc
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, this->noiseTexture);
 	glUniform1i(glGetUniformLocation(SSAOshader, "texNoise"), 2);
+
+	glUniform1i(glGetUniformLocation(SSAOshader, "kernelSize"), data.SSAOkernelSize);
+	glUniform1f(glGetUniformLocation(SSAOshader, "bias"), data.SSAObias);
+	glUniform1f(glGetUniformLocation(SSAOshader, "radius"), data.SSAOradius);
 
 	glUniform3fv(glGetUniformLocation(SSAOshader, "noiseKernel"), 64, (GLfloat*)&this->SSAOkernel[0]);
 	

@@ -757,6 +757,21 @@ public:
 							glBindTexture(GL_TEXTURE_CUBE_MAP, data.ConvDiffCubeMap);
 							glUniform1i(glGetUniformLocation(PBRShader.GetID(), "ConvCubeMap"), 4);
 
+							glActiveTexture(GL_TEXTURE0 + 5);
+							glBindTexture(GL_TEXTURE_CUBE_MAP, data.PrefilteredEnvMap);
+							glUniform1i(glGetUniformLocation(PBRShader.GetID(), "prefilteredMap"), 5);
+
+							glActiveTexture(GL_TEXTURE0 + 6);
+							glBindTexture(GL_TEXTURE_2D, data.brdfLUT);
+							glUniform1i(glGetUniformLocation(PBRShader.GetID(), "brdfLUT"), 6);
+
+							glUniform1f(glGetUniformLocation(PBRShader.GetID(), "FarPlane"), camera.farPlane);
+							glUniform1f(glGetUniformLocation(PBRShader.GetID(), "NearPlane"), camera.nearPlane);
+							glUniform1i(glGetUniformLocation(PBRShader.GetID(), "FogEnabled"), (int)data.FogEnabled);
+							glUniform1f(glGetUniformLocation(PBRShader.GetID(), "FogIntensityUniform"), data.FogIntensity);
+							glUniform3f(glGetUniformLocation(PBRShader.GetID(), "FogColor"), data.FogColor.x, data.FogColor.y, data.FogColor.z);
+
+
 							if (data.RenderShadows)
 							{
 								glUniform1f(glGetUniformLocation(PBRShader.GetID(), "farPlane"), 25.0f);
@@ -764,9 +779,9 @@ public:
 
 								for (size_t i = 0; i < glm::min(data.ShadowCastingLightCount, numberoflights); i++)
 								{
-									glActiveTexture(GL_TEXTURE0 + 5 + i);
+									glActiveTexture(GL_TEXTURE0 + 7 + i);
 									glBindTexture(GL_TEXTURE_CUBE_MAP, OmnishadowMaps[i]->GetShadowMap());
-									glUniform1i(glGetUniformLocation(PBRShader.GetID(), ("OmniShadowMaps[" + std::to_string(i) + "]").c_str()), 5 + i);
+									glUniform1i(glGetUniformLocation(PBRShader.GetID(), ("OmniShadowMaps[" + std::to_string(i) + "]").c_str()), 7 + i);
 								}
 							}
 
@@ -852,7 +867,7 @@ public:
 
 		if (data.EnableSSAO)
 		{
-			ssao.Draw(SSAOShader.GetID(), SSAOblurShader.GetID(), SceneGbuffer, camera);
+			ssao.Draw(SSAOShader.GetID(), SSAOblurShader.GetID(), SceneGbuffer, camera,data);
 		}
 	}
 

@@ -12,7 +12,13 @@ uniform vec2 ScreenSize;
 uniform vec3 noiseKernel[64];
 uniform mat4 projection;
 
-float bias = 0.025;
+uniform float bias;
+uniform int kernelSize;
+uniform float radius;
+
+//float bias = 0.025;
+//int kernelSize = 64;
+//float radius = 0.5;
 
 void main()
 {
@@ -27,10 +33,10 @@ void main()
 	mat3 TBN = mat3(tangent,bitangent,normal);
 
 	float occlusion = 0.0f;
-	for(int i = 0; i < 64 ; ++i)
+	for(int i = 0; i < kernelSize ; ++i)
 	{
        vec3 samplePos = TBN * noiseKernel[i];
-	   samplePos = fragPos + samplePos * 0.5;
+	   samplePos = fragPos + samplePos * radius;
 
 	   vec4 offset = vec4(samplePos,1.0f);
 	   offset = projection * offset;

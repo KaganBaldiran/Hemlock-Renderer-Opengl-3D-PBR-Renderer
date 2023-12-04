@@ -60,8 +60,7 @@ void main()
         OutColor = OutColor * vec4(vec3(texture(SSAO,TexCoords).r),1.0f);
     }
     
-    FragColor = vec4(pow(OutColor.xyz,vec3(0.9)),OutColor.w);
-
+      FragColor = vec4(pow(OutColor.xyz,vec3(0.9)),OutColor.w);
     }
     else if(RenderPass == 3)
     {

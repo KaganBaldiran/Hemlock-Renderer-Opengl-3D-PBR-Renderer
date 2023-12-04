@@ -60,7 +60,7 @@ int main()
     Shader PreFilterCubeMapShader("Shaders/PreFilterCubeMap.vs", "Shaders/PreFilterCubeMap.fs");
     Shader HighPolyBakingShader("Shaders/HighPolyNormalBake.vs", "Shaders/HighPolyNormalBake.fs");
     Shader ScreenSpaceilluminationShader("Shaders/SSGU.vs", "Shaders/SSGU.fs");
-
+    Shader brdfLUTShader("Shaders/brdfLUT.vs", "Shaders/brdfLUT.fs");
 
     scene scene;
     FBO screen_fbo;
@@ -192,12 +192,17 @@ int main()
     glfwSetScrollCallback(window, camera.scrollCallback);
     data.IsPreferencesFileEmpty = data.saveFileData.empty();
 
+
+    //Cubemap.SetCubeMapTexture(CubeMapTexture.first);
+
     //Cubemap.GetCubeMapTexture();
     data.ConvDiffCubeMap = ConvolutateCubeMap(Cubemap.GetCubeMapTexture(), ConvolutateCubeMapShader.GetID()).first;
-    GLuint preFilteredCubeMap = PreFilterCubeMap(Cubemap.GetCubeMapTexture(), PreFilterCubeMapShader.GetID()).first;
+    data.PrefilteredEnvMap = PreFilterCubeMap(Cubemap.GetCubeMapTexture(), PreFilterCubeMapShader.GetID()).first;
     //data.ConvDiffCubeMap = BAKER::BakeNormal(1024, scene.GetModel(0), nullptr, HighPolyBakingShader.GetID(),NULL,camera).first;
-    //Cubemap.SetCubeMapTexture(data.ConvDiffCubeMap);
+    //Cubemap.SetCubeMapTexture(data.PrefilteredEnvMap);
     const double TARGET_FRAME_TIME = 1.0 / TARGET_FPS;
+
+    data.brdfLUT = ComputeLUT(brdfLUTShader).first;
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -223,13 +228,13 @@ int main()
 
             camera.HandleInputs(window, UI::current_win_size ,{width,height}, data.cameraLayout);
 
-            camera.updateMatrix(45.0f, 0.1f, 100.0f, window, UI::current_viewport_size);
+            camera.updateMatrix(data.CameraFOV, 0.1f, 100.0f, window, UI::current_viewport_size);
 
             UI::HandleSliderMaxValues(data, window);
 
             UI::ConfigureUI(currentselectedobj, data, scene, logs, PBRShader.GetID(), lightcolor, lightpos, window, auto_rotate_on,
                            ShadowMap.GetShadowMapImage(), lightshader.GetID(), currentselectedlight,threads,
-                           Cubemap,HDRIShader.GetID(), SplashScreenImage,RenderPass, camera,ConvolutateCubeMapShader.GetID());
+                           Cubemap,HDRIShader.GetID(), SplashScreenImage,RenderPass, camera,ConvolutateCubeMapShader.GetID(),PreFilterCubeMapShader.GetID());
 
             UI::DropDownImportModel(PBRShader.GetID(), scene, logs);
             
@@ -378,10 +383,14 @@ int main()
     DeleteShaderProgram(PreFilterCubeMapShader.GetID());
     DeleteShaderProgram(HighPolyBakingShader.GetID());
     DeleteShaderProgram(ScreenSpaceilluminationShader.GetID());
+    DeleteShaderProgram(brdfLUTShader.GetID());
 
     zeroPointButton.DeleteTexture();
     GridButton.DeleteTexture();
     SplashScreenImage.DeleteTexture();
+
+    glDeleteTextures(1, &data.brdfLUT);
+    glDeleteTextures(1, &data.PrefilteredEnvMap);
 
     UI::EndUI();
 

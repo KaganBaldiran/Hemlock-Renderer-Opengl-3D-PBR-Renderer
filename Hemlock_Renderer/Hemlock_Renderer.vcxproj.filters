@@ -320,5 +320,11 @@
     <None Include="Shaders\SSGU.fs">
       <Filter>shaders</Filter>
     </None>
+    <None Include="Shaders\brdfLUT.vs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\brdfLUT.fs">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -57,6 +57,9 @@ namespace DATA
 		bool enablehighlight = false;
 
 		bool EnableSSAO = false;
+		float SSAObias = 0.025;
+		int SSAOkernelSize = 64;
+		float SSAOradius = 0.5f;
 
 		float degree = NULL;
 
@@ -75,18 +78,25 @@ namespace DATA
 		SaveFileData saveFileData;
 
 		int cameraLayout = CAMERA_LAYOUT_INDUSTRY_STANDARD;
+		float CameraFOV = 45.0f;
 
 		bool IsPreferencesFileEmpty;
 		bool RenderShadows = false;
 		int ShadowCastingLightCount = MAX_LIGHT_COUNT;
 
 		GLuint ConvDiffCubeMap;
+		GLuint PrefilteredEnvMap;
+		GLuint brdfLUT;
 
 		std::string cameraLayOutNameStr;
 
 		bool DOFenabled = false;
 		float DOFintensity = 1.0f;
 		float DOFfarDistance = 0.09f;
+
+		bool FogEnabled = false;
+		float FogIntensity = 1.0f;
+		ImVec4 FogColor = clear_color;
 
 	};
 }

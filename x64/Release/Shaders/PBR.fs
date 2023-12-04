@@ -86,6 +86,15 @@
 
   uniform float LightIntensity;
   uniform float farPlane;
+
+  //Camera depth
+  uniform float FarPlane;
+  uniform float NearPlane;
+
+  uniform float FogIntensityUniform;
+  uniform vec3 FogColor;
+  uniform bool FogEnabled;
+  
   uniform bool RenderShadows;
   uniform int ShadowCastingLightCount;
 
@@ -299,7 +308,21 @@
       color = color / (color + vec3(1.0));
       color = pow(color , vec3(1.0/2.2));
 
-      outColor = vec4(color , 1.0);
+      if(FogEnabled)
+      {
+        float DeltaPlane = FarPlane - NearPlane;
+        float distanceFromCamera = distance(campos,currentpos) / DeltaPlane;
+
+        float FogIntensity = distanceFromCamera * distanceFromCamera * FogIntensityUniform;
+        outColor = vec4(color + (FogColor * FogIntensity), 1.0);
+
+        //outColor = vec4(color + (FogColor * 2.0f), 1.0);
+      }
+      else
+      {
+        outColor = vec4(color , 1.0);
+
+      }
       //outColor = texture(ConvCubeMap,inverse_normal);
       //outColor = DepthDemonstration();
   }

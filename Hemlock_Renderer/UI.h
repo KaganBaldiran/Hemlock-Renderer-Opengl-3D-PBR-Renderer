@@ -894,7 +894,7 @@ namespace UI
 		}
 	}
 
-	void ConfigureUI(int &currentselectedobj , DATA::UIdataPack &data , scene &scene , std::vector<std::string>& logs ,GLuint import_shader , glm::vec4 lightcolor , glm::vec3 lightpos , GLFWwindow* window , std::vector<uint> &auto_rotate_on , GLuint screen_image,GLuint light_shader, int &currentselectedlight , ThreadPool& threads , CubeMap &Cubemap , GLuint HDRItoCubeMapShader , Textures& SplashScreenImage , int &renderPass , Camera& camera , GLuint ConvolutateCubeMapShader)
+	void ConfigureUI(int &currentselectedobj , DATA::UIdataPack &data , scene &scene , std::vector<std::string>& logs ,GLuint import_shader , glm::vec4 lightcolor , glm::vec3 lightpos , GLFWwindow* window , std::vector<uint> &auto_rotate_on , GLuint screen_image,GLuint light_shader, int &currentselectedlight , ThreadPool& threads , CubeMap &Cubemap , GLuint HDRItoCubeMapShader , Textures& SplashScreenImage , int &renderPass , Camera& camera , GLuint ConvolutateCubeMapShader , GLuint PrefilterHDRIShader)
 	{
 
 		static bool importmodel_menu = false;
@@ -2084,7 +2084,7 @@ namespace UI
 						if (CubeMapTexture.second == HDRI_COMPLETE)
 						{
 							data.ConvDiffCubeMap = ConvolutateCubeMap(CubeMapTexture.first, ConvolutateCubeMapShader).first;
-							//Cubemap.SetCubeMapTexture(data.ConvDiffCubeMap);
+							data.PrefilteredEnvMap = PreFilterCubeMap(CubeMapTexture.first, PrefilterHDRIShader).first;
 							Cubemap.SetCubeMapTexture(CubeMapTexture.first);
 
 							logs.push_back("Imported HDRI :: " + std::string(data.outPath));
@@ -2109,8 +2109,17 @@ namespace UI
 					ImGui::Checkbox("Show light meshes", &data.renderlights);
 
 					ImGui::Spacing();
+					ImGui::SliderFloat("Camera FOV", &data.CameraFOV, 0.0f, 360.0f);
+					ImGui::Spacing();
 
 					ImGui::Checkbox("Enable SSAO", &data.EnableSSAO);
+					if (data.EnableSSAO)
+					{
+						ImGui::SliderFloat("SSAO radius", &data.SSAOradius, 0.0f, 10.0f);
+						ImGui::SliderFloat("SSAO bias", &data.SSAObias, 0.0f, 0.1f);
+						ImGui::SliderInt("SSAO Kernel Size", &data.SSAOkernelSize, 0, 128);
+					}
+
 					ImGui::Checkbox(" Enable Shadows", &data.RenderShadows);
 					if (data.RenderShadows)
 					{
@@ -2126,6 +2135,13 @@ namespace UI
 					{
 						ImGui::SliderFloat("DOF intensity", &data.DOFintensity, 0.0f, 10.0f);
 						ImGui::SliderFloat("DOF far distance", &data.DOFfarDistance, 0.0f, 1.0f);
+					}
+
+					ImGui::Checkbox("Enable Fog", &data.FogEnabled);
+					if (data.FogEnabled)
+					{
+						ImGui::SliderFloat("Fog intensity", &data.FogIntensity, 0.0f, 100.0f);
+						ImGui::ColorEdit4("Fog color", (float*)&data.FogColor);
 					}
 
 					ImGui::ColorEdit4("Background color", (float*)&std::get<5>(chosen_color_sheme));

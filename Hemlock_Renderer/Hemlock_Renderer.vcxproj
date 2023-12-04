@@ -202,6 +202,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="nativefiledialog-extended-master\src\nfd_cocoa.m" />
+    <None Include="Shaders\brdfLUT.fs" />
+    <None Include="Shaders\brdfLUT.vs" />
     <None Include="Shaders\ConvolutationCubeMap.fs" />
     <None Include="Shaders\ConvolutationCubeMap.vs" />
     <None Include="Shaders\CubeMap.frag" />

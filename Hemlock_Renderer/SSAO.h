@@ -4,13 +4,14 @@
 #include "VectorMath.h"
 #include "G_Buffer.h"
 #include "Camera.h"
+#include "Data.h"
 
 class SSAO
 {
 public:
 	SSAO(Vec2<float> ScreenSize);
 	~SSAO();
-	void Draw(GLuint SSAOshader, GLuint SSAOblurShader, GBUFFER::gBuffer& sceneGbuffer, Camera& camera);
+	void Draw(GLuint SSAOshader, GLuint SSAOblurShader, GBUFFER::gBuffer& sceneGbuffer, Camera& camera , DATA::UIdataPack& data);
 	float lerp(float a, float b, float f);
 	GLuint GetSSAOfbo() { return this->ssaofbo; };
 	GLuint GetSSAOnoiseTexture() { return this->noiseTexture; };
