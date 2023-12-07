@@ -169,6 +169,7 @@
     <ClInclude Include="Entity.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Log.h" />
+    <ClInclude Include="Material.hpp" />
     <ClInclude Include="NormalBaker.hpp" />
     <ClInclude Include="post_process.h" />
     <ClInclude Include="G_Buffer.h" />

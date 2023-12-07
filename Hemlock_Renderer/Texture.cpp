@@ -9,6 +9,7 @@
 
 Textures::Textures(const char* filepath , GLenum slot , GLenum texturetype , GLenum pixeltype, unsigned int texture_type_for_pbr, std::string texture_type_for_pbr_str)
 {
+	this->channels = -1;
 	std::string temp(filepath);
 	path = temp;
 	
@@ -20,7 +21,7 @@ Textures::Textures(const char* filepath , GLenum slot , GLenum texturetype , GLe
 	unsigned char* pixels = stbi_load(filepath, &width, &height, &channels,0);
 	if (!pixels)
 	{
-
+		TextureState = TEXTURE_ERROR;
 		std::cerr << "Failed to load texture :: " << filepath << "\n";
 		return;
 
@@ -62,11 +63,12 @@ Textures::Textures(const char* filepath , GLenum slot , GLenum texturetype , GLe
 	stbi_image_free(pixels);
 
 	glBindTexture(texturetype, 0);
-
+	TextureState = TEXTURE_SUCCESS;
 }
 
 Textures::Textures(const char* filepath, GLenum slot, GLenum texturetype, GLenum pixeltype,GLenum MAG_FILTER , GLenum MIN_FILTER , bool FlipTexture)
 {
+	this->channels = -1;
 	std::string temp(filepath);
 	path = temp;
 
@@ -76,7 +78,7 @@ Textures::Textures(const char* filepath, GLenum slot, GLenum texturetype, GLenum
 	unsigned char* pixels = stbi_load(filepath, &width, &height, &channels, 0);
 	if (!pixels)
 	{
-
+		TextureState = TEXTURE_ERROR;
 		std::cerr << "Failed to load texture :: " << filepath << "\n";
 		return;
 
@@ -118,7 +120,7 @@ Textures::Textures(const char* filepath, GLenum slot, GLenum texturetype, GLenum
 	stbi_image_free(pixels);
 
 	glBindTexture(texturetype, 0);
-
+	TextureState = TEXTURE_SUCCESS;
 }
 
 
@@ -132,9 +134,17 @@ void Textures::Bind()
 	glBindTexture(type, texture);
 }
 
+void Textures::Bind(GLuint slot, GLuint shader, const char* uniform)
+{
+	glActiveTexture(GL_TEXTURE0 + slot);
+	glBindTexture(GL_TEXTURE_2D, this->texture);
+	glUniform1i(glGetUniformLocation(shader, uniform), slot);
+}
+
 void Textures::Unbind()
 {
 	glBindTexture(type, 0);
+	glActiveTexture(GL_TEXTURE0);
 }
 
 void Textures::DeleteTexture()
@@ -171,20 +181,12 @@ Vec2<float> GetScreenRatio(GLFWwindow* m_window , Vec2<int> menu_size)
 	Vec2<int> winsize;
 	glfwGetWindowSize(m_window, &winsize.x, &winsize.y);
 
-	//std::cout << "WINSIZE.X: " << winsize.x << "WINSIZE.Y: " << winsize.y << "\n";
-
 	winsize.x = menu_size.x;
 	winsize.y = menu_size.y;
 
-	//std::cout << "WINSIZE.X: " << winsize.x << "WINSIZE.Y: " << winsize.y << "\n";
-
-
 	float ratio_minmax = NULL;
-
 	float aspectRatios_wh = static_cast<float>(winsize.x) / static_cast<float>(winsize.y);
-
 	float aspectRatios_hw = static_cast<float>(winsize.y) / static_cast<float>(winsize.x);
-
 
 	float ratio_minmax_x = NULL, ratio_minmax_y = NULL;
 
@@ -205,9 +207,6 @@ Vec2<float> GetScreenRatio(GLFWwindow* m_window , Vec2<int> menu_size)
 		ratio_minmax_x = 1.0f;
 		ratio_minmax_y = 1.0f;
 	}
-
-	//std::cout << "x: " << ratio_minmax_x << "\n";
-	//std::cout << "y: " << ratio_minmax_y << "\n";
 
 	return Vec2<float>{ratio_minmax_x, ratio_minmax_y};
 }

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef CUBEMAP
 #define CUBEMAP
 
@@ -8,6 +9,7 @@
 #include <string>
 #include "Shader.h"
 #include "Camera.h"
+#include "Data.h"
 
 #define HDRI_COMPLETE 0x345
 #define HDRI_ERROR 0x346
@@ -40,6 +42,7 @@ private:
 
 };
 
+void ImportCubeMap(CubeMap& cubemap, GLuint& HDRItoCubeMapShader, GLuint& ConvolutateCubeMapShader, GLuint& PrefilterHDRIShader, DATA::UIdataPack& data, std::vector<std::string>& logs);
 
 #endif 
 

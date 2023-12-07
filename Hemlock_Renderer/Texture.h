@@ -12,6 +12,8 @@ struct GLFWwindow;
 
 #if TEXTURES
 
+#define TEXTURE_ERROR -1
+#define TEXTURE_SUCCESS 1
 
    class Textures
    {
@@ -22,6 +24,7 @@ struct GLFWwindow;
 	   ~Textures();
 
 	   void Bind();
+	   void Bind(GLuint slot, GLuint shader, const char* uniform);
 
 	   void Unbind();
 
@@ -30,9 +33,11 @@ struct GLFWwindow;
 	   GLuint* GetTexture() { return &this->texture; };
 
 	   std::string GetPathData();
+	   int GetChannelCount() { return this->channels; };
 
 	   int GetTextureWidth() { return this->width; };
 	   int GetTextureHeight() { return this->height; };
+	   int GetTextureState() { return this->TextureState; };
 
 	   void texunit(GLuint shader_program, const char* uniform, GLuint unit);
 
@@ -51,6 +56,7 @@ struct GLFWwindow;
 	   std::string path;
 	   int channels;
 
+	   int TextureState;
    };
 
 

@@ -209,6 +209,9 @@
     <ClInclude Include="Data.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Material.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="nativefiledialog-extended-master\src\nfd_cocoa.m" />

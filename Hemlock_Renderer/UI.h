@@ -960,7 +960,7 @@ namespace UI
 						}
 
 						LOG_INF("Reading HML file... :: " << path);
-						SAVEFILE::ReadHMLfile(path.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs,window);
+						SAVEFILE::ReadHMLfile(path.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs,window, Cubemap, HDRItoCubeMapShader, ConvolutateCubeMapShader, PrefilterHDRIShader);
 
 						if (data.saveFileData.RecentProjects.size() < 5)
 						{
@@ -1027,7 +1027,7 @@ namespace UI
 						}
 
 						LOG_INF("Reading HML file... :: " << path);
-						SAVEFILE::ReadHMLfilePacked(path.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs,window);
+						SAVEFILE::ReadHMLfilePacked(path.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs,window, Cubemap, HDRItoCubeMapShader, ConvolutateCubeMapShader, PrefilterHDRIShader);
 
 						if (data.saveFileData.RecentProjects.size() < 5)
 						{
@@ -1526,11 +1526,11 @@ namespace UI
 					{
 						if (data.saveFileData.RecentProjects[i].second == HML_FILE)
 						{
-							SAVEFILE::ReadHMLfile(data.saveFileData.RecentProjects[i].first.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs,window);
+							SAVEFILE::ReadHMLfile(data.saveFileData.RecentProjects[i].first.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs,window,Cubemap,HDRItoCubeMapShader,ConvolutateCubeMapShader,PrefilterHDRIShader);
 						}
 						else if (data.saveFileData.RecentProjects[i].second == HML_FILE_PACKED)
 						{
-							SAVEFILE::ReadHMLfilePacked(data.saveFileData.RecentProjects[i].first.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs,window);
+							SAVEFILE::ReadHMLfilePacked(data.saveFileData.RecentProjects[i].first.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs,window, Cubemap, HDRItoCubeMapShader, ConvolutateCubeMapShader, PrefilterHDRIShader);
 						}
 
 						data.SplashScreenEnabled = false;
@@ -1796,9 +1796,6 @@ namespace UI
 
 
 								}
-
-
-
 
 								if (button_exists)
 								{
@@ -2083,6 +2080,7 @@ namespace UI
 						
 						if (CubeMapTexture.second == HDRI_COMPLETE)
 						{
+							data.HDRIpath = data.outPath;
 							data.ConvDiffCubeMap = ConvolutateCubeMap(CubeMapTexture.first, ConvolutateCubeMapShader).first;
 							data.PrefilteredEnvMap = PreFilterCubeMap(CubeMapTexture.first, PrefilterHDRIShader).first;
 							Cubemap.SetCubeMapTexture(CubeMapTexture.first);

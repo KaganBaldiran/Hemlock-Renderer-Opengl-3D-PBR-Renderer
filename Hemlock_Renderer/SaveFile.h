@@ -23,6 +23,6 @@ namespace SAVEFILE
 	void WriteSaveFile(const char* fileName, DATA::SaveFileData& data, std::vector<std::string>& logs);
 	void WriteHMLfilePacked(const char* fileName, scene& scene, DATA::UIdataPack& data, Camera& camera, int renderPass, std::vector<std::string>& logs);
 	void WriteHMLfile(const char* fileName, scene& scene, DATA::UIdataPack& data, Camera& camera, int renderPass, std::vector<std::string>& logs);
-	void ReadHMLfile(const char* fileName, scene& scene, GLuint shader, GLuint lightShader, DATA::UIdataPack& data, Camera& camera, int &renderPass, std::vector<std::string>& logs, GLFWwindow* window);
-	void ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shader, GLuint lightShader, DATA::UIdataPack& data, Camera& camera, int& renderPass, std::vector<std::string>& logs, GLFWwindow* window);
+	void ReadHMLfile(const char* fileName, scene& scene, GLuint shader, GLuint lightShader, DATA::UIdataPack& data, Camera& camera, int &renderPass, std::vector<std::string>& logs, GLFWwindow* window, CubeMap& cubemap, GLuint& HDRItoCubeMapShader, GLuint& ConvolutateCubeMapShader, GLuint& PrefilterHDRIShader);
+	void ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shader, GLuint lightShader, DATA::UIdataPack& data, Camera& camera, int& renderPass, std::vector<std::string>& logs, GLFWwindow* window, CubeMap& cubemap, GLuint& HDRItoCubeMapShader, GLuint& ConvolutateCubeMapShader, GLuint& PrefilterHDRIShader);
 }

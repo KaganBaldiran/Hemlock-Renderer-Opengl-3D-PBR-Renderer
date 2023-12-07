@@ -1353,6 +1353,9 @@ public:
 	Vec2<double> UseGizmo(GLFWwindow* window , int &currentselectedgizmo , int currentselectedobj, std::pair<uint , bool> &enablegizmo_p , Vec2<double> PrevMousePos , Camera camera , int currentselectedlight , GLuint Model_Shader , GLuint PBR_Shader, Vec2<double> &temp_mouse)
 	{
 
+		//LOG("DOT PRODUCT: " << Vec4<float>(camera.cam_view * glm::vec4(0.0f, 0.0f, 1.0f,0.0f)));
+
+
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
 		{
 			enablegizmo_p = { NULL,false };
@@ -1372,58 +1375,68 @@ public:
 			enablegizmo_p = { X_GIZMO, true };
 		}
 
-		//std::cout << "CAMERA DIRECTION: " << camera.Get_Orientation().x << " " << camera.Get_Orientation().y << " " << camera.Get_Orientation().z<<"\n";
-
-
 		Vec2<double> delta_mouse = { temp_mouse.x - PrevMousePos.x, temp_mouse.y - PrevMousePos.y };
 
 		if (CURRENT_OBJECT(currentselectedobj) >= NULL)
 		{
 			if (enablegizmo_p.first == Y_GIZMO && enablegizmo_p.second == true)
 			{
-				
-				
 				GetModel(CURRENT_OBJECT(currentselectedobj))->transformation.translate(glm::vec3(NULL, -delta_mouse.y / 20.0f, NULL));
-
 				GetModel(CURRENT_OBJECT(currentselectedobj))->dynamic_origin += glm::vec3(NULL, -delta_mouse.y / 20.0f, NULL);
-
-				
-				
-
-
 			}
 			else if (enablegizmo_p.first == Z_GIZMO && enablegizmo_p.second == true)
 			{
 
 				double active_delta_mouse = NULL;
+				glm::vec4 ViewSpaceZaxis = camera.cam_view * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
+				float absX = glm::abs(ViewSpaceZaxis.x);
+				float absY = glm::abs(ViewSpaceZaxis.y);
+				float absZ = glm::abs(ViewSpaceZaxis.z);
 
-				if (abs(delta_mouse.y) > abs(delta_mouse.x))
+				float max = glm::max(glm::max(absX, absY), absZ);
+
+				if (max == absX)
+				{
+					active_delta_mouse = delta_mouse.x;
+
+					if (ViewSpaceZaxis.x < 0)
+					{
+						active_delta_mouse = -active_delta_mouse;
+					}
+					else if (ViewSpaceZaxis.x > 0)
+					{
+					    active_delta_mouse = active_delta_mouse;
+					}
+				}
+				else if (max == absY)
 				{
 					active_delta_mouse = delta_mouse.y;
 
-					if (camera.Get_Orientation().z >= NULL)
+					if (ViewSpaceZaxis.y < 0)
+					{
+						active_delta_mouse = active_delta_mouse;
+					}
+					else if (ViewSpaceZaxis.y > 0)
 					{
 						active_delta_mouse = -active_delta_mouse;
 					}
 				}
-				else if (abs(delta_mouse.y) <= abs(delta_mouse.x))
+				else if (max == absZ)
 				{
-					active_delta_mouse = -delta_mouse.x;
+					active_delta_mouse = delta_mouse.y;
 
-					if (camera.Get_Orientation().z <= NULL)
+					if (ViewSpaceZaxis.z < 0)
 					{
 						active_delta_mouse = -active_delta_mouse;
 					}
+					else if (ViewSpaceZaxis.z > 0)
+					{
+						active_delta_mouse = active_delta_mouse;
+					}
 				}
-
-				
-				
-
+	
 				GetModel(CURRENT_OBJECT(currentselectedobj))->transformation.translate(glm::vec3(NULL, NULL, active_delta_mouse / 20.0f));
-
 				GetModel(CURRENT_OBJECT(currentselectedobj))->dynamic_origin += glm::vec3(NULL, NULL, active_delta_mouse / 20.0f);
-
-
 			}
 
 			else if (enablegizmo_p.first == X_GIZMO && enablegizmo_p.second == true)
@@ -1431,32 +1444,55 @@ public:
 
 				double active_delta_mouse = NULL;
 
-				if (abs(delta_mouse.y) > abs(delta_mouse.x))
-				{
-					active_delta_mouse = delta_mouse.y;
+				glm::vec4 ViewSpaceXaxis = camera.cam_view * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+				float absX = glm::abs(ViewSpaceXaxis.x);
+				float absY = glm::abs(ViewSpaceXaxis.y);
+				float absZ = glm::abs(ViewSpaceXaxis.z);
 
-					if (camera.Get_Orientation().x >= NULL)
-					{
-						active_delta_mouse = -active_delta_mouse;
-					}
-				}
-				else if (abs(delta_mouse.y) <= abs(delta_mouse.x))
+				float max = glm::max(glm::max(absX, absY), absZ);
+
+				if (max == absX)
 				{
 					active_delta_mouse = delta_mouse.x;
 
-					if (camera.Get_Orientation().x <= NULL)
+					if (ViewSpaceXaxis.x < 0)
+					{
+						active_delta_mouse = -active_delta_mouse;
+					}
+					else if (ViewSpaceXaxis.x > 0)
+					{
+						active_delta_mouse = active_delta_mouse;
+					}
+				}
+				else if (max == absY)
+				{
+					active_delta_mouse = delta_mouse.y;
+
+					if (ViewSpaceXaxis.y < 0)
+					{
+						active_delta_mouse = active_delta_mouse;
+					}
+					else if (ViewSpaceXaxis.y > 0)
 					{
 						active_delta_mouse = -active_delta_mouse;
 					}
 				}
+				else if (max == absZ)
+				{
+					active_delta_mouse = delta_mouse.y;
 
-				
-
+					if (ViewSpaceXaxis.z < 0)
+					{
+						active_delta_mouse = -active_delta_mouse;
+					}
+					else if (ViewSpaceXaxis.z > 0)
+					{
+						active_delta_mouse = active_delta_mouse;
+					}
+				}
 
 				GetModel(CURRENT_OBJECT(currentselectedobj))->transformation.translate(glm::vec3(active_delta_mouse / 20.0f, NULL, NULL));
-
 				GetModel(CURRENT_OBJECT(currentselectedobj))->dynamic_origin += glm::vec3(active_delta_mouse / 20.0f, NULL, NULL);
-
 			}
 		}
 

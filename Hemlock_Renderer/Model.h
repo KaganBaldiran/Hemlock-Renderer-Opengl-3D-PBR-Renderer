@@ -22,6 +22,7 @@
 #include <vector>
 #include "VectorMath.h"
 #include <functional>
+#include "Material.hpp"
 
 using namespace std;
 using namespace newwww;
@@ -115,9 +116,7 @@ public:
     glm::vec3 dynamic_origin;
 
     bool gizmo_first_time = true;
-
-    
-    
+    Material ObjectMaterial;
     
     Model(string const& path, bool gamma = false) : gammaCorrection(gamma) , SameModelInstances(0)
     {

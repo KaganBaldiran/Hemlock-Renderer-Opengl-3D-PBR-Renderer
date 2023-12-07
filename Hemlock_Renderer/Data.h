@@ -64,6 +64,7 @@ namespace DATA
 		float degree = NULL;
 
 		bool render_cube_map = false;
+		std::string HDRIpath;
 
 		Vec3<float> albedo = { 1.0f,1.0f,1.0f };
 		float metallic = 0.0f;
@@ -97,6 +98,5 @@ namespace DATA
 		bool FogEnabled = false;
 		float FogIntensity = 1.0f;
 		ImVec4 FogColor = clear_color;
-
 	};
 }

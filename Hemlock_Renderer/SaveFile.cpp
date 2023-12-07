@@ -205,9 +205,27 @@ void SAVEFILE::WriteHMLfilePacked(const char* fileName, scene& scene, DATA::UIda
 			}
 
 
-			HMLfile["GeneralAttributes"]["enableSSAO"] = data.EnableSSAO;
+			HMLfile["GeneralAttributes"]["SSAO"]["enableSSAO"] = data.EnableSSAO;
+			HMLfile["GeneralAttributes"]["SSAO"]["SSAObias"] = data.SSAObias;
+			HMLfile["GeneralAttributes"]["SSAO"]["SSAOkernelSize"] = data.SSAOkernelSize;
+			HMLfile["GeneralAttributes"]["SSAO"]["SSAOradius"] = data.SSAOradius;
+
+			HMLfile["GeneralAttributes"]["DOF"]["DOFenabled"] = data.DOFenabled;
+			HMLfile["GeneralAttributes"]["DOF"]["DOFfarDistance"] = data.DOFfarDistance;
+			HMLfile["GeneralAttributes"]["DOF"]["DOFintensity"] = data.DOFintensity;
+
+			HMLfile["GeneralAttributes"]["Fog"]["FogEnabled"] = data.FogEnabled;
+			HMLfile["GeneralAttributes"]["Fog"]["FogIntensity"] = data.FogIntensity;
+
+			HMLfile["GeneralAttributes"]["Fog"]["FogColor"]["x"] = data.FogColor.x;
+			HMLfile["GeneralAttributes"]["Fog"]["FogColor"]["y"] = data.FogColor.y;
+			HMLfile["GeneralAttributes"]["Fog"]["FogColor"]["z"] = data.FogColor.z;
+
 			HMLfile["GeneralAttributes"]["renderGrid"] = data.RenderGrid;
-			HMLfile["GeneralAttributes"]["enableSkybox"] = data.render_cube_map;
+
+			HMLfile["GeneralAttributes"]["HDRI"]["enableSkybox"] = data.render_cube_map;
+			HMLfile["GeneralAttributes"]["HDRI"]["HDRIpath"] = data.HDRIpath;
+
 			HMLfile["GeneralAttributes"]["showLightMeshes"] = data.renderlights;
 			HMLfile["GeneralAttributes"]["renderShadows"] = data.RenderShadows;
 
@@ -218,6 +236,8 @@ void SAVEFILE::WriteHMLfilePacked(const char* fileName, scene& scene, DATA::UIda
 			HMLfile["ViewportAttributes"]["cameraOrientation"]["x"] = camera.Orientation.x;
 			HMLfile["ViewportAttributes"]["cameraOrientation"]["y"] = camera.Orientation.y;
 			HMLfile["ViewportAttributes"]["cameraOrientation"]["z"] = camera.Orientation.z;
+
+			HMLfile["ViewportAttributes"]["cameraFOV"] = data.CameraFOV;
 
 			HMLfile["ViewportAttributes"]["renderPass"] = renderPass;
 
@@ -292,6 +312,7 @@ void SAVEFILE::WriteHMLfile(const char* fileName, scene& scene , DATA::UIdataPac
 				HMLfile["models"][i]["attributes"]["scale"]["x"] = scene.models[i]->transformation.transformmatrix[0][0];
 				HMLfile["models"][i]["attributes"]["scale"]["y"] = scene.models[i]->transformation.transformmatrix[1][1];
 				HMLfile["models"][i]["attributes"]["scale"]["z"] = scene.models[i]->transformation.transformmatrix[2][2];
+
 			}
 
 			HMLfile["lightCount"] = scene.numberoflights;
@@ -311,9 +332,27 @@ void SAVEFILE::WriteHMLfile(const char* fileName, scene& scene , DATA::UIdataPac
 			}
 
 
-			HMLfile["GeneralAttributes"]["enableSSAO"] = data.EnableSSAO;
+			HMLfile["GeneralAttributes"]["SSAO"]["enableSSAO"] = data.EnableSSAO;
+			HMLfile["GeneralAttributes"]["SSAO"]["SSAObias"] = data.SSAObias;
+			HMLfile["GeneralAttributes"]["SSAO"]["SSAOkernelSize"] = data.SSAOkernelSize;
+			HMLfile["GeneralAttributes"]["SSAO"]["SSAOradius"] = data.SSAOradius;
+
+			HMLfile["GeneralAttributes"]["DOF"]["DOFenabled"] = data.DOFenabled;
+			HMLfile["GeneralAttributes"]["DOF"]["DOFfarDistance"] = data.DOFfarDistance;
+			HMLfile["GeneralAttributes"]["DOF"]["DOFintensity"] = data.DOFintensity;
+
+			HMLfile["GeneralAttributes"]["Fog"]["FogEnabled"] = data.FogEnabled;
+			HMLfile["GeneralAttributes"]["Fog"]["FogIntensity"] = data.FogIntensity;
+
+			HMLfile["GeneralAttributes"]["Fog"]["FogColor"]["x"] = data.FogColor.x;
+			HMLfile["GeneralAttributes"]["Fog"]["FogColor"]["y"] = data.FogColor.y;
+			HMLfile["GeneralAttributes"]["Fog"]["FogColor"]["z"] = data.FogColor.z;
+
 			HMLfile["GeneralAttributes"]["renderGrid"] = data.RenderGrid;
-			HMLfile["GeneralAttributes"]["enableSkybox"] = data.render_cube_map;
+
+			HMLfile["GeneralAttributes"]["HDRI"]["enableSkybox"] = data.render_cube_map;
+			HMLfile["GeneralAttributes"]["HDRI"]["HDRIpath"] = data.HDRIpath;
+
 			HMLfile["GeneralAttributes"]["showLightMeshes"] = data.renderlights;
 			HMLfile["GeneralAttributes"]["renderShadows"] = data.RenderShadows;
 
@@ -324,6 +363,8 @@ void SAVEFILE::WriteHMLfile(const char* fileName, scene& scene , DATA::UIdataPac
 			HMLfile["ViewportAttributes"]["cameraOrientation"]["x"] = camera.Orientation.x;
 			HMLfile["ViewportAttributes"]["cameraOrientation"]["y"] = camera.Orientation.y;
 			HMLfile["ViewportAttributes"]["cameraOrientation"]["z"] = camera.Orientation.z;
+
+			HMLfile["ViewportAttributes"]["cameraFOV"] = data.CameraFOV;
 
 			HMLfile["ViewportAttributes"]["renderPass"] = renderPass;
 
@@ -353,7 +394,8 @@ void SAVEFILE::WriteHMLfile(const char* fileName, scene& scene , DATA::UIdataPac
 
 }
 
-void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,GLuint lightShader, DATA::UIdataPack& data, Camera& camera, int& renderPass, std::vector<std::string> &logs , GLFWwindow *window)
+void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,GLuint lightShader, DATA::UIdataPack& data, Camera& camera, int& renderPass, std::vector<std::string> &logs , 
+	GLFWwindow *window , CubeMap& cubemap, GLuint& HDRItoCubeMapShader , GLuint& ConvolutateCubeMapShader , GLuint& PrefilterHDRIShader)
 {
 	std::ifstream File(fileName);
 
@@ -378,13 +420,16 @@ void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,G
 						std::string textureType(HMLfile["models"][i][meshidname]["textures"][textureid]["type"]);
 
 						Textures newTexture(texturePath.c_str(), textureid, GL_TEXTURE_2D, GL_UNSIGNED_BYTE, NULL, textureType);
-						Texture newTexturePush;
-						newTexturePush.id = *newTexture.GetTexture();
-						newTexturePush.path = newTexture.GetPathData();
-						newTexturePush.type = textureType;
+						if (newTexture.GetTextureState() == TEXTURE_SUCCESS)
+						{
+							Texture newTexturePush;
+							newTexturePush.id = *newTexture.GetTexture();
+							newTexturePush.path = newTexture.GetPathData();
+							newTexturePush.type = textureType;
 
-						scene.models[i]->meshes[meshid].textures.push_back(newTexturePush);
-						scene.models[i]->textures_loaded.push_back(newTexturePush);
+							scene.models[i]->meshes[meshid].textures.push_back(newTexturePush);
+							scene.models[i]->textures_loaded.push_back(newTexturePush);
+						}
 					}
 				}
 
@@ -430,9 +475,32 @@ void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,G
 
 			scene.handlelights(shader);
 
-			data.EnableSSAO = HMLfile["GeneralAttributes"]["enableSSAO"];
+			data.EnableSSAO = HMLfile["GeneralAttributes"]["SSAO"]["enableSSAO"];
+			data.SSAObias = HMLfile["GeneralAttributes"]["SSAO"]["SSAObias"];
+			data.SSAOkernelSize = HMLfile["GeneralAttributes"]["SSAO"]["SSAOkernelSize"];
+			data.SSAOradius = HMLfile["GeneralAttributes"]["SSAO"]["SSAOradius"];
+
+			data.DOFenabled = HMLfile["GeneralAttributes"]["DOF"]["DOFenabled"];
+			data.DOFfarDistance = HMLfile["GeneralAttributes"]["DOF"]["DOFfarDistance"];
+			data.DOFintensity = HMLfile["GeneralAttributes"]["DOF"]["DOFintensity"];
+
+			data.FogEnabled = HMLfile["GeneralAttributes"]["Fog"]["FogEnabled"];
+			data.FogIntensity = HMLfile["GeneralAttributes"]["Fog"]["FogIntensity"];
+
+			data.FogColor.x = HMLfile["GeneralAttributes"]["Fog"]["FogColor"]["x"];
+			data.FogColor.y = HMLfile["GeneralAttributes"]["Fog"]["FogColor"]["y"];
+			data.FogColor.z = HMLfile["GeneralAttributes"]["Fog"]["FogColor"]["z"];
+
 			data.RenderGrid = HMLfile["GeneralAttributes"]["renderGrid"];
-			data.render_cube_map = HMLfile["GeneralAttributes"]["enableSkybox"];
+
+			data.render_cube_map = HMLfile["GeneralAttributes"]["HDRI"]["enableSkybox"];
+			data.HDRIpath = HMLfile["GeneralAttributes"]["HDRI"]["HDRIpath"];
+
+			if (!data.HDRIpath.empty())
+			{
+				ImportCubeMap(cubemap, HDRItoCubeMapShader, ConvolutateCubeMapShader, PrefilterHDRIShader, data, logs);
+			}
+
 			data.renderlights = HMLfile["GeneralAttributes"]["showLightMeshes"];
 			data.RenderShadows = HMLfile["GeneralAttributes"]["renderShadows"];
 
@@ -444,6 +512,7 @@ void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,G
 			camera.Orientation.y = HMLfile["ViewportAttributes"]["cameraOrientation"]["y"];
 			camera.Orientation.z = HMLfile["ViewportAttributes"]["cameraOrientation"]["z"];
 
+			data.CameraFOV = HMLfile["ViewportAttributes"]["cameraFOV"];
 			renderPass = HMLfile["ViewportAttributes"]["renderPass"];
 
 			LOG_INF("hml file read :: " << fileName);
@@ -477,7 +546,8 @@ void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,G
 
 }
 
-void SAVEFILE::ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shader, GLuint lightShader, DATA::UIdataPack& data, Camera& camera, int& renderPass, std::vector<std::string>& logs, GLFWwindow* window)
+void SAVEFILE::ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shader, GLuint lightShader, DATA::UIdataPack& data, Camera& camera, int& renderPass, std::vector<std::string>& logs, 
+	GLFWwindow* window, CubeMap& cubemap, GLuint& HDRItoCubeMapShader, GLuint& ConvolutateCubeMapShader, GLuint& PrefilterHDRIShader)
 {
 
 	std::string HMLfileDirectory(fileName);
@@ -535,13 +605,16 @@ void SAVEFILE::ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shad
 						std::string textureType(HMLfile["models"][i][meshidname]["textures"][textureid]["type"]);
 
 						Textures newTexture(texturePath.c_str(), textureid, GL_TEXTURE_2D, GL_UNSIGNED_BYTE, NULL, textureType);
-						Texture newTexturePush;
-						newTexturePush.id = *newTexture.GetTexture();
-						newTexturePush.path = newTexture.GetPathData();
-						newTexturePush.type = textureType;
+						if (newTexture.GetTextureState() == TEXTURE_SUCCESS)
+						{
+							Texture newTexturePush;
+							newTexturePush.id = *newTexture.GetTexture();
+							newTexturePush.path = newTexture.GetPathData();
+							newTexturePush.type = textureType;
 
-						scene.models[i]->meshes[meshid].textures.push_back(newTexturePush);
-						scene.models[i]->textures_loaded.push_back(newTexturePush);
+							scene.models[i]->meshes[meshid].textures.push_back(newTexturePush);
+							scene.models[i]->textures_loaded.push_back(newTexturePush);
+						}
 					}
 				}
 
@@ -587,9 +660,32 @@ void SAVEFILE::ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shad
 
 			scene.handlelights(shader);
 
-			data.EnableSSAO = HMLfile["GeneralAttributes"]["enableSSAO"];
+			data.EnableSSAO = HMLfile["GeneralAttributes"]["SSAO"]["enableSSAO"];
+			data.SSAObias = HMLfile["GeneralAttributes"]["SSAO"]["SSAObias"];
+			data.SSAOkernelSize = HMLfile["GeneralAttributes"]["SSAO"]["SSAOkernelSize"];
+			data.SSAOradius = HMLfile["GeneralAttributes"]["SSAO"]["SSAOradius"];
+
+			data.DOFenabled = HMLfile["GeneralAttributes"]["DOF"]["DOFenabled"];
+			data.DOFfarDistance = HMLfile["GeneralAttributes"]["DOF"]["DOFfarDistance"];
+			data.DOFintensity = HMLfile["GeneralAttributes"]["DOF"]["DOFintensity"];
+
+			data.FogEnabled = HMLfile["GeneralAttributes"]["Fog"]["FogEnabled"];
+			data.FogIntensity = HMLfile["GeneralAttributes"]["Fog"]["FogIntensity"];
+
+			data.FogColor.x = HMLfile["GeneralAttributes"]["Fog"]["FogColor"]["x"];
+			data.FogColor.y = HMLfile["GeneralAttributes"]["Fog"]["FogColor"]["y"];
+			data.FogColor.z = HMLfile["GeneralAttributes"]["Fog"]["FogColor"]["z"];
+
 			data.RenderGrid = HMLfile["GeneralAttributes"]["renderGrid"];
-			data.render_cube_map = HMLfile["GeneralAttributes"]["enableSkybox"];
+
+			data.render_cube_map = HMLfile["GeneralAttributes"]["HDRI"]["enableSkybox"];
+			data.HDRIpath = HMLfile["GeneralAttributes"]["HDRI"]["HDRIpath"];
+
+			if (!data.HDRIpath.empty())
+			{
+				ImportCubeMap(cubemap, HDRItoCubeMapShader, ConvolutateCubeMapShader, PrefilterHDRIShader, data, logs);
+			}
+
 			data.renderlights = HMLfile["GeneralAttributes"]["showLightMeshes"];
 			data.RenderShadows = HMLfile["GeneralAttributes"]["renderShadows"];
 
@@ -601,6 +697,7 @@ void SAVEFILE::ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shad
 			camera.Orientation.y = HMLfile["ViewportAttributes"]["cameraOrientation"]["y"];
 			camera.Orientation.z = HMLfile["ViewportAttributes"]["cameraOrientation"]["z"];
 
+			data.CameraFOV = HMLfile["ViewportAttributes"]["cameraFOV"];
 			renderPass = HMLfile["ViewportAttributes"]["renderPass"];
 
 			LOG_INF("hml file read :: " << fileName);

@@ -1,3 +1,16 @@
 LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 17:04:19 :: Nov  6 2023
 LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 23:06:42 :: Nov  6 2023
 LOG:: SAVEFILE::ReadHMLfilePacked :: Unable to open the file :: C:/Users/kbald/Desktop/HelmetPacked/HelmetPacked.hml :: 20:10:52 :: Nov 27 2023
+LOG:: SAVEFILE::ReadHMLfilePacked :: Unable to open the file :: C:/Users/kbald/Desktop/HelmetPacked/HelmetPacked.hml :: 22:26:09 :: Dec  4 2023
+LOG:: SAVEFILE::ReadHMLfilePacked :: Unable to open the file :: C:/Users/kbald/Desktop/HelmetPacked/HelmetPacked.hml :: 22:34:39 :: Dec  4 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 22:34:39 :: Dec  4 2023
+LOG:: SAVEFILE::ReadHMLfile :: Exception while reading hml file :: [json.exception.type_error.302] type must be boolean, but is null :: C:/Users/kbald/Desktop/Models/Cannon.hml
+LOG:: SAVEFILE::ReadHMLfile :: Exception while reading hml file :: [json.exception.type_error.302] type must be boolean, but is null :: C:/Users/kbald/Desktop/Models/Cannon.hml
+LOG:: SAVEFILE::ReadHMLfile :: Exception while reading hml file :: [json.exception.type_error.302] type must be boolean, but is null :: C:/Users/kbald/Desktop/Models/Cannon.hml
+LOG:: SAVEFILE::ReadHMLfile :: Exception while reading hml file :: [json.exception.type_error.302] type must be boolean, but is null :: C:/Users/kbald/Desktop/Models/Cannon.hml
+LOG:: SAVEFILE::ReadHMLfile :: Exception while reading hml file :: [json.exception.type_error.302] type must be boolean, but is null :: C:/Users/kbald/Desktop/Models/Cannon.hml
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 01:04:53 :: Dec  6 2023
+LOG:: SAVEFILE::ReadHMLfile :: Exception while reading hml file :: [json.exception.type_error.302] type must be boolean, but is null :: C:/Users/kbald/Desktop/Models/Cannon.hml
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 22:53:44 :: Dec  6 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 22:53:44 :: Dec  6 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 03:52:13 :: Dec  7 2023
