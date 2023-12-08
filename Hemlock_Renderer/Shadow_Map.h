@@ -137,7 +137,7 @@
 
 		  for (size_t i = 1; i < models.size(); i++)
 		  {
-			  models.at(i)->transformation.SendUniformToShader(shadow_map_shader, "model");
+			  models.at(i)->transformation.SetModelMatrixUniformLocation(shadow_map_shader, "model");
 			  models[i]->Draw(shadow_map_shader, camera, shadowMap, NULL);
 		  }
 
@@ -246,7 +246,7 @@
 
 		  for (size_t i = 1; i < models.size(); i++)
 		  {
-			  models.at(i)->transformation.SendUniformToShader(shader, "model");
+			  models.at(i)->transformation.SetModelMatrixUniformLocation(shader, "model");
 			  models[i]->Draw(shader, camera, ShadowMapId, NULL);
 		  }
 

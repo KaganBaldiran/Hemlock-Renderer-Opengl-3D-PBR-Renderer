@@ -105,16 +105,10 @@ namespace UI
 	color_sheme_t chosen_color_sheme = GITHUB_STYLE_THEME;
 	std::string DropDownFilePath;
 	bool DropDownImport = false;
-	//CPU usage counter
-	
-
-    
-
 	
 	void InitNewUIwindow()
 	{
 		ImGui::CreateContext();
-		// Setup Dear ImGui style
 		ImGui::StyleColorsDark();
 	}
 
@@ -564,31 +558,31 @@ namespace UI
 		{
 
 
-			scene.GetModel(currentselectedobj - 2)->transformation.translate(glm::vec3(data.moveamount.x, data.moveamount.y, data.moveamount.z));
+			scene.GetModel(currentselectedobj - 2)->transformation.Translate(glm::vec3(data.moveamount.x, data.moveamount.y, data.moveamount.z));
 
 			scene.GetModel(CURRENT_OBJECT(currentselectedobj))->dynamic_origin += glm::vec3(data.moveamount.x, data.moveamount.y, data.moveamount.z);
 
 
 			if (data.scaleamount != 0.0f)
 			{
-				scene.GetModel(currentselectedobj - 2)->transformation.scale(glm::vec3(data.scaleamount, data.scaleamount, data.scaleamount));
+				scene.GetModel(currentselectedobj - 2)->transformation.Scale(glm::vec3(data.scaleamount, data.scaleamount, data.scaleamount));
 
 				scene.RecalculateObjectScales(currentselectedobj, glm::vec3(data.scaleamount, data.scaleamount, data.scaleamount));
 
 			}
 
 
-			scene.GetModel(currentselectedobj - 2)->transformation.rotate(data.rotationamount, glm::vec3(0.0f, 1.0f, 0.0f));
+			scene.GetModel(currentselectedobj - 2)->transformation.Rotate(data.rotationamount, glm::vec3(0.0f, 1.0f, 0.0f));
 
 
 
 
-			scene.GetModel(currentselectedobj - 2)->transformation.translate(glm::vec3(0.0f, 0.0f, 0.0f));
+			scene.GetModel(currentselectedobj - 2)->transformation.Translate(glm::vec3(0.0f, 0.0f, 0.0f));
 
 
 
 
-			scene.GetModel(currentselectedobj - 2)->transformation.translate(-glm::vec3(0.0f, 0.0f, 0.0f));
+			scene.GetModel(currentselectedobj - 2)->transformation.Translate(-glm::vec3(0.0f, 0.0f, 0.0f));
 
 
 		}
@@ -600,18 +594,18 @@ namespace UI
 		if (currentselectedobj >= 2)
 		{
 
-			scene.GetModel(currentselectedobj - 2)->transformation.translate(glm::vec3(0.0f, 0.0f, 0.0f));
+			scene.GetModel(currentselectedobj - 2)->transformation.Translate(glm::vec3(0.0f, 0.0f, 0.0f));
 
 
-			scene.GetModel(currentselectedobj - 2)->transformation.rotate(-data.rotationamount, glm::vec3(0.0f, 1.0f, 0.0f));
+			scene.GetModel(currentselectedobj - 2)->transformation.Rotate(-data.rotationamount, glm::vec3(0.0f, 1.0f, 0.0f));
 
-			scene.GetModel(currentselectedobj - 2)->transformation.translate(-glm::vec3(0.0f, 0.0f, 0.0f));
-
-
-			scene.GetModel(currentselectedobj - 2)->transformation.scale(glm::vec3(1 / data.scaleamount, 1 / data.scaleamount, 1 / data.scaleamount));
+			scene.GetModel(currentselectedobj - 2)->transformation.Translate(-glm::vec3(0.0f, 0.0f, 0.0f));
 
 
-			scene.GetModel(currentselectedobj - 2)->transformation.translate(-glm::vec3(data.moveamount.x, data.moveamount.y, data.moveamount.z));
+			scene.GetModel(currentselectedobj - 2)->transformation.Scale(glm::vec3(1 / data.scaleamount, 1 / data.scaleamount, 1 / data.scaleamount));
+
+
+			scene.GetModel(currentselectedobj - 2)->transformation.Translate(-glm::vec3(data.moveamount.x, data.moveamount.y, data.moveamount.z));
 
 			scene.GetModel(CURRENT_OBJECT(currentselectedobj))->dynamic_origin -= glm::vec3(data.moveamount.x, data.moveamount.y, data.moveamount.z);
 
@@ -674,11 +668,11 @@ namespace UI
 		{
 			if (auto_rotate_on.at(i) != CURRENT_OBJECT(currentselectedobj))
 			{
-				scene.GetModel(auto_rotate_on.at(i))->transformation.translate(glm::vec3(0.0f, 0.0f, 0.0f));
+				scene.GetModel(auto_rotate_on.at(i))->transformation.Translate(glm::vec3(0.0f, 0.0f, 0.0f));
 
-				scene.GetModel(auto_rotate_on.at(i))->transformation.rotate(scene.GetModel(auto_rotate_on.at(i))->UIprop.rotationamount, glm::vec3(0.0f, 1.0f, 0.0f));
+				scene.GetModel(auto_rotate_on.at(i))->transformation.Rotate(scene.GetModel(auto_rotate_on.at(i))->UIprop.rotationamount, glm::vec3(0.0f, 1.0f, 0.0f));
 
-				scene.GetModel(auto_rotate_on.at(i))->transformation.translate(-glm::vec3(0.0f, 0.0f, 0.0f));
+				scene.GetModel(auto_rotate_on.at(i))->transformation.Translate(-glm::vec3(0.0f, 0.0f, 0.0f));
 
 			}
 
@@ -694,11 +688,11 @@ namespace UI
 			if (auto_rotate_on.at(i) != CURRENT_OBJECT(currentselectedobj))
 			{
 
-				scene.GetModel(auto_rotate_on.at(i))->transformation.translate(glm::vec3(0.0f, 0.0f, 0.0f));
+				scene.GetModel(auto_rotate_on.at(i))->transformation.Translate(glm::vec3(0.0f, 0.0f, 0.0f));
 
-				scene.GetModel(auto_rotate_on.at(i))->transformation.rotate(-scene.GetModel(auto_rotate_on.at(i))->UIprop.rotationamount, glm::vec3(0.0f, 1.0f, 0.0f));
+				scene.GetModel(auto_rotate_on.at(i))->transformation.Rotate(-scene.GetModel(auto_rotate_on.at(i))->UIprop.rotationamount, glm::vec3(0.0f, 1.0f, 0.0f));
 
-				scene.GetModel(auto_rotate_on.at(i))->transformation.translate(-glm::vec3(0.0f, 0.0f, 0.0f));
+				scene.GetModel(auto_rotate_on.at(i))->transformation.Translate(-glm::vec3(0.0f, 0.0f, 0.0f));
 
 			}
 		}
@@ -758,7 +752,7 @@ namespace UI
 
 			UseShaderProgram(import_shader);
 
-			scene.GetModel(scene.GetModelCount() - 1)->transformation.scale(glm::vec3(0.05f, 0.05f, 0.05f));
+			scene.GetModel(scene.GetModelCount() - 1)->transformation.Scale(glm::vec3(0.05f, 0.05f, 0.05f));
 
 			std::string logtemp = "A new object is imported!";
 
@@ -1216,7 +1210,7 @@ namespace UI
 						glUniform3f(glGetUniformLocation(import_shader, "lightpos1"), lightpos.x, lightpos.y, lightpos.z);
 
 
-						scene.GetModel(scene.GetModelCount() - 1)->transformation.scale(glm::vec3(0.05f, 0.05f, 0.05f));
+						scene.GetModel(scene.GetModelCount() - 1)->transformation.Scale(glm::vec3(0.05f, 0.05f, 0.05f));
 
 						std::string logtemp = "A new object is imported!";
 
@@ -2191,17 +2185,15 @@ namespace UI
 				ImGui::PopStyleVar();
 				ImGui::PopStyleVar();
 
+				ImVec2 ButtonSize(std::min(current_win_size.x * 0.3f, 130.0f), std::min(current_win_size.x * 0.2f, 65.0f));
+
 				if (!importmodel)
 				{
-					//ImGui::SetCursorPos(ImVec2(10, 300));
 
 					ImGui::Text("Import 3D model: ");
-
-					//ImGui::SetCursorPos(ImVec2(130, 290));
-
 					ImGui::SameLine();
 
-					if (ImGui::Button("Import Model", ImVec2(100, 40)))
+					if (ImGui::Button("Import Model", ButtonSize))
 					{
 							importmodel = true;
 							data.imported = false;
@@ -2258,7 +2250,7 @@ namespace UI
 						glUniform3f(glGetUniformLocation(import_shader, "lightpos1"), lightpos.x, lightpos.y, lightpos.z);
 
 
-						scene.GetModel(scene.GetModelCount() - 1)->transformation.scale(glm::vec3(0.05f, 0.05f, 0.05f));
+						scene.GetModel(scene.GetModelCount() - 1)->transformation.Scale(glm::vec3(0.05f, 0.05f, 0.05f));
 
 						std::string logtemp = "A new object is imported!";
 
@@ -2282,7 +2274,7 @@ namespace UI
 					//ImGui::SetCursorPos(ImVec2(130, 350));
 					ImGui::SameLine();
 
-					if (ImGui::Button("Save Screenshot", ImVec2(120, 40)))
+					if (ImGui::Button("Save Screenshot", ButtonSize))
 					{
 						data.takesreenshot = true;
 					}

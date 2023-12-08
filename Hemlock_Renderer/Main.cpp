@@ -117,7 +117,7 @@ int main()
    
     for (size_t i = 0; i < scene.GetModelCount(); i++)
     {
-        scene.GetModel(i)->transformation.scale(glm::vec3(0.05f, 0.05f, 0.05f));
+        scene.GetModel(i)->transformation.Scale(glm::vec3(0.05f, 0.05f, 0.05f));
     }
    
     scene.handlelights(PBRShader.GetID());
@@ -273,7 +273,17 @@ int main()
                 //UI::current_win_size.Cast<float>(), UI::current_viewport_size.y, RenderPass, pickingtex,
                 //pickingshader.GetID(), pickingBuffertex, ssao, data.EnableSSAO, *window , camera);
 
-            
+            if (data.takesreenshot)
+            {
+                UseShaderProgram(0);
+
+                Vec2<int> screensize;
+                glfwGetWindowSize(window, &screensize.x, &screensize.y);
+
+                scene.Takescreenshot(screensize.x, screensize.y, data.screenshotPathstr.c_str(), RenderPass, SceneGbuffer, screen_fbo);
+                data.takesreenshot = false;
+            }
+
             UI::DrawOnViewportSettings({width,height}, RenderPass, *zeroPointButton.GetTexture(),*GridButton.GetTexture(), camera, data);
             UI::Render();
 

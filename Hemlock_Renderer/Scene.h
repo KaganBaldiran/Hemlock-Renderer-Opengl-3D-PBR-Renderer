@@ -283,11 +283,11 @@ public:
 		Vec2<int> finalImageSize;
 		int ChannelSize = 0;
 
-		if(renderPass == RENDER_PASS_COMBINED)
+		if(renderPass == RENDER_PASS_COMBINED || renderPass == RENDER_PASS_WIREFRAME)
 		{ 
-			glBindFramebuffer(GL_FRAMEBUFFER, screenFBO.GetFBO());
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-			finalImageSize({ (int)screenFBO.FboSize.x,(int)screenFBO.FboSize.y });
+			finalImageSize({ (int)width,(int)height });
 			ChannelSize = 3;
 			pixels = new BYTE[ChannelSize * finalImageSize.x * finalImageSize.y];
 
@@ -472,7 +472,7 @@ public:
 
 			for (size_t i = 1; i < models.size(); i++)
 			{
-				models.at(i)->transformation.SendUniformToShader(GbufferShader, "model");
+				models.at(i)->transformation.SetModelMatrixUniformLocation(GbufferShader, "model");
 				models[i]->Draw(GbufferShader, camera, NULL, NULL);
 			}
 
@@ -485,7 +485,7 @@ public:
 
 			for (size_t i = 1; i < models.size(); i++)
 			{
-				models.at(i)->transformation.SendUniformToShader(pickingtextureShader, "model");
+				models.at(i)->transformation.SetModelMatrixUniformLocation(pickingtextureShader, "model");
 				models[i]->Draw(pickingtextureShader, camera, NULL, NULL);
 			}
 
@@ -584,7 +584,6 @@ public:
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 
-	
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, width, height);
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); 
@@ -592,7 +591,14 @@ public:
 
 		UseShaderProgram(shader);
 		
-		glUniformMatrix4fv(glGetUniformLocation(shader, "modelMat"), 1, GL_FALSE, glm::value_ptr(modelMat * ScaleMat));
+		if (data.takesreenshot)
+		{
+			glUniformMatrix4fv(glGetUniformLocation(shader, "modelMat"), 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
+		}
+		else
+		{
+		    glUniformMatrix4fv(glGetUniformLocation(shader, "modelMat"), 1, GL_FALSE, glm::value_ptr(modelMat * ScaleMat));
+		}
 		
 		GLuint renderpass = buffertexture;
 
@@ -683,7 +689,15 @@ public:
 
 
 		screen_fbo.Bind(GL_FRAMEBUFFER);
-		glViewport(0, 0, screen_fbo.FboSize.x, screen_fbo.FboSize.y);
+		if (data.takesreenshot)
+		{
+			const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+			glViewport(0, 0, mode->width, mode->height);
+		}
+		else
+		{
+		   glViewport(0, 0, screen_fbo.FboSize.x, screen_fbo.FboSize.y);
+		}
 
 		if (RenderPass == RENDER_PASS_COMBINED || RenderPass == RENDER_PASS_WIREFRAME)
 		{
@@ -715,7 +729,7 @@ public:
 			{
 				glClearColor(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-				camera.screenratiodefault = glm::mat4(1.0f);
+				//camera.screenratiodefault = glm::mat4(1.0f);
 			}
 
 			if (data.render_cube_map)
@@ -747,7 +761,7 @@ public:
 
 						glUniform1i(glGetUniformLocation(PBRShader.GetID(), "enablehighlight"), data.enablehighlight);
 
-						GetModel(i - 1)->transformation.SendUniformToShader(PBRShader.GetID(), "model");
+						GetModel(i - 1)->transformation.SetModelMatrixUniformLocation(PBRShader.GetID(), "model");
 
 						auto ShaderPrep = [&]() {
 
@@ -800,7 +814,7 @@ public:
 							glCullFace(GL_BACK);
 							glUniform4f(glGetUniformLocation(lightshader.GetID(), "lightColor"), 1.0f, 1.0f, 1.0f, 1.0f);
 
-							GetModel(i - 1)->transformation.SendUniformToShader(lightshader.GetID(), "model");
+							GetModel(i - 1)->transformation.SetModelMatrixUniformLocation(lightshader.GetID(), "model");
 							DrawModels(lightshader.GetID(), camera, i - 1, NULL, NULL);
 
 							UseShaderProgram(0);
@@ -854,7 +868,7 @@ public:
 
 		glBindFramebuffer(GL_FRAMEBUFFER, NULL);
 
-		if (data.takesreenshot)
+		/*if (data.takesreenshot)
 		{
 			UseShaderProgram(0);
 
@@ -863,7 +877,7 @@ public:
 
 			Takescreenshot(screensize.x, screensize.y, data.screenshotPathstr.c_str(), RenderPass, SceneGbuffer, screen_fbo);
 			data.takesreenshot = false;
-		}
+		}*/
 
 		if (data.EnableSSAO)
 		{
@@ -949,7 +963,7 @@ public:
 
 	void DrawModelsWithOutline(GLuint shader1, GLuint shader2, Camera& camera, size_t model_index_to_draw, size_t current_selected, GLuint shadowMap)
 	{
-
+		//static bool AlreadySelected = false;
 		glClear(GL_STENCIL_BUFFER_BIT);
 
 		UseShaderProgram(shader1);
@@ -957,7 +971,7 @@ public:
 		glStencilMask(0xFF);
 		glDisable(GL_DEPTH_TEST);
 
-		models[model_index_to_draw]->transformation.SendUniformToShader(shader1, "model");
+		models[model_index_to_draw]->transformation.SetModelMatrixUniformLocation(shader1, "model");
 		models[model_index_to_draw]->Draw(shader1, camera, shadowMap,NULL);
 
 		//glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
@@ -976,10 +990,10 @@ public:
 		//models[model_index_to_draw]->transformation.translate(glm::vec3(0.0f, -0.5f, 0.0f));
 
 		//models[model_index_to_draw]->transformation.scale(glm::vec3(1.01f, 1.01f, 1.01f));
-		models[model_index_to_draw]->transformation.SendUniformToShader(shader2, "model");
+		models[model_index_to_draw]->transformation.SetModelMatrixUniformLocation(shader2, "model");
 		glUniformMatrix4fv(glGetUniformLocation(shader2, "ViewMat"), 1, GL_FALSE, glm::value_ptr(camera.cam_view));
 
-		std::cout << "SCALE AVG@; " << models[model_index_to_draw]->transformation.scale_avg << "\n";
+		//std::cout << "SCALE AVG@; " << models[model_index_to_draw]->transformation.scale_avg << "\n";
 
 		UseShaderProgram(shader2);
 
@@ -1182,8 +1196,8 @@ public:
 	{
 
 		int Model_index = -1;
-
-		glm::vec3 model_transformation;
+		//glm::vec3 model_transformation;
+		glm::mat4 model_transformation;
 		glm::vec3 model_scales;
 		glm::vec3 originpoint;
 
@@ -1191,12 +1205,11 @@ public:
 		{
 			Model_index = CURRENT_LIGHT(currentselectedlight);
 
-			model_transformation = glm::vec3(lights.at(Model_index)->transformation.transformmatrix[3]);
+			model_transformation = lights.at(Model_index)->transformation.TranslationMatrix;
 
-			model_scales = glm::vec3(lights.at(Model_index)->transformation.transformmatrix[0][0],
-				                     lights.at(Model_index)->transformation.transformmatrix[1][1],
-				                     lights.at(Model_index)->transformation.transformmatrix[2][2]);
-
+			model_scales = glm::vec3(lights.at(Model_index)->transformation.ScalingMatrix[0][0],
+				                     lights.at(Model_index)->transformation.ScalingMatrix[1][1],
+				                     lights.at(Model_index)->transformation.ScalingMatrix[2][2]);
 
 			originpoint = glm::vec3(lights.at(Model_index)->originpoint.x,
 				                    lights.at(Model_index)->originpoint.y,
@@ -1207,55 +1220,43 @@ public:
 		{
 			Model_index = CURRENT_OBJECT(currentselectedobject);
 
-			model_transformation = glm::vec3(models.at(Model_index)->transformation.transformmatrix[3]);
-
-			model_scales = glm::vec3(models.at(Model_index)->transformation.transformmatrix[0][0],
-				                     models.at(Model_index)->transformation.transformmatrix[1][1],
-				                     models.at(Model_index)->transformation.transformmatrix[2][2]);
+			model_transformation = models.at(Model_index)->transformation.TranslationMatrix;
 
 
-			//originpoint = glm::vec3(GetModel(Model_index)->transformation.Position.x * GetModel(Model_index)->originpoint.x,
-				                    //GetModel(Model_index)->transformation.Position.y * GetModel(Model_index)->originpoint.y,
-				                    //GetModel(Model_index)->transformation.Position.z * GetModel(Model_index)->originpoint.z);
+			model_scales = glm::vec3(models.at(Model_index)->transformation.ScalingMatrix[0][0],
+				                     models.at(Model_index)->transformation.ScalingMatrix[1][1],
+				                     models.at(Model_index)->transformation.ScalingMatrix[2][2]);
 
 			originpoint = glm::vec3(GetModel(Model_index)->transformation.Position.x ,
 				                    GetModel(Model_index)->transformation.Position.y,
 				                    GetModel(Model_index)->transformation.Position.z);
 
-
-
 		}
 
-		
-		
+		GetModel(0)->transformation.Translate(originpoint);
+		GetModel(0)->transformation.TranslationMatrix = model_transformation;
 
-		GetModel(0)->transformation.translate(originpoint);
-
-		
-		GetModel(0)->transformation.translate(model_transformation * 20.0f);
-		
-
-
-		GetModel(0)->transformation.scale(model_scales * 10.0f);
+		GetModel(0)->transformation.Scale(model_scales * 10.0f);
 
 		if (CURRENT_LIGHT(currentselectedlight) >= NULL)
 		{
 
-			GetModel(0)->transformation.scale(glm::vec3(lights.at(Model_index)->transformation.scale_avg) / 5.0f);
+			GetModel(0)->transformation.Scale(glm::vec3(lights.at(Model_index)->transformation.scale_avg) / 5.0f);
 			//GetModel(0)->transformation.scale(glm::vec3(GetModel(0)->transformation.scale_avg) / 5.0f);
 
 
 		}
 		else if (CURRENT_OBJECT(currentselectedobject) >= NULL)
 		{
-			GetModel(0)->transformation.scale(glm::vec3(GetModel(Model_index)->transformation.scale_avg) / 5.0f);
+			GetModel(0)->transformation.Scale(glm::vec3(GetModel(Model_index)->transformation.scale_avg) / 5.0f);
 
 		}
+		UseShaderProgram(shader);
 
 
 		if (iterator == 0)
 		{
-			GetModel(0)->transformation.SendUniformToShader(shader, "model");
+			GetModel(0)->transformation.SetModelMatrixUniformLocation(shader, "model");
 			UseShaderProgram(shader);
 
 			if (enablegizmo_p.first == Y_GIZMO && enablegizmo_p.second)
@@ -1274,8 +1275,8 @@ public:
 		}
 		if (iterator == 1)
 		{
-			GetModel(0)->transformation.rotate(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-			GetModel(0)->transformation.SendUniformToShader(shader, "model");
+			GetModel(0)->transformation.Rotate(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+			GetModel(0)->transformation.SetModelMatrixUniformLocation(shader, "model");
 			UseShaderProgram(shader);
 
 			if (enablegizmo_p.first == Z_GIZMO && enablegizmo_p.second)
@@ -1290,14 +1291,14 @@ public:
 			*GetModel(0)->GetModelIDptr() = 5 + GetModelCount() + lights.size();
 			UseShaderProgram(0);
 			DrawModels(shader, camera, 0, NULL,NULL);
-			GetModel(0)->transformation.rotate(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+			GetModel(0)->transformation.Rotate(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 
 		}
 		if (iterator == 2)
 		{
-			GetModel(0)->transformation.rotate(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-			GetModel(0)->transformation.rotate(90.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-			GetModel(0)->transformation.SendUniformToShader(shader, "model");
+			GetModel(0)->transformation.Rotate(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+			GetModel(0)->transformation.Rotate(90.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+			GetModel(0)->transformation.SetModelMatrixUniformLocation(shader, "model");
 			UseShaderProgram(shader);
 
 			if (enablegizmo_p.first == X_GIZMO && enablegizmo_p.second)
@@ -1313,8 +1314,8 @@ public:
 
 			UseShaderProgram(0);
 			DrawModels(shader, camera, 0, NULL,NULL);
-			GetModel(0)->transformation.rotate(-90.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-			GetModel(0)->transformation.rotate(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+			GetModel(0)->transformation.Rotate(-90.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+			GetModel(0)->transformation.Rotate(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 
 
 		}
@@ -1322,27 +1323,19 @@ public:
 		if (CURRENT_LIGHT(currentselectedlight) >= NULL)
 		{
 
-		   GetModel(0)->transformation.scale(1.0f / (glm::vec3(lights.at(Model_index)->transformation.scale_avg / 5.0f)));
+		   GetModel(0)->transformation.Scale(1.0f / (glm::vec3(lights.at(Model_index)->transformation.scale_avg / 5.0f)));
 		   //GetModel(0)->transformation.scale(1.0f / (glm::vec3(GetModel(0)->transformation.scale_avg / 5.0f)));
 
 		}
 		else if (CURRENT_OBJECT(currentselectedobject) >= NULL)
 		{
 
-			GetModel(0)->transformation.scale(1.0f / (glm::vec3(GetModel(Model_index)->transformation.scale_avg / 5.0f)));
+			GetModel(0)->transformation.Scale(1.0f / (glm::vec3(GetModel(Model_index)->transformation.scale_avg / 5.0f)));
 		}
 
-		GetModel(0)->transformation.scale(1.0f / (model_scales * 10.0f));
+		GetModel(0)->transformation.Scale(1.0f / (model_scales * 10.0f));
 
-	
-
-
-		GetModel(0)->transformation.translate(-(model_transformation * 20.0f));
-
-		
-
-		GetModel(0)->transformation.translate(-originpoint);
-		
+		GetModel(0)->transformation.Translate(-originpoint);
 		
 		*GetModel(0)->GetModelIDptr() = 2;
 
@@ -1381,7 +1374,7 @@ public:
 		{
 			if (enablegizmo_p.first == Y_GIZMO && enablegizmo_p.second == true)
 			{
-				GetModel(CURRENT_OBJECT(currentselectedobj))->transformation.translate(glm::vec3(NULL, -delta_mouse.y / 20.0f, NULL));
+				GetModel(CURRENT_OBJECT(currentselectedobj))->transformation.Translate(glm::vec3(NULL, -delta_mouse.y / 20.0f, NULL));
 				GetModel(CURRENT_OBJECT(currentselectedobj))->dynamic_origin += glm::vec3(NULL, -delta_mouse.y / 20.0f, NULL);
 			}
 			else if (enablegizmo_p.first == Z_GIZMO && enablegizmo_p.second == true)
@@ -1435,7 +1428,7 @@ public:
 					}
 				}
 	
-				GetModel(CURRENT_OBJECT(currentselectedobj))->transformation.translate(glm::vec3(NULL, NULL, active_delta_mouse / 20.0f));
+				GetModel(CURRENT_OBJECT(currentselectedobj))->transformation.Translate(glm::vec3(NULL, NULL, active_delta_mouse / 20.0f));
 				GetModel(CURRENT_OBJECT(currentselectedobj))->dynamic_origin += glm::vec3(NULL, NULL, active_delta_mouse / 20.0f);
 			}
 
@@ -1491,7 +1484,7 @@ public:
 					}
 				}
 
-				GetModel(CURRENT_OBJECT(currentselectedobj))->transformation.translate(glm::vec3(active_delta_mouse / 20.0f, NULL, NULL));
+				GetModel(CURRENT_OBJECT(currentselectedobj))->transformation.Translate(glm::vec3(active_delta_mouse / 20.0f, NULL, NULL));
 				GetModel(CURRENT_OBJECT(currentselectedobj))->dynamic_origin += glm::vec3(active_delta_mouse / 20.0f, NULL, NULL);
 			}
 		}
@@ -1500,20 +1493,21 @@ public:
 		{
 
 			Light* currentlight = lights.at(CURRENT_LIGHT(currentselectedlight));
+			const float lightSpeed = 0.004f;
 
 			if (enablegizmo_p.first == Y_GIZMO && enablegizmo_p.second == true)
 			{
 
+				float deltaTransformation = -delta_mouse.y * lightSpeed;
+				currentlight->transformation.Translate(glm::vec3(NULL, deltaTransformation, NULL));
 
-				currentlight->transformation.translate(glm::vec3(NULL, -delta_mouse.y / 20.0f, NULL));
+				currentlight->lightpos += glm::vec3(NULL, deltaTransformation, NULL);
 
-				currentlight->lightpos += glm::vec3(NULL, -delta_mouse.y / 20.0f, NULL);
-
-				currentlight->originpoint += glm::vec3(NULL, -delta_mouse.y / 20.0f, NULL);
+				currentlight->originpoint += glm::vec3(NULL, deltaTransformation, NULL);
 
 				LightPositions[CURRENT_LIGHT(currentselectedlight)] = currentlight->lightpos;
 
-				currentlight->lightmodel = currentlight->transformation.transformmatrix;
+				currentlight->lightmodel = currentlight->transformation.GetModelMat4();
 
 				handlelights(PBR_Shader);
 
@@ -1523,39 +1517,65 @@ public:
 			{
 
 				double active_delta_mouse = NULL;
+				glm::vec4 ViewSpaceZaxis = camera.cam_view * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
+				float absX = glm::abs(ViewSpaceZaxis.x);
+				float absY = glm::abs(ViewSpaceZaxis.y);
+				float absZ = glm::abs(ViewSpaceZaxis.z);
 
-				if (abs(delta_mouse.y) > abs(delta_mouse.x))
+				float max = glm::max(glm::max(absX, absY), absZ);
+
+				if (max == absX)
+				{
+					active_delta_mouse = delta_mouse.x;
+
+					if (ViewSpaceZaxis.x < 0)
+					{
+						active_delta_mouse = -active_delta_mouse;
+					}
+					else if (ViewSpaceZaxis.x > 0)
+					{
+						active_delta_mouse = active_delta_mouse;
+					}
+				}
+				else if (max == absY)
 				{
 					active_delta_mouse = delta_mouse.y;
 
-					if (camera.Get_Orientation().z >= NULL)
+					if (ViewSpaceZaxis.y < 0)
+					{
+						active_delta_mouse = active_delta_mouse;
+					}
+					else if (ViewSpaceZaxis.y > 0)
 					{
 						active_delta_mouse = -active_delta_mouse;
 					}
 				}
-				else if (abs(delta_mouse.y) <= abs(delta_mouse.x))
+				else if (max == absZ)
 				{
-					active_delta_mouse = -delta_mouse.x;
+					active_delta_mouse = delta_mouse.y;
 
-					if (camera.Get_Orientation().z <= NULL)
+					if (ViewSpaceZaxis.z < 0)
 					{
 						active_delta_mouse = -active_delta_mouse;
+					}
+					else if (ViewSpaceZaxis.z > 0)
+					{
+						active_delta_mouse = active_delta_mouse;
 					}
 				}
 
 
+				float deltaTransformation = active_delta_mouse * lightSpeed;
 
+				currentlight->transformation.Translate(glm::vec3(NULL, NULL, deltaTransformation));
 
-				currentlight->transformation.translate(glm::vec3(NULL, NULL, active_delta_mouse / 20.0f));
+				currentlight->lightpos += glm::vec3(NULL, NULL, deltaTransformation);
 
-
-				currentlight->lightpos += glm::vec3(NULL, NULL, active_delta_mouse / 20.0f);
-
-				currentlight->originpoint += glm::vec3(NULL, NULL, active_delta_mouse / 20.0f);
+				currentlight->originpoint += glm::vec3(NULL, NULL, deltaTransformation);
 
 				LightPositions[CURRENT_LIGHT(currentselectedlight)] = currentlight->lightpos;
 
-				currentlight->lightmodel = currentlight->transformation.transformmatrix;
+				currentlight->lightmodel = currentlight->transformation.GetModelMat4();
 
 				handlelights(PBR_Shader);
 
@@ -1567,38 +1587,66 @@ public:
 
 				double active_delta_mouse = NULL;
 
-				if (abs(delta_mouse.y) > abs(delta_mouse.x))
-				{
-					active_delta_mouse = delta_mouse.y;
+				glm::vec4 ViewSpaceXaxis = camera.cam_view * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+				float absX = glm::abs(ViewSpaceXaxis.x);
+				float absY = glm::abs(ViewSpaceXaxis.y);
+				float absZ = glm::abs(ViewSpaceXaxis.z);
 
-					if (camera.Get_Orientation().x >= NULL)
-					{
-						active_delta_mouse = -active_delta_mouse;
-					}
-				}
-				else if (abs(delta_mouse.y) <= abs(delta_mouse.x))
+				float max = glm::max(glm::max(absX, absY), absZ);
+
+				if (max == absX)
 				{
 					active_delta_mouse = delta_mouse.x;
 
-					if (camera.Get_Orientation().x <= NULL)
+					if (ViewSpaceXaxis.x < 0)
 					{
 						active_delta_mouse = -active_delta_mouse;
+					}
+					else if (ViewSpaceXaxis.x > 0)
+					{
+						active_delta_mouse = active_delta_mouse;
+					}
+				}
+				else if (max == absY)
+				{
+					active_delta_mouse = delta_mouse.y;
+
+					if (ViewSpaceXaxis.y < 0)
+					{
+						active_delta_mouse = active_delta_mouse;
+					}
+					else if (ViewSpaceXaxis.y > 0)
+					{
+						active_delta_mouse = -active_delta_mouse;
+					}
+				}
+				else if (max == absZ)
+				{
+					active_delta_mouse = delta_mouse.y;
+
+					if (ViewSpaceXaxis.z < 0)
+					{
+						active_delta_mouse = -active_delta_mouse;
+					}
+					else if (ViewSpaceXaxis.z > 0)
+					{
+						active_delta_mouse = active_delta_mouse;
 					}
 				}
 
 
 
+				float deltaTransformation = active_delta_mouse * lightSpeed;
+				currentlight->transformation.Translate(glm::vec3(deltaTransformation, NULL, NULL));
 
-				currentlight->transformation.translate(glm::vec3(active_delta_mouse / 20.0f, NULL, NULL));
 
+				currentlight->lightpos += glm::vec3(deltaTransformation, NULL, NULL);
 
-				currentlight->lightpos += glm::vec3(active_delta_mouse / 20.0f, NULL, NULL);
-
-				currentlight->originpoint += glm::vec3(active_delta_mouse / 20.0f, NULL, NULL);
+				currentlight->originpoint += glm::vec3(deltaTransformation, NULL, NULL);
 
 				LightPositions[CURRENT_LIGHT(currentselectedlight)] = currentlight->lightpos;
 
-				currentlight->lightmodel = currentlight->transformation.transformmatrix;
+				currentlight->lightmodel = currentlight->transformation.GetModelMat4();
 
 				handlelights(PBR_Shader);
 				

@@ -117,7 +117,7 @@ std::pair<GLuint,int> BAKER::BakeNormal( GLuint NormalCubeMapSize, Model* highPo
             glUniformMatrix4fv(glGetUniformLocation(HighPolyShader, "view"), 1, GL_FALSE, glm::value_ptr(fboViews[i]));
         };
 
-        highPolyModel->transformation.SendUniformToShader(HighPolyShader, "model");
+        highPolyModel->transformation.SetModelMatrixUniformLocation(HighPolyShader, "model");
         highPolyModel->Draw(HighPolyShader, ShaderPrep);
     }
 

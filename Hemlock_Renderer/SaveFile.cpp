@@ -178,13 +178,13 @@ void SAVEFILE::WriteHMLfilePacked(const char* fileName, scene& scene, DATA::UIda
 					}
 				}
 
-				HMLfile["models"][i]["attributes"]["position"]["x"] = scene.models[i]->transformation.transformmatrix[3][0];
-				HMLfile["models"][i]["attributes"]["position"]["y"] = scene.models[i]->transformation.transformmatrix[3][1];
-				HMLfile["models"][i]["attributes"]["position"]["z"] = scene.models[i]->transformation.transformmatrix[3][2];
+				HMLfile["models"][i]["attributes"]["position"]["x"] = scene.models[i]->transformation.TranslationMatrix[3][0];
+				HMLfile["models"][i]["attributes"]["position"]["y"] = scene.models[i]->transformation.TranslationMatrix[3][1];
+				HMLfile["models"][i]["attributes"]["position"]["z"] = scene.models[i]->transformation.TranslationMatrix[3][2];
 
-				HMLfile["models"][i]["attributes"]["scale"]["x"] = scene.models[i]->transformation.transformmatrix[0][0];
-				HMLfile["models"][i]["attributes"]["scale"]["y"] = scene.models[i]->transformation.transformmatrix[1][1];
-				HMLfile["models"][i]["attributes"]["scale"]["z"] = scene.models[i]->transformation.transformmatrix[2][2];
+				HMLfile["models"][i]["attributes"]["scale"]["x"] = scene.models[i]->transformation.ScalingMatrix[0][0];
+				HMLfile["models"][i]["attributes"]["scale"]["y"] = scene.models[i]->transformation.ScalingMatrix[1][1];
+				HMLfile["models"][i]["attributes"]["scale"]["z"] = scene.models[i]->transformation.ScalingMatrix[2][2];
 			}
 
 
@@ -301,17 +301,17 @@ void SAVEFILE::WriteHMLfile(const char* fileName, scene& scene , DATA::UIdataPac
 
 				for (int row = 0; row < 4; row++) {
 					for (int col = 0; col < 4; col++) {
-						cout << "Element [" << row << "][" << col << "]: " << scene.models[i]->transformation.transformmatrix[row][col] << endl;
+						cout << "Element [" << row << "][" << col << "]: " << scene.models[i]->transformation.GetModelMat4()[row][col] << endl;
 					}
 				}
 
-				HMLfile["models"][i]["attributes"]["position"]["x"] = scene.models[i]->transformation.transformmatrix[3][0];
-				HMLfile["models"][i]["attributes"]["position"]["y"] = scene.models[i]->transformation.transformmatrix[3][1];
-				HMLfile["models"][i]["attributes"]["position"]["z"] = scene.models[i]->transformation.transformmatrix[3][2];
+				HMLfile["models"][i]["attributes"]["position"]["x"] = scene.models[i]->transformation.TranslationMatrix[3][0];
+				HMLfile["models"][i]["attributes"]["position"]["y"] = scene.models[i]->transformation.TranslationMatrix[3][1];
+				HMLfile["models"][i]["attributes"]["position"]["z"] = scene.models[i]->transformation.TranslationMatrix[3][2];
 
-				HMLfile["models"][i]["attributes"]["scale"]["x"] = scene.models[i]->transformation.transformmatrix[0][0];
-				HMLfile["models"][i]["attributes"]["scale"]["y"] = scene.models[i]->transformation.transformmatrix[1][1];
-				HMLfile["models"][i]["attributes"]["scale"]["z"] = scene.models[i]->transformation.transformmatrix[2][2];
+				HMLfile["models"][i]["attributes"]["scale"]["x"] = scene.models[i]->transformation.ScalingMatrix[0][0];
+				HMLfile["models"][i]["attributes"]["scale"]["y"] = scene.models[i]->transformation.ScalingMatrix[1][1];
+				HMLfile["models"][i]["attributes"]["scale"]["z"] = scene.models[i]->transformation.ScalingMatrix[2][2];
 
 			}
 
@@ -444,8 +444,8 @@ void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,G
 				scale.y = HMLfile["models"][i]["attributes"]["scale"]["y"];
 				scale.z = HMLfile["models"][i]["attributes"]["scale"]["z"];
 
-				scene.models[i]->transformation.translate(position);
-				scene.models[i]->transformation.scale(scale);
+				scene.models[i]->transformation.Translate(position);
+				scene.models[i]->transformation.Scale(scale);
 
 			}
 
@@ -629,8 +629,8 @@ void SAVEFILE::ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shad
 				scale.y = HMLfile["models"][i]["attributes"]["scale"]["y"];
 				scale.z = HMLfile["models"][i]["attributes"]["scale"]["z"];
 
-				scene.models[i]->transformation.translate(position);
-				scene.models[i]->transformation.scale(scale);
+				scene.models[i]->transformation.Translate(position);
+				scene.models[i]->transformation.Scale(scale);
 
 			}
 

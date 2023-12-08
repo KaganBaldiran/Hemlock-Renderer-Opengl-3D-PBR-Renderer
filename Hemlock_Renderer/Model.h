@@ -29,51 +29,46 @@ using namespace newwww;
 
 inline unsigned int TextureFromFile(const char* path, const string& directory, bool gamma = false);
 
-class worldtransform
+class WorldTransform
 {
 public:
 
-    glm::mat4 transformmatrix = glm::mat4(1.0f);
+    WorldTransform()
+    {
+        Position.x = TranslationMatrix[3][0];
+        Position.y = TranslationMatrix[3][1];
+        Position.z = TranslationMatrix[3][2];
+        //Position = glm::vec3(0.0f, 0.0f, 0.0f);
+        ScaleFactor = glm::vec3(1.0f, 1.0f, 1.0f);
+    }
+
+    glm::mat4 TranslationMatrix = glm::mat4(1.0f);
+    glm::mat4 RotationMatrix = glm::mat4(1.0f);
+    glm::mat4 ScalingMatrix = glm::mat4(1.0f);
+
     glm::vec3 ObjectScales;
+    glm::vec3 InitialObjectScales;
+
     glm::vec3 Position;
     float scale_avg;
     float dynamic_scale_avg;
+    
+    glm::vec3 ScaleFactor;
 
-    worldtransform()
+    void SetModelMatrixUniformLocation(GLuint shader, const char* uniform);
+    void Translate(glm::vec3 v);
+    void Scale(glm::vec3 v);
+    void Rotate(float angle,glm::vec3 v);
+
+    //No transform history for children
+    void TranslateNoTraceBack(glm::vec3 v);
+    void ScaleNoTraceBack(glm::vec3 v);
+    void RotateNoTraceBack(glm::vec3 v, float angle);
+
+    glm::mat4 GetModelMat4()
     {
-        Position = glm::vec3(1.0f);
-    }
-
-    void translate(glm::vec3 position)
-    {
-        transformmatrix = glm::translate(transformmatrix, position);
-        //glm::vec4 temp = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) * glm::translate(glm::mat4(1.0f), position);
-        Position.x = transformmatrix[3][0];
-        Position.y = transformmatrix[3][1];
-        Position.z = transformmatrix[3][2];
-        //LOG("POSITION: " << temp.x << " " << temp.y << " " << temp.z);
-    }
-
-    void scale(glm::vec3 scale)
-    {
-        transformmatrix = glm::scale(transformmatrix, scale);
-    }
-
-    void rotate(float degree , glm::vec3 axis)
-    {
-        transformmatrix = glm::rotate(transformmatrix, glm::radians(degree), axis);
-
-    }
-
-    void SendUniformToShader(GLuint shader , const char *uniform)
-    {
-        UseShaderProgram(shader);
-        glUniformMatrix4fv(glGetUniformLocation(shader, uniform), 1, GL_FALSE, glm::value_ptr(transformmatrix));
-        UseShaderProgram(0);
-    }
-
-    glm::mat4 *GetTransformationMat4() { return &transformmatrix; };
-
+        return TranslationMatrix * RotationMatrix * ScalingMatrix;
+    };
 };
 
 
@@ -98,12 +93,12 @@ class Model
 {
 public:
     // model data 
-    vector<Texture> textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
+    vector<Texture> textures_loaded;	
     vector<Mesh>  meshes;
     string directory;
     bool gammaCorrection;
     string modelpath;
-    worldtransform transformation;
+    WorldTransform transformation;
     UIproperties UIprop;
     bool imported = false;
     uint* modelcounterptr;

@@ -14,3 +14,10 @@ LOG:: SAVEFILE::ReadHMLfile :: Exception while reading hml file :: [json.excepti
 LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 22:53:44 :: Dec  6 2023
 LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 22:53:44 :: Dec  6 2023
 LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 03:52:13 :: Dec  7 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 00:27:44 :: Dec  8 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 01:26:19 :: Dec  8 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 01:27:29 :: Dec  8 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 01:28:12 :: Dec  8 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 01:28:12 :: Dec  8 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 01:30:42 :: Dec  8 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 01:30:42 :: Dec  8 2023

@@ -91,14 +91,14 @@ public:
 		this->lightscale = meshscale;
 		this->light_color = light_color;
 
-		lightmodel = glm::translate(lightmodel, this->lightpos);
-		lightmodel = glm::scale(lightmodel, this->lightscale);
+		transformation.Translate(this->lightpos);
+		transformation.Scale(this->lightscale);
 
 		UseShaderProgram(shader);
 
-		transformation.transformmatrix = lightmodel;
+		//transformation.transformmatrix = lightmodel;
 
-		glUniformMatrix4fv(glGetUniformLocation(shader, "model"), 1, GL_FALSE, glm::value_ptr(lightmodel));
+		transformation.SetModelMatrixUniformLocation(shader, "model");
 		glUniform4f(glGetUniformLocation(shader, "lightColor"), light_color.x, light_color.y, light_color.z, light_color.w);
 
 		UseShaderProgram(0);
@@ -117,20 +117,15 @@ public:
 
 	void Draw(GLuint shader, Camera& camera)
 	{
-		//lightmodel = glm::translate(lightmodel, this->lightpos);
-		//lightmodel = glm::scale(lightmodel, this->lightscale);
-
 		UseShaderProgram(shader);
 
-		glUniformMatrix4fv(glGetUniformLocation(shader, "model"), 1, GL_FALSE, glm::value_ptr(lightmodel));
+		transformation.SetModelMatrixUniformLocation(shader, "model");
 		glUniform4f(glGetUniformLocation(shader, "lightColor"), light_color.x, light_color.y, light_color.z, light_color.w);
 		glUniform1f(glGetUniformLocation(shader, "modelID"), this->LightID);
-
 
 		UseShaderProgram(0);
 
 		lightmesh->Draw(shader, camera, GL_TRIANGLES);
-
 	};
 
 	
@@ -141,7 +136,7 @@ public:
 	glm::mat4 lightmodel = glm::mat4(1.0f);
 	glm::vec3 originpoint;
 	float Intensity;
-	worldtransform transformation;
+	WorldTransform transformation;
 	int LightID;
 
 };
