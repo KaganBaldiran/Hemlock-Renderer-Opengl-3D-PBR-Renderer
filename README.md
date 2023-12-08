@@ -1,3 +1,8 @@
+![GitHub language count](https://img.shields.io/github/languages/count/KaganBaldiran/Hemlock-Renderer-Opengl-3D-PBR-Renderer)
+![GitHub top language](https://img.shields.io/github/languages/top/KaganBaldiran/Hemlock-Renderer-Opengl-3D-PBR-Renderer) 
+![GitHub last commit](https://img.shields.io/github/last-commit/KaganBaldiran/Hemlock-Renderer-Opengl-3D-PBR-Renderer)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+
 # Hemlock-Renderer-Opengl-3D-Renderer
 Hemlock Renderer is an Opengl based 3D PBR renderer written in C++.
 Still is in an early stage of development and requires a considerable amount of work in order to bring it to life completely.
