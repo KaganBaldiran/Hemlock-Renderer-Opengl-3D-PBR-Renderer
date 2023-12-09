@@ -17,8 +17,7 @@ using json = nlohmann::json;
 
 namespace SAVEFILE
 {
-	
-
+	void ClearScene(scene& scen, DATA::UIdataPack& data, GLuint shader);
 	bool ReadSaveFile(const char* fileName, DATA::SaveFileData& data, std::vector<std::string>& logs);
 	void WriteSaveFile(const char* fileName, DATA::SaveFileData& data, std::vector<std::string>& logs);
 	void WriteHMLfilePacked(const char* fileName, scene& scene, DATA::UIdataPack& data, Camera& camera, int renderPass, std::vector<std::string>& logs);

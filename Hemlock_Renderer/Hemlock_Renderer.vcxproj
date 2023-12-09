@@ -159,6 +159,7 @@
     <ClCompile Include="SSAO.cpp" />
     <ClCompile Include="StopWatch.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="Transformation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Desktop\Projects\SDL2 PROJECTS\VS_sdl2_projects\2DRendererbyKB\2DRendererbyKB\stb_image.h" />
@@ -178,6 +179,7 @@
     <ClInclude Include="StopWatch.h" />
     <ClInclude Include="SystemData.h" />
     <ClInclude Include="Thread.h" />
+    <ClInclude Include="Transformation.hpp" />
     <ClInclude Include="VectorMath.h" />
     <ClInclude Include="Imgui\imconfig.h" />
     <ClInclude Include="Imgui\imgui.h" />

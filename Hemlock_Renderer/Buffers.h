@@ -1,11 +1,7 @@
 #pragma once
+#include <glew.h>
 #include <vector>
 #include <iostream>
-
-typedef float GLfloat;
-typedef int GLint;
-typedef unsigned int GLuint;
-typedef unsigned int uint;
 
 typedef short int int16;
 typedef short unsigned int uint16;

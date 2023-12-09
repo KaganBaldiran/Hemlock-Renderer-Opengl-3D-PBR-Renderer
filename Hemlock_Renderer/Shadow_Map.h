@@ -67,7 +67,7 @@
 	  };
 
 
-	  void LightProjection(glm::vec3 lightposition,GLuint shader ,GLFWwindow* window,std::vector<Model*> &models ,float scene_scale , Camera camera , Vec2<int> current_viewport_size)
+	  void LightProjection(glm::vec3 lightposition,GLuint shader ,GLFWwindow* window,std::vector<Model*> &models ,float scene_scale , Camera& camera , Vec2<int> current_viewport_size)
 	  {
 		 
 

@@ -723,6 +723,9 @@ public:
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				RenderGrid(lightshader.GetID(), grid, camera);
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+				//camera.Draw(camera.cammatrix, lightshader, []() {});
+				DrawCameras(camera.cammatrix, lightshader, []() {});
 			}
 
 			if (data.takesreenshot)
@@ -1051,6 +1054,15 @@ public:
 		models.erase(models.begin() + index);
 	}
 
+	void DeleteLights()
+	{
+		for (size_t i = 0; i < numberoflights; i++)
+		{
+			delete lights.at(i);
+		}
+		numberoflights = 0;
+		lights.clear();
+	}
 
 	void DeleteLight(size_t index , GLuint shader)
 	{
@@ -1069,7 +1081,6 @@ public:
 		delete lights.at(index);
 		lights.erase(lights.begin() + index);
 		numberoflights--;
-
 		handlelights(shader);
 	}
 
@@ -1317,7 +1328,6 @@ public:
 			GetModel(0)->transformation.Rotate(-90.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 			GetModel(0)->transformation.Rotate(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 
-
 		}
 
 		if (CURRENT_LIGHT(currentselectedlight) >= NULL)
@@ -1343,7 +1353,7 @@ public:
 
 	}
 
-	Vec2<double> UseGizmo(GLFWwindow* window , int &currentselectedgizmo , int currentselectedobj, std::pair<uint , bool> &enablegizmo_p , Vec2<double> PrevMousePos , Camera camera , int currentselectedlight , GLuint Model_Shader , GLuint PBR_Shader, Vec2<double> &temp_mouse)
+	Vec2<double> UseGizmo(GLFWwindow* window , int &currentselectedgizmo , int currentselectedobj, std::pair<uint , bool> &enablegizmo_p , Vec2<double> PrevMousePos , Camera& camera , int currentselectedlight , GLuint Model_Shader , GLuint PBR_Shader, Vec2<double> &temp_mouse)
 	{
 
 		//LOG("DOT PRODUCT: " << Vec4<float>(camera.cam_view * glm::vec4(0.0f, 0.0f, 1.0f,0.0f)));
@@ -1510,7 +1520,6 @@ public:
 				currentlight->lightmodel = currentlight->transformation.GetModelMat4();
 
 				handlelights(PBR_Shader);
-
 
 			}
 			else if (enablegizmo_p.first == Z_GIZMO && enablegizmo_p.second == true)

@@ -8,6 +8,16 @@ bool IsFileEmpty(std::ifstream& file) {
 	return file.peek() == std::ifstream::traits_type::eof();
 }
 
+void SAVEFILE::ClearScene(scene& scene, DATA::UIdataPack& data, GLuint shader)
+{
+	for (size_t i = 1; i < scene.models.size(); i++)
+	{
+		scene.DeleteModel(i);
+	}
+	DisposeCameras();
+	scene.DeleteLights();
+}
+
 bool SAVEFILE::ReadSaveFile(const char* fileName, DATA::SaveFileData& data, std::vector<std::string>& logs)
 {
 	std::ifstream File(fileName);
@@ -229,16 +239,22 @@ void SAVEFILE::WriteHMLfilePacked(const char* fileName, scene& scene, DATA::UIda
 			HMLfile["GeneralAttributes"]["showLightMeshes"] = data.renderlights;
 			HMLfile["GeneralAttributes"]["renderShadows"] = data.RenderShadows;
 
-			HMLfile["ViewportAttributes"]["cameraPosition"]["x"] = camera.Position.x;
-			HMLfile["ViewportAttributes"]["cameraPosition"]["y"] = camera.Position.y;
-			HMLfile["ViewportAttributes"]["cameraPosition"]["z"] = camera.Position.z;
+			HMLfile["ViewportAttributes"]["CameraCount"] = Cameras.size();
+			HMLfile["ViewportAttributes"]["ActiveCameraID"] = ActiveCameraID;
 
-			HMLfile["ViewportAttributes"]["cameraOrientation"]["x"] = camera.Orientation.x;
-			HMLfile["ViewportAttributes"]["cameraOrientation"]["y"] = camera.Orientation.y;
-			HMLfile["ViewportAttributes"]["cameraOrientation"]["z"] = camera.Orientation.z;
+			for (size_t i = 0; i < Cameras.size(); i++)
+			{
+				std::string cameraID = "ID" + std::to_string(i);
+				HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraPosition"]["x"] = Cameras[i]->Position.x;
+				HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraPosition"]["y"] = Cameras[i]->Position.y;
+				HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraPosition"]["z"] = Cameras[i]->Position.z;
+
+				HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraOrientation"]["x"] = Cameras[i]->Orientation.x;
+				HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraOrientation"]["y"] = Cameras[i]->Orientation.y;
+				HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraOrientation"]["z"] = Cameras[i]->Orientation.z;
+			}
 
 			HMLfile["ViewportAttributes"]["cameraFOV"] = data.CameraFOV;
-
 			HMLfile["ViewportAttributes"]["renderPass"] = renderPass;
 
 
@@ -356,13 +372,20 @@ void SAVEFILE::WriteHMLfile(const char* fileName, scene& scene , DATA::UIdataPac
 			HMLfile["GeneralAttributes"]["showLightMeshes"] = data.renderlights;
 			HMLfile["GeneralAttributes"]["renderShadows"] = data.RenderShadows;
 
-			HMLfile["ViewportAttributes"]["cameraPosition"]["x"] = camera.Position.x;
-			HMLfile["ViewportAttributes"]["cameraPosition"]["y"] = camera.Position.y;
-			HMLfile["ViewportAttributes"]["cameraPosition"]["z"] = camera.Position.z;
+			HMLfile["ViewportAttributes"]["CameraCount"] = Cameras.size();
+			HMLfile["ViewportAttributes"]["ActiveCameraID"] = ActiveCameraID;
 
-			HMLfile["ViewportAttributes"]["cameraOrientation"]["x"] = camera.Orientation.x;
-			HMLfile["ViewportAttributes"]["cameraOrientation"]["y"] = camera.Orientation.y;
-			HMLfile["ViewportAttributes"]["cameraOrientation"]["z"] = camera.Orientation.z;
+			for (size_t i = 0; i < Cameras.size(); i++)
+			{
+				std::string cameraID = "ID" + std::to_string(i);
+				HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraPosition"]["x"] = Cameras[i]->Position.x;
+				HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraPosition"]["y"] = Cameras[i]->Position.y;
+				HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraPosition"]["z"] = Cameras[i]->Position.z;
+
+				HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraOrientation"]["x"] = Cameras[i]->Orientation.x;
+				HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraOrientation"]["y"] = Cameras[i]->Orientation.y;
+				HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraOrientation"]["z"] = Cameras[i]->Orientation.z;
+			}
 
 			HMLfile["ViewportAttributes"]["cameraFOV"] = data.CameraFOV;
 
@@ -403,6 +426,7 @@ void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,G
 	{
 		try
 		{
+			ClearScene(scene, data, shader);
 			json HMLfile;
 			File >> HMLfile;
 
@@ -447,11 +471,6 @@ void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,G
 				scene.models[i]->transformation.Translate(position);
 				scene.models[i]->transformation.Scale(scale);
 
-			}
-
-			for (size_t i = 0; i < scene.numberoflights; i++)
-			{
-				scene.DeleteLight(i, shader);
 			}
 
 			for (size_t i = 0; i < HMLfile["lightCount"]; i++)
@@ -504,13 +523,26 @@ void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,G
 			data.renderlights = HMLfile["GeneralAttributes"]["showLightMeshes"];
 			data.RenderShadows = HMLfile["GeneralAttributes"]["renderShadows"];
 
-			camera.Position.x = HMLfile["ViewportAttributes"]["cameraPosition"]["x"];
-			camera.Position.y = HMLfile["ViewportAttributes"]["cameraPosition"]["y"];
-			camera.Position.z = HMLfile["ViewportAttributes"]["cameraPosition"]["z"];
+			ActiveCameraID = HMLfile["ViewportAttributes"]["ActiveCameraID"];
 
-			camera.Orientation.x = HMLfile["ViewportAttributes"]["cameraOrientation"]["x"];
-			camera.Orientation.y = HMLfile["ViewportAttributes"]["cameraOrientation"]["y"];
-			camera.Orientation.z = HMLfile["ViewportAttributes"]["cameraOrientation"]["z"];
+			LOG("SAVE FILE CAMERA COUNT: " << (int)HMLfile["ViewportAttributes"]["CameraCount"]);
+
+			glm::vec3 TempCameraPos;
+			glm::vec3 TempCameraOrien;
+
+			for (size_t i = 0; i < (int)HMLfile["ViewportAttributes"]["CameraCount"]; i++)
+			{
+				std::string cameraID = "ID" + std::to_string(i);
+				TempCameraPos.x = HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraPosition"]["x"];
+				TempCameraPos.y = HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraPosition"]["y"];
+				TempCameraPos.z = HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraPosition"]["z"];
+
+				TempCameraOrien.x = HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraOrientation"]["x"];
+				TempCameraOrien.y = HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraOrientation"]["y"];
+				TempCameraOrien.z = HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraOrientation"]["z"];
+
+				AddCamera(TempCameraPos, TempCameraOrien);
+			}
 
 			data.CameraFOV = HMLfile["ViewportAttributes"]["cameraFOV"];
 			renderPass = HMLfile["ViewportAttributes"]["renderPass"];
@@ -585,7 +617,7 @@ void SAVEFILE::ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shad
 	{
 		try
 		{
-
+			ClearScene(scene, data, shader);
 			json HMLfile;
 			File >> HMLfile;
 
@@ -632,11 +664,6 @@ void SAVEFILE::ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shad
 				scene.models[i]->transformation.Translate(position);
 				scene.models[i]->transformation.Scale(scale);
 
-			}
-
-			for (size_t i = 0; i < scene.numberoflights; i++)
-			{
-				scene.DeleteLight(i, shader);
 			}
 
 			for (size_t i = 0; i < HMLfile["lightCount"]; i++)
@@ -689,13 +716,24 @@ void SAVEFILE::ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shad
 			data.renderlights = HMLfile["GeneralAttributes"]["showLightMeshes"];
 			data.RenderShadows = HMLfile["GeneralAttributes"]["renderShadows"];
 
-			camera.Position.x = HMLfile["ViewportAttributes"]["cameraPosition"]["x"];
-			camera.Position.y = HMLfile["ViewportAttributes"]["cameraPosition"]["y"];
-			camera.Position.z = HMLfile["ViewportAttributes"]["cameraPosition"]["z"];
+			ActiveCameraID = HMLfile["ViewportAttributes"]["ActiveCameraID"];
 
-			camera.Orientation.x = HMLfile["ViewportAttributes"]["cameraOrientation"]["x"];
-			camera.Orientation.y = HMLfile["ViewportAttributes"]["cameraOrientation"]["y"];
-			camera.Orientation.z = HMLfile["ViewportAttributes"]["cameraOrientation"]["z"];
+			glm::vec3 TempCameraPos;
+			glm::vec3 TempCameraOrien;
+
+			for (size_t i = 0; i < (int)HMLfile["ViewportAttributes"]["CameraCount"]; i++)
+			{
+				std::string cameraID = "ID" + std::to_string(i);
+				TempCameraPos.x = HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraPosition"]["x"];
+				TempCameraPos.y = HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraPosition"]["y"];
+				TempCameraPos.z = HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraPosition"]["z"];
+
+				TempCameraOrien.x = HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraOrientation"]["x"];
+				TempCameraOrien.y = HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraOrientation"]["y"];
+				TempCameraOrien.z = HMLfile["ViewportAttributes"]["Cameras"][cameraID]["cameraOrientation"]["z"];
+
+				AddCamera(TempCameraPos, TempCameraOrien);
+			}
 
 			data.CameraFOV = HMLfile["ViewportAttributes"]["cameraFOV"];
 			renderPass = HMLfile["ViewportAttributes"]["renderPass"];

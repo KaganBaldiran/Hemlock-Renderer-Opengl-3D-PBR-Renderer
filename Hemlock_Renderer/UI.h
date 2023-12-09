@@ -1309,6 +1309,11 @@ namespace UI
 					ImGui::EndMenu();
 				}
 
+				if (ImGui::MenuItem("Camera", "Ctrl+A+C"))
+				{
+					AddCamera({ 0.0f,0.0f,0.0f }, { 1.0f,0.0f,0.0f });
+				}
+
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu("About"))
@@ -2143,6 +2148,7 @@ namespace UI
 					ImGui::Text("Selected Object: %d", currentselectedobj);
 					ImGui::Text("Current existing object count: %d", scene.GetModelCount());
 
+					//ImGui::SliderInt("Active Camera", &ActiveCameraID, 0, Cameras.size() - 1);
 					ImGui::EndChildFrame();
 
 
@@ -2362,7 +2368,7 @@ namespace UI
 						else
 						{
 							float distance = current_win_size.x ;
-							LOG("(float)current_win_size.x: " << distance * 0.6f);
+							//LOG("(float)current_win_size.x: " << distance * 0.6f);
 							ImGui::SameLine(0.0f, distance * 0.6f);
 							ImGui::Button("hello", { ImGui::GetFontSize(),ImGui::GetFontSize() });
 						}
@@ -2394,6 +2400,18 @@ namespace UI
 
 						}
 
+					}
+
+					for (size_t i = 0; i < Cameras.size(); i++)
+					{
+						if (ImGui::TreeNode(("Camera" + std::to_string(i)).c_str()))
+						{
+							if (ImGui::Selectable(("Set Active##Object" + std::to_string(i)).c_str()))
+							{
+								ActiveCameraID = i;
+							}
+							ImGui::TreePop();
+						}
 					}
 
 

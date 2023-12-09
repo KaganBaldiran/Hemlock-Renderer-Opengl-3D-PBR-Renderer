@@ -1,17 +1,77 @@
 #include "Camera.h"
-#include "VectorMath.h"
-#include "Texture.h"
+#include <vector>
 
 Vec2<double> ScrollAmount;
 Vec2<double> MousePosCamera;
 
+std::vector<Camera*> Cameras;
+int ActiveCameraID = 0;
+int CameraIterator = 0;
+
 Camera::Camera(int window_width, int window_height, glm::vec3 position)
 {
+	this->CameraID = CameraIterator;
+
 	w_width = window_width;
 	w_height = window_height;
 	Position = position;
 
+	Objectview = glm::mat4(1.0f);
+
 	targetPosition = glm::vec3(0.0f);
+
+	std::vector<float> vertices = {
+		0.5f, 0.4f, 0.35f,
+		0.5f, -0.6f, 0.35f,
+		-0.5f, 0.4f, 0.35f,
+		-0.5f, -0.6f, 0.35f,
+
+		0.25f, 0.15f, 0.0f,
+		0.25f, -0.35f, 0.0f,
+		-0.25f, 0.15f, 0.0f,
+		-0.25f, -0.35f, 0.0f,
+
+		0.0f, 0.6f, 0.0f,
+		0.0f, -0.1f, -0.35f
+	};
+
+	std::vector<unsigned int> indices = {
+		0,1,1,3,3,2,2,0,
+		4,5,5,7,7,6,6,4,
+		0,4,1,5,2,6,3,7,
+		4,8,6,8,
+		4,9,5,9,6,9,7,9
+	};
+
+	IndicesCount = indices.size();
+
+	glGenVertexArrays(1, &this->Camvao);
+	glGenBuffers(1, &this->Camvbo);
+
+	glBindVertexArray(Camvao);
+	glBindBuffer(GL_ARRAY_BUFFER, Camvbo);
+
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)0);
+
+	glGenBuffers(1, &Camebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Camebo);
+
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	CameraIterator++;
+}
+
+Camera::~Camera()
+{
+	glDeleteBuffers(1, &Camvbo);
+	glDeleteBuffers(1, &Camebo);
+	glDeleteVertexArrays(1, &Camvao);
 }
 
 void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane , GLFWwindow* window, Vec2<int> menu_size)
@@ -29,19 +89,16 @@ void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane , GLFWwi
 	this->nearPlane = nearPlane;
 	this->farPlane = farPlane;
 
-	//std::cout <<"IN CAMERA: " << "WINSIZE.X: " << width - menu_size.x << "WINSIZE.Y: " << menu_size.y << "\n";
-
-	//float aspect_rat = (float)(width - menu_size.x) / (float)menu_size.y;
 	float aspect_rat = (float)(w_width/w_height);
-	//float aspect_rat = (float)((1000 - 175.438) / (1000 - 18));
-
-	//std::cout << "ASPECT RATIO: "<< aspect_rat << "\n";
-
+	
+	if (ActiveCameraID == this->CameraID)
+	{
+		Objectview = glm::lookAt(glm::vec3(0.0f), -Orientation, Up);
+		Objectview = glm::translate(Objectview, -Position);
+	}
 
 	proj = glm::perspective(glm::radians(FOVdeg),aspect_rat , nearPlane, farPlane);
-
 	this->projection = proj;
-	//proj = glm::ortho(0, w_width, w_height, 0, 0, 100);
 
 	screenratiodefault = glm::mat4(1.0f);
 	screenratiodefault = glm::scale(screenratiodefault, glm::vec3(GetScreenRatio(window,menu_size).x, GetScreenRatio(window,menu_size).y, 1.0f));
@@ -270,4 +327,65 @@ void Camera::HandleInputs(GLFWwindow* window, Vec2<int> menu_size , Vec2<int> Wi
 
 }
 
+void Camera::Draw(glm::mat4& cammatrix, Shader& shader, std::function<void()> shaderPrep)
+{
+	shader.use();
+	glBindVertexArray(Camvao);
 
+	shader.setMat4("cameramatrix",cammatrix);
+	shader.setMat4("model", glm::inverse(Objectview));
+
+	shader.setVec4("lightColor", glm::vec4(255/255.0f, 69 / 255.0f, 0, 1.0f));
+
+	glDrawElements(GL_LINES, IndicesCount, GL_UNSIGNED_INT, 0);
+
+	glBindVertexArray(0);
+	UseShaderProgram(0);
+}
+
+void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	ScrollAmount({ xoffset, yoffset });
+}
+
+int AddCamera(glm::vec3 Position , glm::vec3 Orientation)
+{
+	Camera* temp = new Camera(1000, 1000, Position);
+	temp->Orientation = Orientation;
+	temp->Objectview = glm::lookAt(glm::vec3(0.0f), -temp->Orientation, temp->Up);
+	temp->Objectview = glm::translate(temp->Objectview, -temp->Position);
+	Cameras.push_back(temp);
+	return temp->CameraID;
+}
+
+void DisposeCameras()
+{
+	for (size_t i = 0; i < Cameras.size(); i++)
+	{
+		delete Cameras[i];
+	}
+	Cameras.clear();
+	CameraIterator = 0;
+	LOG_INF("Cameras disposed!");
+}
+
+void DisposeAllocatedCameras()
+{
+	for (size_t i = 1; i < Cameras.size(); i++)
+	{
+		delete Cameras[i];
+		Cameras.erase(Cameras.begin() + i);
+	}
+	LOG_INF("Cameras disposed!");
+}
+
+void DrawCameras(glm::mat4& cammatrix, Shader& shader, std::function<void()> shaderPrep)
+{
+	for (size_t i = 0; i < Cameras.size(); i++)
+	{
+		if (i != ActiveCameraID) 
+		{
+			Cameras[i]->Draw(cammatrix, shader, shaderPrep);
+		}
+	}
+}

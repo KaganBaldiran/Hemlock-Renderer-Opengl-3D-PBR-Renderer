@@ -138,9 +138,7 @@ int main()
 
     picking_technique pickingteq;
     
-
-
-    Camera camera(windowwidth, windowheight, glm::vec3(0.0f, 0.3f, 2.0f));
+    AddCamera(glm::vec3(0.0f, 0.3f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f));
 
     int selection = NULL;
     int index = NULL;
@@ -170,7 +168,7 @@ int main()
     UI::InitLogs(logs);
     shadowmap ShadowMap(1024, 1024);
 
-    ShadowMap.LightProjection(scene.LightPositions[0],ShadowMapShader.GetID(),window,scene.models,scene.globalscale,camera, UI::current_viewport_size);
+    ShadowMap.LightProjection(scene.LightPositions[0],ShadowMapShader.GetID(),window,scene.models,scene.globalscale,*Cameras[0], UI::current_viewport_size);
 
     scene.SetScreenQuads();
 
@@ -189,7 +187,7 @@ int main()
     glfwSetDropCallback(window, UI::DropDownFile);
     SAVEFILE::ReadSaveFile("Preferences.json", data.saveFileData, logs);
     UI::SetPreferences(data);
-    glfwSetScrollCallback(window, camera.scrollCallback);
+    glfwSetScrollCallback(window, scrollCallback);
     data.IsPreferencesFileEmpty = data.saveFileData.empty();
 
 
@@ -203,9 +201,10 @@ int main()
     const double TARGET_FRAME_TIME = 1.0 / TARGET_FPS;
 
     data.brdfLUT = ComputeLUT(brdfLUTShader).first;
-
+    
 	while (!glfwWindowShouldClose(window))
 	{
+            Camera &camera = *Cameras[ActiveCameraID];
             auto start_time = std::chrono::high_resolution_clock::now();
 
             glfwGetCursorPos(&*window, &mousepos.x, &mousepos.y);
@@ -265,6 +264,7 @@ int main()
                 screen_fbo, RenderPass, currentselectedobj, Outlineshader, Cubemap, currentselectedlight, enablegizmo_p,
                 ssao, SSAOShader, SSAOblurShader, SceneGbuffer, width, height, grid, UI::current_viewport_size);
            
+
             scene.DrawScreenQuad(FrameBufferShader.GetID(), screen_fbo.GetScreenImage(), SceneGbuffer,
                 UI::current_win_size.Cast<float>(), UI::current_viewport_size.y, RenderPass, pickingtex,
                 pickingshader.GetID(),pickingBuffertex,ssao,data.EnableSSAO, *window,data,camera);
@@ -332,9 +332,7 @@ int main()
                     currentselectedgizmo = NULL;
 
                 }
-
-                
-
+            
                 if (currentselectedobj >= 2)
                 {
                     UI::UseSelectedObjectData(data, scene.GetModel(CURRENT_OBJECT(currentselectedobj))->UIprop);
@@ -402,11 +400,12 @@ int main()
     glDeleteTextures(1, &data.brdfLUT);
     glDeleteTextures(1, &data.PrefilteredEnvMap);
 
+    DisposeCameras();
+
     UI::EndUI();
 
     NFD_Quit();
     DeinitializeWindow();
     SAVEFILE::WriteSaveFile("Preferences.json", data.saveFileData , logs);
-    //SAVEFILE::WriteHMLfile("demo.hml", scene,data,camera,RenderPass,logs);
 	return 0;
 }

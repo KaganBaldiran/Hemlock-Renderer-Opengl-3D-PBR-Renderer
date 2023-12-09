@@ -810,19 +810,18 @@ void ImportCubeMap(CubeMap& cubemap, GLuint& HDRItoCubeMapShader, GLuint& Convol
 
     if (CubeMapTexture.second == HDRI_COMPLETE)
     {
-        data.HDRIpath = data.outPath;
         data.ConvDiffCubeMap = ConvolutateCubeMap(CubeMapTexture.first, ConvolutateCubeMapShader).first;
         data.PrefilteredEnvMap = PreFilterCubeMap(CubeMapTexture.first, PrefilterHDRIShader).first;
         cubemap.SetCubeMapTexture(CubeMapTexture.first);
 
-        logs.push_back("Imported HDRI :: " + std::string(data.outPath));
+        logs.push_back("Imported HDRI :: " + std::string(data.HDRIpath));
     }
     else if (CubeMapTexture.second == HDRI_INCOMPATIBLE_FILE)
     {
-        logs.push_back("Error importing HDRI(Incompatible file extension)! :: " + std::string(data.outPath));
+        logs.push_back("Error importing HDRI(Incompatible file extension)! :: " + std::string(data.HDRIpath));
     }
     else if (CubeMapTexture.second == HDRI_ERROR)
     {
-        logs.push_back("Error importing HDRI(Unable to complete the Framebuffer)! :: " + std::string(data.outPath));
+        logs.push_back("Error importing HDRI(Unable to complete the Framebuffer)! :: " + std::string(data.HDRIpath));
     }
 }
