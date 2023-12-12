@@ -3,9 +3,45 @@
 #include <fstream>
 #include "Texture.h"
 #include <iostream>
+#include <filesystem>
 
 bool IsFileEmpty(std::ifstream& file) {
 	return file.peek() == std::ifstream::traits_type::eof();
+}
+bool StrCmprCaseInsnstv(const char* str1, const char* str2)
+{
+	return _stricmp(str1, str2) == 0;
+}
+int SAVEFILE::CheckHMLfileType(const char* fileName)
+{
+	std::ifstream File(fileName);
+	int Type = -1;
+	if (File.is_open())
+	{
+		if (!IsFileEmpty(File))
+		{
+			try
+			{
+				json HMLfile;
+				File >> HMLfile;
+				File.close();
+				const int ReadFileType = HMLfile["FileType"];
+				if (ReadFileType == HML_FILE || ReadFileType == HML_FILE_PACKED)
+				{
+					Type = ReadFileType;
+				}
+			}
+			catch (const std::exception& e)
+			{
+				LOG_ERR("Exception while reading the HML file :: " << e.what());
+				std::string logtemp = "Exception while reading the HML file :: " + std::string(e.what()) + " :: " + std::string(fileName);
+				LOG_TO_FILE("Exception_log.txt", logtemp << " :: " << __TIME__ << " :: " << __DATE__);
+				File.close();
+			}
+		}
+		
+	}
+	return Type;
 }
 
 void SAVEFILE::ClearScene(scene& scene, DATA::UIdataPack& data, GLuint shader)
@@ -165,6 +201,7 @@ void SAVEFILE::WriteHMLfilePacked(const char* fileName, scene& scene, DATA::UIda
 			json HMLfile;
 
 			HMLfile["modelCount"] = scene.GetModelCount();
+			HMLfile["FileType"] = HML_FILE_PACKED;
 
 			for (size_t i = 1; i < scene.GetModelCount(); i++)
 			{
@@ -296,6 +333,7 @@ void SAVEFILE::WriteHMLfile(const char* fileName, scene& scene , DATA::UIdataPac
 			json HMLfile;
 
 			HMLfile["modelCount"] = scene.GetModelCount();
+			HMLfile["FileType"] = HML_FILE;
 
 			for (size_t i = 1; i < scene.GetModelCount(); i++)
 			{

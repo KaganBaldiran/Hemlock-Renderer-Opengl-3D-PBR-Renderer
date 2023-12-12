@@ -27,7 +27,7 @@
 #include "Log.h"
 #include "StopWatch.h"
 #include "Thread.h"
-#include"UI.h"
+#include "UI.h"
 #include "Scene.h"
 #include "NormalBaker.hpp"
 #include <thread>
@@ -211,7 +211,8 @@ int main()
 			Cubemap, HDRIShader.GetID(), SplashScreenImage, RenderPass, camera, ConvolutateCubeMapShader.GetID(), PreFilterCubeMapShader.GetID());
 		
 		camera.updateMatrix(data.CameraFOV, 0.1f, 100.0f, window, UI::current_viewport_size, data.takesreenshot);
-		UI::DropDownImportModel(PBRShader.GetID(), scene, logs,{width,height} , data);
+		UI::DropDownImportModel(PBRShader.GetID(), scene, logs,{width,height} , data,window, lightshader.GetID(),camera,RenderPass,
+			HDRIShader.GetID(), ConvolutateCubeMapShader.GetID(), PreFilterCubeMapShader.GetID(),Cubemap);
 		scene.DeleteModelKeyboardAction(currentselectedobj, window, logs);
 		scene.CopyModelKeyboardAction(currentselectedobj, defaultshader.GetID(), window, logs, lightcolor, lightpos);
 		scene.DeleteLightKeyboardAction(currentselectedlight, window, logs, PBRShader.GetID());

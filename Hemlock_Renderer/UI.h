@@ -103,9 +103,8 @@ namespace UI
 
 	UIcolorShemePack current_color_sheme;
 	color_sheme_t chosen_color_sheme = GITHUB_STYLE_THEME;
-	std::string DropDownFilePath;
-	bool DropDownImport = false;
-	
+	SAVEFILE::DropDownFileData DropdownFileData;
+
 	void InitNewUIwindow()
 	{
 		ImGui::CreateContext();
@@ -699,62 +698,140 @@ namespace UI
 		for (i = 0; i < count; i++)
 		{
 			LOG(paths[i]);
-			DropDownFilePath = paths[i];
-			DropDownImport = true;
+			DropdownFileData.DropDownFilePath = paths[i];
 		}
+		DropdownFileData.DropDownImport = true;
+		const char* FileExtention = strrchr(DropdownFileData.DropDownFilePath.c_str(), '.');
+		if (StrCmprCaseInsnstv(FileExtention, ".hml"))
+		{
+			const int Filetype = SAVEFILE::CheckHMLfileType(DropdownFileData.DropDownFilePath.c_str());
+			LOG(Filetype);
+			if (Filetype == HML_FILE)
+			{
+				LOG("ITS AN HML FILE! :: " << FileExtention);
+			}
+			else if (Filetype == HML_FILE_PACKED)
+			{
+				LOG("ITS A PACKED HML FILE! :: " << FileExtention);
+			}
+			DropdownFileData.OverAllFileType = Filetype;
+		}
+		else if (StrCmprCaseInsnstv(FileExtention, ".png") || StrCmprCaseInsnstv(FileExtention, ".tga") ||
+			StrCmprCaseInsnstv(FileExtention, ".jpeg") || StrCmprCaseInsnstv(FileExtention, ".jpg"))
+		{
+			LOG("ITS AN IMAGE FILE! :: " << FileExtention);
+			DropdownFileData.OverAllFileType = IMAGE_FILE;
+		}
+		else if (StrCmprCaseInsnstv(FileExtention, ".obj") || StrCmprCaseInsnstv(FileExtention, ".fbx") || StrCmprCaseInsnstv(FileExtention, ".blend") ||
+			StrCmprCaseInsnstv(FileExtention, ".gltf") || StrCmprCaseInsnstv(FileExtention, ".dae") || StrCmprCaseInsnstv(FileExtention, ".glb"))
+		{
+			DropdownFileData.OverAllFileType = OBJECT_FILE;
+			LOG("ITS AN MODEL FILE! :: " << FileExtention);
+		}
+		DropdownFileData.DropDownFileSize = GetFileSize<CONVERSION_MEGABYTE>(DropdownFileData.DropDownFilePath.c_str());
 	}
 
-	void DropDownMenu(Vec2<int> WindowSize, DATA::UIdataPack& data , scene& scene)
+	void DropDownMenu(Vec2<int> WindowSize, DATA::UIdataPack& data , scene& scene , const int& OverallFileType )
 	{
 		static ImVec2 DropDownMenuSize = { WindowSize.x / 2.0f , WindowSize.y / 2.0f };
 		static ImVec2 DropDownMenuPosition = ImVec2((WindowSize.x / 2) - (DropDownMenuSize.x / 2), (WindowSize.y / 2) - (DropDownMenuSize.y / 2));
+		const char* FileExtention = strrchr(DropdownFileData.DropDownFilePath.c_str(), '.');
 
 		ImGui::SetNextWindowSize(ImVec2(DropDownMenuSize.x, DropDownMenuSize.y));
 		ImGui::SetNextWindowPos(DropDownMenuPosition, ImGuiCond_FirstUseEver);
 		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.ChildMenuColor));
+		
+		ImGui::Begin("Drop-Down assign", &DropdownFileData.DropDownImport, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse);
+		float OriginalFontSize = ImGui::GetFont()->FontSize;
+		float FontSizeMultiplier = ((DropDownMenuSize.x / WindowSize.x) + (DropDownMenuSize.y / WindowSize.y)) / 2.0f;
+		ImGui::SetWindowFontScale(FontSizeMultiplier * 2.0f);
 
-		ImGui::Begin("Drop-Down assign", &DropDownImport, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse);
+		ImGui::Text("File info: ");
+		ImGui::Text("");
+		ImGui::SameLine();
+		ImGui::Text(("File Path: " + DropdownFileData.DropDownFilePath).c_str());
+		ImGui::Text("");
+		ImGui::SameLine();
+		ImGui::Text(("Size:" + std::to_string(DropdownFileData.DropDownFileSize) + "mb").c_str());
+		ImGui::Text("");
+		ImGui::SameLine();
+		ImGui::Text("Type:");
+		ImGui::SameLine();
+		if (DropdownFileData.OverAllFileType == HML_FILE)
+		{
+			ImGui::Text("HML file");
+		}
+		else if (DropdownFileData.OverAllFileType == HML_FILE_PACKED)
+		{
+			ImGui::Text("Packed HML file");
+		}
+		else if (DropdownFileData.OverAllFileType == IMAGE_FILE)
+		{
+			ImGui::Text("Texture file");
+		}
+		else if (DropdownFileData.OverAllFileType == OBJECT_FILE)
+		{
+			ImGui::Text("3D Object file");
+		}
+		
 
-		//const char* modelName = strrchr(path.c_str(), '/');
-
-
+		const ImVec2 ButtonSize = { DropDownMenuSize.x * 0.1f , DropDownMenuSize.x * 0.05f };
+		ImGui::SetCursorPos({ DropDownMenuSize.x * 0.99f - ButtonSize.x , DropDownMenuSize.y * 0.99f - ButtonSize.y });
+		if (ImGui::Button("Import", ButtonSize))
+		{
+			DropdownFileData.CheckFileType = true;
+			DropdownFileData.DropDownImport = false;
+		}
 
 		DropDownMenuSize = ImGui::GetWindowSize();
 		DropDownMenuPosition = ImGui::GetWindowPos();
 		ImGui::End();
 	}
 
-	void DropDownImportModel(GLuint import_shader , scene& scene , std::vector<std::string>& logs , Vec2<int> WindowSize, DATA::UIdataPack& data)
+	void DropDownImportModel(GLuint import_shader , scene& scene , std::vector<std::string>& logs , Vec2<int> WindowSize, DATA::UIdataPack& data, GLFWwindow* window,
+		GLuint light_shader,Camera& camera,int &renderPass, GLuint HDRItoCubeMapShader, GLuint ConvolutateCubeMapShader, GLuint PrefilterHDRIShader , CubeMap& Cubemap)
 	{
-		if (DropDownImport)
+		if (DropdownFileData.DropDownImport)
 		{
-			/*std::string path(DropDownFilePath);
-
-			for (size_t i = 0; i < path.size(); i++)
+			DropDownMenu(WindowSize, data, scene, DropdownFileData.OverAllFileType);
+		}
+		if (DropdownFileData.CheckFileType && !DropdownFileData.DropDownImport)
+		{
+			if (DropdownFileData.OverAllFileType == HML_FILE)
 			{
-				if (path.at(i) == '\\')
+				LOG_INF("Reading HML file... :: " << DropdownFileData.DropDownFilePath);
+				SAVEFILE::ReadHMLfile(DropdownFileData.DropDownFilePath.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs, window, Cubemap, HDRItoCubeMapShader, ConvolutateCubeMapShader, PrefilterHDRIShader);
+			}
+			else if (DropdownFileData.OverAllFileType == HML_FILE_PACKED)
+			{
+				LOG_INF("Reading HML file... :: " << DropdownFileData.DropDownFilePath);
+				SAVEFILE::ReadHMLfilePacked(DropdownFileData.DropDownFilePath.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs, window, Cubemap, HDRItoCubeMapShader, ConvolutateCubeMapShader, PrefilterHDRIShader);
+			}
+			else if (DropdownFileData.OverAllFileType == IMAGE_FILE)
+			{
+			}
+			else if (DropdownFileData.OverAllFileType == OBJECT_FILE)
+			{
+				std::string path(DropdownFileData.DropDownFilePath);
+
+				for (size_t i = 0; i < path.size(); i++)
 				{
-					path.at(i) = '/';
+					if (path.at(i) == '\\')
+					{
+						path.at(i) = '/';
+					}
 				}
+				std::string temp(path);
+				scene.ImportModel(temp, import_shader);
+				scene.handlelights(import_shader);
+				UseShaderProgram(import_shader);
+				scene.GetModel(scene.GetModelCount() - 1)->transformation.Scale(glm::vec3(0.05f, 0.05f, 0.05f));
+				std::string logtemp = "A new object is imported!";
+				logs.push_back(logtemp);
 			}
 
-			std::cout << "NEW PATH: " << path << "\n";
-
-			std::string temp(path);
-			scene.ImportModel(temp, import_shader);
-			scene.handlelights(import_shader);
-
-			UseShaderProgram(import_shader);
-
-			scene.GetModel(scene.GetModelCount() - 1)->transformation.Scale(glm::vec3(0.05f, 0.05f, 0.05f));
-
-			std::string logtemp = "A new object is imported!";
-
-			logs.push_back(logtemp);
-
-			DropDownImport = false;*/
-
-			DropDownMenu(WindowSize, data , scene);
+			DropdownFileData.DropDownImport = false;
+			DropdownFileData.CheckFileType = false;
 		}
 	}
 
@@ -2003,22 +2080,16 @@ namespace UI
 			else
 			{
 				ImGui::BeginGroup();
-
-
 				static float f = 0.0f;
 				static int counter = 0;
 				static bool importmodel = false;
 
 				ImGui::SetCursorPos(ChildMenuPos);
-
-
 				//ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(ImVec4(45 / 255.0, 55 / 255.0, 71 / 255.0, 28 / 255.0)));
 				//ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.ChildMenuColor));
 
 				ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.MidMenuColor));
-
 				ImGui::BeginChildFrame(66, ChildMenuSize, ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
-
 				ImGui::PopStyleColor();
 				//ImGui::PushStyleColor(ImGuiCol_Header | , ImGui::ColorConvertFloat4ToU32(ImVec4(80 / 255.0, 40 / 255.0, 250 / 255.0, 98 / 255.0)));
 				//ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.2f, 0.2f, 0.2f, 1.0f)); // Set the background color of the header
@@ -2143,10 +2214,6 @@ namespace UI
 
 					//ImGui::SliderInt("Active Camera", &ActiveCameraID, 0, Cameras.size() - 1);
 					ImGui::EndChildFrame();
-
-
-
-
 				}
 				ImGui::PopStyleColor();
 				ImGui::PopStyleVar();

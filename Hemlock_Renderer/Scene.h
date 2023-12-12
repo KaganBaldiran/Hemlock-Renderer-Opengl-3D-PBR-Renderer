@@ -118,13 +118,9 @@ public:
 
 		}
 
-		// Decide on a unit scale for the scene
 		float unitScale = 1.0f; // 1 unit = 1 meter
-
-		// Calculate the global scale factor
 		//float maxDimension = std::max(sceneWidth, std::max(sceneHeight, sceneDepth));
 		//float globalScale = maxDimension / unitScale;
-
 		float maxDimension = (sceneWidth + sceneHeight + sceneDepth) / 3;
 		float globalScale = maxDimension / unitScale;
 
