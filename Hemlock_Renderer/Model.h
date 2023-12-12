@@ -28,6 +28,8 @@
 using namespace std;
 using namespace newwww;
 
+static uint ModelIDiterator = 2;
+
 inline unsigned int TextureFromFile(const char* path, const string& directory, bool gamma = false);
 
 class UIproperties
@@ -91,22 +93,19 @@ public:
             }
         }
 
-        static uint counter = 2;
-        modelcounterptr = &counter;
-        modelid = counter;
+        modelcounterptr = &ModelIDiterator;
+        modelid = ModelIDiterator;
         modelpath = path;
         loadModel(path);
-        counter++;
+        ModelIDiterator++;
         
     }
 
     Model(bool gamma = false) : gammaCorrection(gamma)
     {
-        static uint counter = 2;
-        modelcounterptr = &counter;
-        modelid = counter;
-        counter++;
-
+        modelcounterptr = &ModelIDiterator;
+        modelid = ModelIDiterator;
+        ModelIDiterator++;
     }
 
     ~Model()

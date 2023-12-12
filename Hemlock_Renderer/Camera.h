@@ -15,6 +15,7 @@
 #include "Log.h"
 #include "Transformation.hpp"
 
+
 #define CAMERA_LAYOUT_FIRST_PERSON 0X100
 #define CAMERA_LAYOUT_INDUSTRY_STANDARD 0X101
 
@@ -55,7 +56,7 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
 	  glm::vec3 targetPosition;
 	  
-	  void updateMatrix(float FOVdeg, float nearPlane, float farPlane, GLFWwindow* window, Vec2<int> menu_size);
+	  void updateMatrix(float FOVdeg, float nearPlane, float farPlane, GLFWwindow* window, Vec2<int> menu_size , bool TakeScreenShot);
 	  void Matrix(GLuint shaderprogram, const char* uniform);
 	  void HandleInputs(GLFWwindow* window, Vec2<int> menu_size, Vec2<int> WindowSize, int cameraLayout);
 	  glm::vec3 Get_Position() { return Position; };

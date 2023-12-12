@@ -556,13 +556,8 @@ namespace UI
 	{
 		if (currentselectedobj >= 2)
 		{
-
-
 			scene.GetModel(currentselectedobj - 2)->transformation.Translate(glm::vec3(data.moveamount.x, data.moveamount.y, data.moveamount.z));
-
 			scene.GetModel(CURRENT_OBJECT(currentselectedobj))->dynamic_origin += glm::vec3(data.moveamount.x, data.moveamount.y, data.moveamount.z);
-
-
 			if (data.scaleamount != 0.0f)
 			{
 				scene.GetModel(currentselectedobj - 2)->transformation.Scale(glm::vec3(data.scaleamount, data.scaleamount, data.scaleamount));
@@ -570,21 +565,9 @@ namespace UI
 				scene.RecalculateObjectScales(currentselectedobj, glm::vec3(data.scaleamount, data.scaleamount, data.scaleamount));
 
 			}
-
-
 			scene.GetModel(currentselectedobj - 2)->transformation.Rotate(data.rotationamount, glm::vec3(0.0f, 1.0f, 0.0f));
-
-
-
-
 			scene.GetModel(currentselectedobj - 2)->transformation.Translate(glm::vec3(0.0f, 0.0f, 0.0f));
-
-
-
-
 			scene.GetModel(currentselectedobj - 2)->transformation.Translate(-glm::vec3(0.0f, 0.0f, 0.0f));
-
-
 		}
 
 	}
@@ -593,20 +576,11 @@ namespace UI
 	{
 		if (currentselectedobj >= 2)
 		{
-
 			scene.GetModel(currentselectedobj - 2)->transformation.Translate(glm::vec3(0.0f, 0.0f, 0.0f));
-
-
 			scene.GetModel(currentselectedobj - 2)->transformation.Rotate(-data.rotationamount, glm::vec3(0.0f, 1.0f, 0.0f));
-
 			scene.GetModel(currentselectedobj - 2)->transformation.Translate(-glm::vec3(0.0f, 0.0f, 0.0f));
-
-
 			scene.GetModel(currentselectedobj - 2)->transformation.Scale(glm::vec3(1 / data.scaleamount, 1 / data.scaleamount, 1 / data.scaleamount));
-
-
 			scene.GetModel(currentselectedobj - 2)->transformation.Translate(-glm::vec3(data.moveamount.x, data.moveamount.y, data.moveamount.z));
-
 			scene.GetModel(CURRENT_OBJECT(currentselectedobj))->dynamic_origin -= glm::vec3(data.moveamount.x, data.moveamount.y, data.moveamount.z);
 
 
@@ -730,11 +704,31 @@ namespace UI
 		}
 	}
 
-	void DropDownImportModel(GLuint import_shader , scene& scene , std::vector<std::string>& logs)
+	void DropDownMenu(Vec2<int> WindowSize, DATA::UIdataPack& data , scene& scene)
+	{
+		static ImVec2 DropDownMenuSize = { WindowSize.x / 2.0f , WindowSize.y / 2.0f };
+		static ImVec2 DropDownMenuPosition = ImVec2((WindowSize.x / 2) - (DropDownMenuSize.x / 2), (WindowSize.y / 2) - (DropDownMenuSize.y / 2));
+
+		ImGui::SetNextWindowSize(ImVec2(DropDownMenuSize.x, DropDownMenuSize.y));
+		ImGui::SetNextWindowPos(DropDownMenuPosition, ImGuiCond_FirstUseEver);
+		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.ChildMenuColor));
+
+		ImGui::Begin("Drop-Down assign", &DropDownImport, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse);
+
+		//const char* modelName = strrchr(path.c_str(), '/');
+
+
+
+		DropDownMenuSize = ImGui::GetWindowSize();
+		DropDownMenuPosition = ImGui::GetWindowPos();
+		ImGui::End();
+	}
+
+	void DropDownImportModel(GLuint import_shader , scene& scene , std::vector<std::string>& logs , Vec2<int> WindowSize, DATA::UIdataPack& data)
 	{
 		if (DropDownImport)
 		{
-			std::string path(DropDownFilePath);
+			/*std::string path(DropDownFilePath);
 
 			for (size_t i = 0; i < path.size(); i++)
 			{
@@ -758,7 +752,9 @@ namespace UI
 
 			logs.push_back(logtemp);
 
-			DropDownImport = false;
+			DropDownImport = false;*/
+
+			DropDownMenu(WindowSize, data , scene);
 		}
 	}
 
@@ -1279,7 +1275,7 @@ namespace UI
 
             if (ImGui::BeginMenu("Edit"))
             {
-                // Add Edit menu items here
+                
                 if (ImGui::MenuItem("Undo", "Ctrl+Z")) { /* Do something */ }
                 if (ImGui::MenuItem("Redo", "Ctrl+Y")) { /* Do something */ }
                 ImGui::EndMenu();
@@ -1332,8 +1328,6 @@ namespace UI
 				ImGui::EndMenu();
 			}
 
-            // Add additional menus here
-
             ImGui::EndMainMenuBar();
         }
 
@@ -1341,8 +1335,6 @@ namespace UI
 
 		if (ApplicationMenuEnabled)
 		{
-			
-
 			ApplicationSettingSizes = { win_size.x / 2.0f , win_size.y / 2.0f };
 			ImVec2 ApplicationSettingPosition = ImVec2((win_size.x / 2) - (ApplicationSettingSizes.x / 2), (win_size.y / 2) - (ApplicationSettingSizes.y / 2));
 
@@ -1357,9 +1349,6 @@ namespace UI
 
 			ImVec2 Max = ImVec2(ApplicationSettingPosition.x + (ApplicationSettingSizes.x ) , ApplicationSettingPosition.y + (ApplicationSettingSizes.y ));
 			ImVec2 Min = ImVec2(ApplicationSettingPosition.x - (ApplicationSettingSizes.x ), ApplicationSettingPosition.y - (ApplicationSettingSizes.y ));
-
-			//std::cout << "MAX WINDOW: " << Max.x << " "<<Max.y << "Hovered: "<< ImGui::IsMouseHoveringRect(Min, Max) << "\n";
-			//std::cout << "MIN WINDOW: " << Min.x << " " << Min.y << "Hovered: " << ImGui::IsMouseHoveringRect(Min, Max) << "\n";
 
 			if (!ImGui::IsMouseHoveringRect(Min, Max) && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 			{
@@ -1499,7 +1488,6 @@ namespace UI
 				}
 
 				UIthemeComboBox(data);
-
 			}
 			else
 			{
@@ -1542,7 +1530,6 @@ namespace UI
 
 			}
 
-
 			if (!ImGui::IsMouseHoveringRect(Min, Max) && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 			{
 				data.SplashScreenEnabled = false;
@@ -1555,22 +1542,22 @@ namespace UI
 
         FrameBufferSizeCallBack(window);
         
-
-
+		const float MainTabCount = 2.0f;
+		ImVec2 MainTabSize(current_win_size.x / MainTabCount, current_win_size.y * 0.05f);
 
         ImGui::Begin("Settings", (bool*)0, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse );
 
        
-        ImGui::SetCursorPos(ImVec2(current_win_size.x / 16, current_win_size.y / 20));
+        ImGui::SetCursorPos(ImVec2(0, 18));
 
-        if (ImGui::Button("Object Properties", ImVec2(current_win_size.x / 2.5f, current_win_size.y / 15)))
+        if (ImGui::Button("Object Properties", MainTabSize))
         {
             data.propertiesbutton = true;
             data.logbutton = false;
         }
 		
-		ImVec2 ChildMenuSize(current_win_size.x / 1.05f, current_win_size.y / 1.165f);
-		ImVec2 ChildMenuPos(current_win_size.x / 35, current_win_size.y / 20 + (current_win_size.y / 12));
+		const ImVec2 ChildMenuSize(current_win_size.x / 1.01f, current_win_size.y / 1.165f);
+		const ImVec2 ChildMenuPos(current_win_size.x * 0.007f, current_win_size.y * 0.03f + MainTabSize.y);
 
 		if (data.propertiesbutton)
 		{
@@ -2045,12 +2032,12 @@ namespace UI
 				{
 					ImGui::BeginChildFrame(33, ImVec2(ChildMenuSize.x * 0.98f, ChildMenuSize.y * 0.50f), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
 
-					//ImGui::SetCursorPos(ImVec2(10, 10));
-					ImGui::Checkbox(" Enable Skybox", &data.render_cube_map);
+					ImGui::Text("Enable Skybox:");
+					ImGui::SameLine();
+					ImGui::Checkbox("##EnableSkybox", &data.render_cube_map);
 
 
 					static bool ImportHDRI = false;
-
 					if (ImGui::Button("Import HDRI", ImVec2(100, 40)) && !ImportHDRI)
 					{
 						nfdfilteritem_t filterItem[3] = { { "High Dynamic Range Image Files", "hdr,exr" }, { "hdr", "hdr" } , {"exr","exr"} };
@@ -2103,13 +2090,19 @@ namespace UI
 					ImGui::Spacing();
 					ImGui::Spacing();
 
-					ImGui::Checkbox("Show light meshes", &data.renderlights);
+					ImGui::Text("Show light meshes:");
+					ImGui::SameLine();
+					ImGui::Checkbox("##Showlightmeshes", &data.renderlights);
 
 					ImGui::Spacing();
-					ImGui::SliderFloat("Camera FOV", &data.CameraFOV, 0.0f, 360.0f);
+					ImGui::Text("Camera FOV:");
+					ImGui::SameLine();
+					ImGui::SliderFloat("##CameraFOV", &data.CameraFOV, 0.0f, 360.0f);
 					ImGui::Spacing();
 
-					ImGui::Checkbox("Enable SSAO", &data.EnableSSAO);
+					ImGui::Text("Enable SSAO:");
+					ImGui::SameLine();
+					ImGui::Checkbox("##EnableSSAO", &data.EnableSSAO);
 					if (data.EnableSSAO)
 					{
 						ImGui::SliderFloat("SSAO radius", &data.SSAOradius, 0.0f, 10.0f);
@@ -2433,11 +2426,11 @@ namespace UI
 		}
 
 
-        ImGui::SetCursorPos(ImVec2(current_win_size.x / 1.8f, current_win_size.y / 20));
+        ImGui::SetCursorPos(ImVec2(current_win_size.x / MainTabCount, 18));
 
         //ImGui::SameLine();
 
-        if (ImGui::Button("Logs", ImVec2(current_win_size.x / 2.5f, current_win_size.y / 15)))
+        if (ImGui::Button("Logs", MainTabSize))
         {
             data.propertiesbutton = false;;
             data.logbutton = true;

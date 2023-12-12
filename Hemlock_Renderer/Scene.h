@@ -67,14 +67,14 @@ public:
 			for (size_t j = 0; j < models[i]->meshes.size(); j++)
 			{
 
-				Vertex origin = models[i]->meshes[j].vertices[0]; // use first vertex as origin point
+				Vertex origin = models[i]->meshes[j].vertices[0]; 
 
 				for (unsigned int k = 0; k < models[i]->meshes[j].vertices.size(); k++) {
 
 					Vertex vertex;
 					vertex.Position.x = models[i]->meshes[j].vertices[k].Position.x - origin.Position.x;
 					vertex.Position.y = models[i]->meshes[j].vertices[k].Position.y - origin.Position.y;
-					vertex.Position.z = models[i]->meshes[j].vertices[k].Position.z - origin.Position.z;// subtract origin point from vertex
+					vertex.Position.z = models[i]->meshes[j].vertices[k].Position.z - origin.Position.z;
 
 					maxX = std::max(maxX, vertex.Position.x);
 					maxY = std::max(maxY, vertex.Position.y);
@@ -413,51 +413,9 @@ public:
 		models.push_back(newmodel);
 
 	}
-	/*
-	void DrawShadowMap(shadowmap* ShadowMap, GLuint shadow_map_shader, Camera& camera, GLFWwindow* window, glm::vec4 background_color)
-	{
-
-
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		UseShaderProgram(shadow_map_shader);
-
-		glEnable(GL_DEPTH_TEST);
-
-		//glEnable(GL_CULL_FACE);
-		//glCullFace(GL_BACK);
-
-		glBindFramebuffer(GL_FRAMEBUFFER, ShadowMap->GetShadowMapFBO());
-
-		glViewport(0, 0, ShadowMap->GetShadowMapSize().x, ShadowMap->GetShadowMapSize().y);
-
-
-		glClear(GL_DEPTH_BUFFER_BIT);
-
-		glBindTexture(GL_TEXTURE_2D, ShadowMap->GetShadowMapImage());
-
-		
-		//glCullFace(GL_BACK);
-
-		for (size_t i = 1; i < models.size(); i++)
-		{
-			models.at(i)->transformation.SendUniformToShader(shadow_map_shader, "model");
-			models[i]->Draw(shadow_map_shader, camera, ShadowMap->GetShadowMapImage(),NULL);
-		}
-
-
-		UseShaderProgram(0);
-		//glBindTexture(GL_TEXTURE_2D, 0);
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-
-	}
-	*/
-
-	void DrawGbuffer(GBUFFER::gBuffer& SceneGbuffer, GLuint GbufferShader, Camera& camera, Vec2<float> menuSize, GLFWwindow& window , int currentselectedobj , std::pair<uint,bool> enablegizmo_p, int currentselectedlight , GLuint pickingtextureShader , pickingtexture& pickingtex , bool Drawlights)
+	
+	void DrawGbuffer(GBUFFER::gBuffer& SceneGbuffer, GLuint GbufferShader, Camera& camera, Vec2<float> menuSize, GLFWwindow& window , int currentselectedobj , std::pair<uint,bool> enablegizmo_p, int currentselectedlight , 
+		GLuint pickingtextureShader , pickingtexture& pickingtex , bool Drawlights , DATA::UIdataPack& data , Vec2<int> windowSize)
 	{
 		if (!models.empty())
 		{
@@ -465,8 +423,15 @@ public:
 			glEnable(GL_DEPTH_TEST);
 
 			glBindFramebuffer(GL_FRAMEBUFFER, SceneGbuffer.gbuffer);
-			glViewport(0, 0, SceneGbuffer.window_width, SceneGbuffer.window_height);
-
+			//glViewport(0, 0, SceneGbuffer.window_width, SceneGbuffer.window_height);
+			if (data.takesreenshot)
+			{
+				glViewport(0, 0, windowSize.x, windowSize.y);
+			}
+			else
+			{
+				glViewport(0, 0, SceneGbuffer.window_width, SceneGbuffer.window_height);
+			}
 			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -553,7 +518,7 @@ public:
 
 	}
 
-	void DrawScreenQuad(GLuint shader, GLuint buffertexture , GBUFFER::gBuffer& screenGbuffer , Vec2<float> menuSize,float viewportHeight , int RenderPass,pickingtexture &pickingTexture,GLuint PickingShader, pickingtexture &pickingBuffertex, SSAO &ssao, bool EnableSSAO,GLFWwindow &window , DATA::UIdataPack& data , Camera& camera)
+	void DrawScreenQuad(GLuint shader, FBO& buffertexture , GBUFFER::gBuffer& screenGbuffer , Vec2<float> menuSize,float viewportHeight , int RenderPass,pickingtexture &pickingTexture,GLuint PickingShader, pickingtexture &pickingBuffertex, SSAO &ssao, bool EnableSSAO,GLFWwindow &window , DATA::UIdataPack& data , Camera& camera)
 	{
 		int width, height;
 		glfwGetWindowSize(&window, &width, &height);
@@ -585,9 +550,17 @@ public:
 
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, width, height);
+		glDisable(GL_DEPTH_TEST);
+		if (data.takesreenshot)
+		{
+			glViewport(0, 0, buffertexture.FboSize.x, buffertexture.FboSize.y);
+		}
+		else
+		{
+			glViewport(0, 0, width, height);
+		}
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); 
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		UseShaderProgram(shader);
 		
@@ -600,11 +573,11 @@ public:
 		    glUniformMatrix4fv(glGetUniformLocation(shader, "modelMat"), 1, GL_FALSE, glm::value_ptr(modelMat * ScaleMat));
 		}
 		
-		GLuint renderpass = buffertexture;
+		GLuint renderpass = buffertexture.GetScreenImage();
 
 		if (RenderPass == RENDER_PASS_COMBINED || RenderPass == RENDER_PASS_WIREFRAME)
 		{
-			renderpass = buffertexture;
+			renderpass = buffertexture.GetScreenImage();
 			glUniform1i(glGetUniformLocation(shader, "RenderPass"), 1);
 			glUniform1i(glGetUniformLocation(shader, "DOFenabled"), (int)data.DOFenabled);
 			if (data.DOFenabled)
@@ -670,6 +643,7 @@ public:
 		UseShaderProgram(0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glBindVertexArray(0);
+		glEnable(GL_DEPTH_TEST);
 
 	}
 
@@ -691,8 +665,7 @@ public:
 		screen_fbo.Bind(GL_FRAMEBUFFER);
 		if (data.takesreenshot)
 		{
-			const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-			glViewport(0, 0, mode->width, mode->height);
+			glViewport(0, 0, width, height);
 		}
 		else
 		{
@@ -867,24 +840,10 @@ public:
 			//glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
-
-
 		glBindFramebuffer(GL_FRAMEBUFFER, NULL);
-
-		/*if (data.takesreenshot)
-		{
-			UseShaderProgram(0);
-
-			Vec2<int> screensize;
-			glfwGetWindowSize(window, &screensize.x, &screensize.y);
-
-			Takescreenshot(screensize.x, screensize.y, data.screenshotPathstr.c_str(), RenderPass, SceneGbuffer, screen_fbo);
-			data.takesreenshot = false;
-		}*/
-
 		if (data.EnableSSAO)
 		{
-			ssao.Draw(SSAOShader.GetID(), SSAOblurShader.GetID(), SceneGbuffer, camera,data);
+			ssao.Draw(SSAOShader.GetID(), SSAOblurShader.GetID(), SceneGbuffer, camera,data,{width,height});
 		}
 	}
 
@@ -1052,6 +1011,7 @@ public:
 	{
 		delete models.at(index);
 		models.erase(models.begin() + index);
+		ModelIDiterator--;
 	}
 
 	void DeleteLights()
@@ -1177,9 +1137,7 @@ public:
 		std::vector<Vertexs> gridvert = Grid(10).first;
 		std::vector<uint> gridindices = Grid(10).second;
 		std::vector<Textures> tex;
-
 		Meshs grid(gridvert, gridindices, tex, shader);
-
 		return grid;
 
 	}
@@ -1355,10 +1313,6 @@ public:
 
 	Vec2<double> UseGizmo(GLFWwindow* window , int &currentselectedgizmo , int currentselectedobj, std::pair<uint , bool> &enablegizmo_p , Vec2<double> PrevMousePos , Camera& camera , int currentselectedlight , GLuint Model_Shader , GLuint PBR_Shader, Vec2<double> &temp_mouse)
 	{
-
-		//LOG("DOT PRODUCT: " << Vec4<float>(camera.cam_view * glm::vec4(0.0f, 0.0f, 1.0f,0.0f)));
-
-
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
 		{
 			enablegizmo_p = { NULL,false };
@@ -1761,6 +1715,63 @@ public:
 			}
 		}
 	}
+
+	/*void PickObject(int &index , GLFWwindow* window ,int &currentselectedobj , int &currentselectedlight , int &currentselectedgizmo , bool& allowclick,
+		pickingtexture& pickingtex , DATA::UIdataPack &data , Vec2<double> mousepos , Vec2<int> WindowSize , Shader& PBRShader)
+	{
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE && !allowclick)
+		{
+			index = 0;
+		}
+
+		if (index == 0)
+		{
+			allowclick = true;
+		}
+
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS && allowclick)
+		{
+			if (currentselectedobj >= 2)
+			{
+				UI::ReturnSelectedObjectData(data, GetModel(CURRENT_OBJECT(currentselectedobj))->UIprop);
+			}
+
+			allowclick = false;
+			index = pickingtex.ReadPixel(mousepos.x, mousepos.y, { WindowSize.x,WindowSize.y }).ObjectID;
+			glUniform1i(glGetUniformLocation(PBRShader.GetID(), "stencilindex"), index);
+			if (index - 1 <= GetModelCount())
+			{
+				currentselectedobj = index;
+				currentselectedlight = NULL;
+				currentselectedgizmo = NULL;
+			}
+			else if (index - 1 >= GetModelCount() && index - 1 <= GetModelCount() + lights.size())
+			{
+				currentselectedlight = index;
+				currentselectedobj = NULL;
+				currentselectedgizmo = NULL;
+			}
+			else if (index == NULL)
+			{
+				currentselectedlight = NULL;
+				currentselectedobj = NULL;
+				currentselectedgizmo = NULL;
+			}
+			if (currentselectedobj >= 2)
+			{
+				UI::UseSelectedObjectData(data, GetModel(CURRENT_OBJECT(currentselectedobj))->UIprop);
+			}
+		}
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+		{
+			index = pickingtex.ReadPixel(mousepos.x, mousepos.y, { WindowSize.x,WindowSize.y }).ObjectID;
+			if (index - 1 >= GetModelCount() + lights.size())
+			{
+				currentselectedgizmo = index;
+			}
+
+		}
+	}*/
 
 };
 

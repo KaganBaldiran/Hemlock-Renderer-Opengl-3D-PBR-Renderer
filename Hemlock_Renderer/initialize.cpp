@@ -11,8 +11,8 @@ void WindowSizeRecall(GLFWwindow* window , Vec2<int> menu_size)
 	int height = NULL, width = NULL;
 	glfwGetWindowSize(window, &width, &height);
 	//glViewport(menu_size.x,NULL , width, height);
-    //glViewport(NULL, NULL, width, height);
-    glViewport(NULL, NULL, menu_size.x, menu_size.y);
+    glViewport(NULL, NULL, width, height);
+    //glViewport(NULL, NULL, menu_size.x, menu_size.y);
 }
 
 GLFWwindow* initializeWindow(int windowwidth , int windowheight , const char*windowname)
@@ -138,6 +138,8 @@ GLFWwindow* initializeWindow(int windowwidth , int windowheight , const char*win
     images[0].pixels = stbi_load("resources/Hemlock_Logo.png", &images[0].width, &images[0].height, 0, 4);  
     glfwSetWindowIcon(window, 1, images);
     stbi_image_free(images[0].pixels);
+
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
 	return window;
 

@@ -113,12 +113,14 @@ SSAO::~SSAO()
 	glDeleteTextures(1, &SSAOblurColorAttach);
 }
 
-void SSAO::Draw(GLuint SSAOshader , GLuint SSAOblurShader  ,GBUFFER::gBuffer& sceneGbuffer , Camera &camera, DATA::UIdataPack& data)
+void SSAO::Draw(GLuint SSAOshader , GLuint SSAOblurShader  ,GBUFFER::gBuffer& sceneGbuffer , Camera &camera, DATA::UIdataPack& data, Vec2<int> WindowSize)
 {
 	glDisable(GL_BLEND);
 	glBindFramebuffer(GL_FRAMEBUFFER, this->ssaofbo);
 	glUseProgram(SSAOshader);
+	//glViewport(0, 0, ScreenSize.x, ScreenSize.y);
 	glViewport(0, 0, ScreenSize.x, ScreenSize.y);
+
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glBindVertexArray(this->vao);
@@ -144,7 +146,7 @@ void SSAO::Draw(GLuint SSAOshader , GLuint SSAOblurShader  ,GBUFFER::gBuffer& sc
 	
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)ScreenSize.x / (float)ScreenSize.y, 0.1f, 100.0f);
 	glUniform2f(glGetUniformLocation(SSAOshader, "ScreenSize"), ScreenSize.x,ScreenSize.y);
-	glUniformMatrix4fv(glGetUniformLocation(SSAOshader, "projection"), 1, GL_FALSE, glm::value_ptr( camera.screenratiodefault * camera.projection));
+	glUniformMatrix4fv(glGetUniformLocation(SSAOshader, "projection"), 1, GL_FALSE, glm::value_ptr(camera.screenratiodefault * camera.projection));
 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 

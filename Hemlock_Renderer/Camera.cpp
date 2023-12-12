@@ -74,7 +74,7 @@ Camera::~Camera()
 	glDeleteVertexArrays(1, &Camvao);
 }
 
-void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane , GLFWwindow* window, Vec2<int> menu_size)
+void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane , GLFWwindow* window, Vec2<int> menu_size, bool TakeScreenShot)
 {
 	glm::mat4 view = glm::mat4(1.0f);
 	glm::mat4 proj = glm::mat4(1.0f);
@@ -89,8 +89,14 @@ void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane , GLFWwi
 	this->nearPlane = nearPlane;
 	this->farPlane = farPlane;
 
-	float aspect_rat = (float)(w_width/w_height);
+	float aspect_rat = 1.0f;
+	if (TakeScreenShot)
+	{
+		aspect_rat = (float)width / (float)height;
+	}
 	
+	//float aspect_rat = (float)menu_size.x / (float)menu_size.y;
+
 	if (ActiveCameraID == this->CameraID)
 	{
 		Objectview = glm::lookAt(glm::vec3(0.0f), -Orientation, Up);
@@ -102,7 +108,16 @@ void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane , GLFWwi
 
 	screenratiodefault = glm::mat4(1.0f);
 	screenratiodefault = glm::scale(screenratiodefault, glm::vec3(GetScreenRatio(window,menu_size).x, GetScreenRatio(window,menu_size).y, 1.0f));
-	cammatrix = screenratiodefault * proj * view;
+	
+	if (TakeScreenShot)
+	{
+		cammatrix = proj * view;
+		screenratiodefault = glm::mat4(1.0f);
+	}
+	else
+	{
+		cammatrix = screenratiodefault * proj * view;
+	}
 }
 
 void Camera::Matrix(GLuint shaderprogram, const char* uniform)
