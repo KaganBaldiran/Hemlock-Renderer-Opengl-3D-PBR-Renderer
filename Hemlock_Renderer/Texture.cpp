@@ -22,9 +22,8 @@ Textures::Textures(const char* filepath , GLenum slot , GLenum texturetype , GLe
 	if (!pixels)
 	{
 		TextureState = TEXTURE_ERROR;
-		std::cerr << "Failed to load texture :: " << filepath << "\n";
+		LOG_ERR("Failed to load texture :: " << filepath);
 		return;
-
 	}
 
 	this->channels = channels;

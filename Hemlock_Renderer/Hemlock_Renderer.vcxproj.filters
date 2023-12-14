@@ -96,6 +96,9 @@
     <ClCompile Include="Transformation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PreviewMaker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="initialize.h">
@@ -218,6 +221,9 @@
     <ClInclude Include="Transformation.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PreviewMaker.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="nativefiledialog-extended-master\src\nfd_cocoa.m" />
@@ -333,6 +339,12 @@
       <Filter>shaders</Filter>
     </None>
     <None Include="Shaders\brdfLUT.fs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\ModelPreview.vs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\ModelPreview.fs">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

@@ -106,13 +106,13 @@ namespace newwww {
                 if (name == "texture_diffuse")
                     number = std::to_string(diffuseNr++);
                 else if (name == "texture_specular")
-                    number = std::to_string(specularNr++); // transfer unsigned int to string
+                    number = std::to_string(specularNr++); 
                 else if (name == "texture_normal")
-                    number = std::to_string(normalNr++); // transfer unsigned int to string
+                    number = std::to_string(normalNr++); 
                 else if (name == "texture_height")
-                    number = std::to_string(heightNr++); // transfer unsigned int to string
+                    number = std::to_string(heightNr++); 
                 else if (name == "texture_metalic")
-                    number = std::to_string(metalicNr++); // transfer unsigned int to string
+                    number = std::to_string(metalicNr++); 
 
 
 
@@ -200,7 +200,7 @@ namespace newwww {
 
             ShaderPrep();
 
-            // draw mesh
+       
             glBindVertexArray(VAO);
             glUniform1i(glGetUniformLocation(shader, "RenderStep"), 1);
 

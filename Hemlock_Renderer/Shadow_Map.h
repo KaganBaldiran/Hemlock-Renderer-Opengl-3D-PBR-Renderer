@@ -45,19 +45,14 @@
 		  GLenum result = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		  if (result == GL_FRAMEBUFFER_COMPLETE)
 		  {
-			  std::cerr << "Framebuffer is complete." << "\n";
-
+			  LOG_INF("Framebuffer is complete.");
 		  }
 		  else
 		  {
-			  std::cerr << "Framebuffer is not complete." << "\n";
-
+			  LOG_ERR("Framebuffer is not complete!");
 		  }
-
-		  // Revert to the default framebuffer for now
 		  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		  
-
+		 
 	  };
 
       ~shadowmap()

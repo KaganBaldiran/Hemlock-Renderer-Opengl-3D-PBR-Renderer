@@ -7,6 +7,8 @@ Vec2<double> MousePosCamera;
 std::vector<Camera*> Cameras;
 int ActiveCameraID = 0;
 int CameraIterator = 0;
+GLuint Camvbo, Camvao, Camebo;
+unsigned int IndicesCount;
 
 Camera::Camera(int window_width, int window_height, glm::vec3 position)
 {
@@ -17,61 +19,13 @@ Camera::Camera(int window_width, int window_height, glm::vec3 position)
 	Position = position;
 
 	Objectview = glm::mat4(1.0f);
-
 	targetPosition = glm::vec3(0.0f);
-
-	std::vector<float> vertices = {
-		0.5f, 0.4f, 0.35f,
-		0.5f, -0.6f, 0.35f,
-		-0.5f, 0.4f, 0.35f,
-		-0.5f, -0.6f, 0.35f,
-
-		0.25f, 0.15f, 0.0f,
-		0.25f, -0.35f, 0.0f,
-		-0.25f, 0.15f, 0.0f,
-		-0.25f, -0.35f, 0.0f,
-
-		0.0f, 0.6f, 0.0f,
-		0.0f, -0.1f, -0.35f
-	};
-
-	std::vector<unsigned int> indices = {
-		0,1,1,3,3,2,2,0,
-		4,5,5,7,7,6,6,4,
-		0,4,1,5,2,6,3,7,
-		4,8,6,8,
-		4,9,5,9,6,9,7,9
-	};
-
-	IndicesCount = indices.size();
-
-	glGenVertexArrays(1, &this->Camvao);
-	glGenBuffers(1, &this->Camvbo);
-
-	glBindVertexArray(Camvao);
-	glBindBuffer(GL_ARRAY_BUFFER, Camvbo);
-
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)0);
-
-	glGenBuffers(1, &Camebo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Camebo);
-
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
-
-	glBindVertexArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
 	CameraIterator++;
 }
 
 Camera::~Camera()
 {
-	glDeleteBuffers(1, &Camvbo);
-	glDeleteBuffers(1, &Camebo);
-	glDeleteVertexArrays(1, &Camvao);
+	
 }
 
 void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane , GLFWwindow* window, Vec2<int> menu_size, bool TakeScreenShot)
@@ -120,6 +74,28 @@ void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane , GLFWwi
 	}
 }
 
+void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane, Vec2<int> WindowSize)
+{
+	glm::mat4 view = glm::mat4(1.0f);
+	glm::mat4 proj = glm::mat4(1.0f);
+
+	view = glm::lookAt(Position, Position + Orientation, Up);
+
+	this->cam_view = view;
+	this->nearPlane = nearPlane;
+	this->farPlane = farPlane;
+	float aspect_rat = (float)WindowSize.x / (float)WindowSize.y;
+	if (ActiveCameraID == this->CameraID)
+	{
+		Objectview = glm::lookAt(glm::vec3(0.0f), -Orientation, Up);
+		Objectview = glm::translate(Objectview, -Position);
+	}
+
+	proj = glm::perspective(glm::radians(FOVdeg), aspect_rat, nearPlane, farPlane);
+	this->projection = proj;
+	cammatrix = proj * view;
+}
+
 void Camera::Matrix(GLuint shaderprogram, const char* uniform)
 {
 	
@@ -128,8 +104,6 @@ void Camera::Matrix(GLuint shaderprogram, const char* uniform)
 	glUniformMatrix4fv(glGetUniformLocation(shaderprogram, "view"), 1, GL_FALSE, glm::value_ptr(cam_view));
 
 }
-
-
 
 void Camera::HandleInputs(GLFWwindow* window, Vec2<int> menu_size , Vec2<int> WindowSize, int cameraLayout)
 {
@@ -191,14 +165,10 @@ void Camera::HandleInputs(GLFWwindow* window, Vec2<int> menu_size , Vec2<int> Wi
 
 		if ((glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS))
 		{
-			int height = NULL, width = NULL;
-			glfwGetWindowSize(window, &width, &height);
-
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-
 			if (firstclick)
 			{
-				glfwSetCursorPos(window, (w_width / 2), (w_height / 2));
+				glfwSetCursorPos(window, (WindowSize.x / 2), (WindowSize.y / 2));
 				firstclick = false;
 			}
 
@@ -208,33 +178,24 @@ void Camera::HandleInputs(GLFWwindow* window, Vec2<int> menu_size , Vec2<int> Wi
 
 			Vec2<float> rot;
 
-			rot.x = sensitivity * (float)(mousepos.y - (w_height / 2)) / w_height;
-			rot.y = sensitivity * (float)(mousepos.x - (w_width / 2)) / w_width;
+			rot.x = sensitivity * (float)(mousepos.y - (WindowSize.y / 2)) / WindowSize.y;
+			rot.y = sensitivity * (float)(mousepos.x - (WindowSize.x / 2)) / WindowSize.x;
 
 			glm::vec3 newOrientation = glm::rotate(Orientation, glm::radians(-rot.x), glm::normalize(glm::cross(Orientation, Up)));
 
 			if (abs(glm::angle(newOrientation, Up) - glm::radians(90.0f)) <= glm::radians(85.0f))
 			{
-
 				Orientation = newOrientation;
-
 			}
 
 			Orientation = glm::rotate(Orientation, glm::radians(-rot.y), Up);
-
-			//int height = NULL, width = NULL;
-			//glfwGetWindowSize(window, &width, &height);
-
-			glfwSetCursorPos(window, (w_width / 2), (w_height / 2));
+			glfwSetCursorPos(window, (WindowSize.x / 2), (WindowSize.y / 2));
 		}
 
 		else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_RELEASE)
 		{
-
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-
 			firstclick = true;
-
 		}
 	}
 	else if (cameraLayout == CAMERA_LAYOUT_INDUSTRY_STANDARD)
@@ -249,13 +210,10 @@ void Camera::HandleInputs(GLFWwindow* window, Vec2<int> menu_size , Vec2<int> Wi
 		if (ScrollAmount.y == 1)
 		{
 			Position += speed * Orientation;
-
 		}
 		if (ScrollAmount.y == -1)
 		{
-
 			Position += speed * -Orientation;
-
 		}
 
 		if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
@@ -296,14 +254,11 @@ void Camera::HandleInputs(GLFWwindow* window, Vec2<int> menu_size , Vec2<int> Wi
 		
 		if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS))
 		{
-			int height = NULL, width = NULL;
-			glfwGetWindowSize(window, &width, &height);
-
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
 			if (firstclick)
 			{
-				glfwSetCursorPos(window, (w_width / 2), (w_height / 2));
+				glfwSetCursorPos(window, (WindowSize.x / 2), (WindowSize.y / 2));
 				firstclick = false;
 			}
 
@@ -312,8 +267,8 @@ void Camera::HandleInputs(GLFWwindow* window, Vec2<int> menu_size , Vec2<int> Wi
 
 			Vec2<float> rot;
 
-			rot.x = CameraSensitivity * (float)(mousepos.y - (w_height / 2)) / w_height;
-			rot.y = CameraSensitivity * (float)(mousepos.x - (w_width / 2)) / w_width;
+			rot.x = CameraSensitivity * (float)(mousepos.y - (WindowSize.y / 2)) / WindowSize.y;
+			rot.y = CameraSensitivity * (float)(mousepos.x - (WindowSize.x / 2)) / WindowSize.x;
 
 			glm::vec3 cameraToTarget = targetPosition - Position;
 			float distanceToTarget = glm::length(cameraToTarget);
@@ -322,16 +277,13 @@ void Camera::HandleInputs(GLFWwindow* window, Vec2<int> menu_size , Vec2<int> Wi
 			Position = targetPosition - distanceToTarget * glm::normalize(cameraToTarget);
 			Orientation = glm::normalize(targetPosition - Position);
 
-			glfwSetCursorPos(window, (w_width / 2), (w_height / 2));
+			glfwSetCursorPos(window, (WindowSize.x / 2), (WindowSize.y / 2));
 		}
 
 		else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_RELEASE)
 		{
-
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-
 			firstclick = true;
-
 		}
 
 		MousePosCamera(CurrentMousePos);
@@ -361,6 +313,61 @@ void Camera::Draw(glm::mat4& cammatrix, Shader& shader, std::function<void()> sh
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	ScrollAmount({ xoffset, yoffset });
+}
+
+void InitializeCameraMesh()
+{
+	std::vector<float> vertices = {
+		0.5f, 0.4f, 0.35f,
+		0.5f, -0.6f, 0.35f,
+		-0.5f, 0.4f, 0.35f,
+		-0.5f, -0.6f, 0.35f,
+
+		0.25f, 0.15f, 0.0f,
+		0.25f, -0.35f, 0.0f,
+		-0.25f, 0.15f, 0.0f,
+		-0.25f, -0.35f, 0.0f,
+
+		0.0f, 0.6f, 0.0f,
+		0.0f, -0.1f, -0.35f
+	};
+
+	std::vector<unsigned int> indices = {
+		0,1,1,3,3,2,2,0,
+		4,5,5,7,7,6,6,4,
+		0,4,1,5,2,6,3,7,
+		4,8,6,8,
+		4,9,5,9,6,9,7,9
+	};
+
+	IndicesCount = indices.size();
+
+	glGenVertexArrays(1, &Camvao);
+	glGenBuffers(1, &Camvbo);
+
+	glBindVertexArray(Camvao);
+	glBindBuffer(GL_ARRAY_BUFFER, Camvbo);
+
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)0);
+
+	glGenBuffers(1, &Camebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Camebo);
+
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+void DisposeCameraMesh()
+{
+	glDeleteBuffers(1, &Camvbo);
+	glDeleteBuffers(1, &Camebo);
+	glDeleteVertexArrays(1, &Camvao);
+	LOG_INF("Camera mesh disposed!");
 }
 
 int AddCamera(glm::vec3 Position , glm::vec3 Orientation)

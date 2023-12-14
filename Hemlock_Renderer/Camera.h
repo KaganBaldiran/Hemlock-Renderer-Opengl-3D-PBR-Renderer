@@ -22,6 +22,8 @@
 extern Vec2<double> ScrollAmount;
 extern int ActiveCameraID;
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
+void InitializeCameraMesh();
+void DisposeCameraMesh();
 
   class Camera
   {
@@ -50,13 +52,15 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 	  float speed = 0.03f;
 	  float sensitivity = 100.0f;
 
-	  unsigned int IndicesCount;
+	  //unsigned int IndicesCount;
 	  WorldTransform transformation;
 	  glm::mat4 Objectview;
 
 	  glm::vec3 targetPosition;
 	  
 	  void updateMatrix(float FOVdeg, float nearPlane, float farPlane, GLFWwindow* window, Vec2<int> menu_size , bool TakeScreenShot);
+	  void updateMatrix(float FOVdeg, float nearPlane, float farPlane,Vec2<int> WindowSize);
+
 	  void Matrix(GLuint shaderprogram, const char* uniform);
 	  void HandleInputs(GLFWwindow* window, Vec2<int> menu_size, Vec2<int> WindowSize, int cameraLayout);
 	  glm::vec3 Get_Position() { return Position; };
@@ -64,7 +68,7 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 	  void Draw(glm::mat4& cammatrix, Shader& shader, std::function<void()> shaderPrep);
 
   private:
-	  GLuint Camvbo, Camvao, Camebo;
+	  //GLuint Camvbo, Camvao, Camebo;
   };
 
   extern std::vector<Camera*> Cameras;

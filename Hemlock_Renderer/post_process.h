@@ -11,7 +11,8 @@ class FBO
 public:
 
 	FBO();
-	~FBO()
+	
+	void Clear()
 	{
 		DeleteFBO();
 		glDeleteRenderbuffers(1, &rbo);
@@ -19,8 +20,8 @@ public:
 	}
 
 	void Bind(GLenum usage);
-
 	void DeleteFBO();
+	void DeleteRBO();
 
 	GLuint &GetScreenImage() { return screen_image; };
 	GLuint& GetScreenStencilImage() { return screen_stencil_buffer; };

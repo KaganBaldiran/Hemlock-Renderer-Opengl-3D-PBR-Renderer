@@ -20,9 +20,9 @@
 #include "Thread.h"
 #include "Cubemap.h"
 #include "SaveFile.h"
+#include "PreviewMaker.hpp"
 
-
-typedef std::tuple<ImVec4, ImVec4, ImVec4 , ImVec4, ImVec4 , ImVec4> color_sheme_t;
+typedef std::tuple<ImVec4, ImVec4, ImVec4, ImVec4, ImVec4, ImVec4> color_sheme_t;
 // Dark theme color values
 #define DARK_THEME color_sheme_t(ImVec4(0.1f, 0.1f, 0.1f, 1.0f), ImVec4(0.2f, 0.2f, 0.2f, 1.0f), ImVec4(0.25f, 0.25f, 0.25f, 1.0f), ImVec4(0.4f, 0.4f, 0.4f, 1.0f), ImVec4(0.8f, 0.8f, 0.8f, 1.0f),ImVec4(0.041f, 0.041f, 0.044f, 0.00f))
 #define LIGHT_THEME color_sheme_t(ImVec4(0.9f, 0.9f, 0.9f, 1.0f), ImVec4(0.8f, 0.8f, 0.8f, 1.0f), ImVec4(0.7f, 0.7f, 0.7f, 1.0f), ImVec4(0.6f, 0.6f, 0.6f, 1.0f), ImVec4(0.2f, 0.2f, 0.2f, 1.0f),ImVec4(0.5f, 0.5f, 0.5f, 1.0f))
@@ -83,7 +83,7 @@ namespace UI
 			ChildMenuColor = cmcolor;
 		}
 
-		void operator()(const color_sheme_t &color_sh) 
+		void operator()(const color_sheme_t& color_sh)
 		{
 			MenuBackgroundColor = std::get<0>(color_sh);
 			ChildMenuColor = std::get<1>(color_sh);
@@ -95,7 +95,7 @@ namespace UI
 
 	};
 
-	Vec2<int> current_win_size((1000/4.0f),1000-18);
+	Vec2<int> current_win_size((1000 / 4.0f), 1000 - 18);
 	Vec2<int> current_viewport_size;
 	Vec2<float> ApplicationSettingSizes;
 	Vec2<float> viewport_size;
@@ -111,7 +111,7 @@ namespace UI
 		ImGui::StyleColorsDark();
 	}
 
-	void SetPlatformBackEnd(const char* version , GLFWwindow *window)
+	void SetPlatformBackEnd(const char* version, GLFWwindow* window)
 	{
 		// Setup Platform/Renderer backends
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -126,7 +126,7 @@ namespace UI
 		ImGui::NewFrame();
 	}
 
-	void SetPreferences(DATA::UIdataPack &data)
+	void SetPreferences(DATA::UIdataPack& data)
 	{
 		if (data.saveFileData.ViewportTheme != -1)
 		{
@@ -216,16 +216,16 @@ namespace UI
 		}
 	}
 
-	void SetStyle(DATA::UIdataPack &data)
+	void SetStyle(DATA::UIdataPack& data)
 	{
-		ImGuiStyle &style = ImGui::GetStyle();
+		ImGuiStyle& style = ImGui::GetStyle();
 
-		
+
 		current_color_sheme(chosen_color_sheme);
 
 		data.clear_color = current_color_sheme.ViewportBackgroundColor;
 
-		style.Colors[ImGuiCol_Text] = current_color_sheme.TextColor; 
+		style.Colors[ImGuiCol_Text] = current_color_sheme.TextColor;
 		style.Colors[ImGuiCol_WindowBg] = current_color_sheme.MenuBackgroundColor;
 		style.Colors[ImGuiCol_Border] = current_color_sheme.BorderColor;
 		style.Colors[ImGuiCol_MenuBarBg] = current_color_sheme.MenuBackgroundColor;
@@ -237,48 +237,48 @@ namespace UI
 		style.Alpha = 0.9f;
 		style.ScrollbarSize = 10.0f;
 		style.WindowMinSize = ImVec2(0, 0);
-        
-        
+
+
 	}
 
-    void Render()
-    {
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    }
+	void Render()
+	{
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	}
 
-    void EndUI()
-    {
-        ImGui_ImplOpenGL3_Shutdown();
-        ImGui::DestroyContext();
-    }
+	void EndUI()
+	{
+		ImGui_ImplOpenGL3_Shutdown();
+		ImGui::DestroyContext();
+	}
 
-    void UseSelectedObjectData(DATA::UIdataPack&data , UIproperties &obj_data)
-    {
-        data.autorotate = obj_data.autorotate;
-        data.keepoldrotation = obj_data.keepoldrotation;
-        data.maxmove = obj_data.maxmove;
-        data.moveamount = obj_data.moveamount;
-        data.newtreshold = obj_data.newtreshold;
-        data.scaleamount = obj_data.scaleamount;
-        data.maxscale = obj_data.maxscale;
-        data.rotationamount = obj_data.rotationamount;
-        data.degree = obj_data.degree;
-       
-    }
+	void UseSelectedObjectData(DATA::UIdataPack& data, UIproperties& obj_data)
+	{
+		data.autorotate = obj_data.autorotate;
+		data.keepoldrotation = obj_data.keepoldrotation;
+		data.maxmove = obj_data.maxmove;
+		data.moveamount = obj_data.moveamount;
+		data.newtreshold = obj_data.newtreshold;
+		data.scaleamount = obj_data.scaleamount;
+		data.maxscale = obj_data.maxscale;
+		data.rotationamount = obj_data.rotationamount;
+		data.degree = obj_data.degree;
 
-    void ReturnSelectedObjectData(DATA::UIdataPack& data, UIproperties& obj_data)
-    {
-        obj_data.autorotate = data.autorotate;
-        obj_data.keepoldrotation = data.keepoldrotation;
-        obj_data.maxmove = data.maxmove;
-        obj_data.moveamount = data.moveamount;
-        obj_data.newtreshold = data.newtreshold;
-        obj_data.scaleamount = data.scaleamount;
-        obj_data.maxscale = data.maxscale;
-        obj_data.rotationamount = data.rotationamount;
-        obj_data.degree = data.degree;
-    }
+	}
+
+	void ReturnSelectedObjectData(DATA::UIdataPack& data, UIproperties& obj_data)
+	{
+		obj_data.autorotate = data.autorotate;
+		obj_data.keepoldrotation = data.keepoldrotation;
+		obj_data.maxmove = data.maxmove;
+		obj_data.moveamount = data.moveamount;
+		obj_data.newtreshold = data.newtreshold;
+		obj_data.scaleamount = data.scaleamount;
+		obj_data.maxscale = data.maxscale;
+		obj_data.rotationamount = data.rotationamount;
+		obj_data.degree = data.degree;
+	}
 
 	void InitLogs(std::vector<std::string>& logs)
 	{
@@ -317,28 +317,28 @@ namespace UI
 
 	}
 
-    void FrameBufferSizeCallBack(GLFWwindow* window)
-    {
-        Vec2<int> winsize;
+	void FrameBufferSizeCallBack(GLFWwindow* window)
+	{
+		Vec2<int> winsize;
 
-        glfwGetWindowSize(window, &winsize.x, &winsize.y);
+		glfwGetWindowSize(window, &winsize.x, &winsize.y);
 
-        int main_menu_height = 18;
+		int main_menu_height = 18;
 
-        //current_win_size.x = winsize.x / 5.4f;
-        current_win_size.y = winsize.y - main_menu_height;
+		//current_win_size.x = winsize.x / 5.4f;
+		current_win_size.y = winsize.y - main_menu_height;
 
-        ImGui::SetNextWindowSize(ImVec2(current_win_size.x,current_win_size.y));
-        ImGui::SetNextWindowPos(ImVec2(0, main_menu_height));
+		ImGui::SetNextWindowSize(ImVec2(current_win_size.x, current_win_size.y));
+		ImGui::SetNextWindowPos(ImVec2(0, main_menu_height));
 
-    }
+	}
 
 	void FindCurrentViewportSize(GLFWwindow* window)
 	{
 		int height = NULL, width = NULL;
 		glfwGetWindowSize(window, &width, &height);
 
-		current_viewport_size = { width - current_win_size.x , current_win_size.y};
+		current_viewport_size = { width - current_win_size.x , current_win_size.y };
 
 	}
 
@@ -349,16 +349,16 @@ namespace UI
 
 		Vec2<double> virtual_mouse_pos;
 
-		virtual_mouse_pos.x = (mousepos.x ) - current_win_size.x;
+		virtual_mouse_pos.x = (mousepos.x) - current_win_size.x;
 		virtual_mouse_pos.y = (mousepos.y - 37);
 
 		std::cout << "VIRTUAL MOUSE POS X: " << virtual_mouse_pos.x << "VIRTUAL MOUSE POS Y: " << mousepos.y << "\n";
 
 		int height = NULL, width = NULL;
 		glfwGetWindowSize(window, &width, &height);
-		
 
-		mousepos = { (current_viewport_size.x *virtual_mouse_pos.x) / current_viewport_size.x, (current_viewport_size.y * virtual_mouse_pos.y) / current_viewport_size.y};
+
+		mousepos = { (current_viewport_size.x * virtual_mouse_pos.x) / current_viewport_size.x, (current_viewport_size.y * virtual_mouse_pos.y) / current_viewport_size.y };
 
 		std::cout << "MOUSE POS X: " << mousepos.x << "MOUSE POS Y: " << mousepos.y << "\n";
 
@@ -367,7 +367,7 @@ namespace UI
 	}
 
 
-	void DrawFrameBuffer(GLuint screen_image , GLFWwindow* window)
+	void DrawFrameBuffer(GLuint screen_image, GLFWwindow* window)
 	{
 
 		static float max_viewport_size_y = -std::numeric_limits<float>::infinity();
@@ -386,19 +386,19 @@ namespace UI
 
 		ImGui::Begin("Viewport", (bool*)0, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-		
+
 		image_ratio_divisor = 1.1f;
 
-		viewport_size = { 1920/image_ratio_divisor ,1000/image_ratio_divisor};
+		viewport_size = { 1920 / image_ratio_divisor ,1000 / image_ratio_divisor };
 
 
 		float image_aspect_ratio = 1920.0f / 1000.0f;
 
-		
 
-		ImGui::SetCursorPos(ImVec2(0, current_win_size.y - max_viewport_size_y ));
 
-		
+		ImGui::SetCursorPos(ImVec2(0, current_win_size.y - max_viewport_size_y));
+
+
 		ImVec2 uv0(0, 1); // Bottom-left corner of texture
 		ImVec2 uv1(1, 0);
 
@@ -408,7 +408,7 @@ namespace UI
 
 		//glDisable(GL_FRAMEBUFFER_SRGB);
 
-		
+
 		ImGui::SetCursorPos(ImVec2(winsize.x / 1.3f, winsize.y / 30.0f));
 
 		ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
@@ -421,12 +421,12 @@ namespace UI
 
 	}
 
-	void DrawOnViewportSettings(Vec2<int> winsize, int& renderPass , GLuint zeroPointButton, GLuint gridButton, Camera& camera , DATA::UIdataPack& data)
+	void DrawOnViewportSettings(Vec2<int> winsize, int& renderPass, GLuint zeroPointButton, GLuint gridButton, Camera& camera, DATA::UIdataPack& data)
 	{
 		static bool showDropdown = true;
 
 		Vec2<float> viewportSettingsSize(winsize.x - current_win_size.x, current_win_size.y * 0.05f);
-		
+
 		ImGui::SetNextWindowPos(ImVec2(current_win_size.x, 18));
 		ImGui::SetNextWindowSize(ImVec2(viewportSettingsSize.x, viewportSettingsSize.y));
 
@@ -434,7 +434,7 @@ namespace UI
 
 		ImGui::SetCursorPos(ImVec2((viewportSettingsSize.x * 0.018f) + (viewportSettingsSize.y * 0.7f), viewportSettingsSize.y * 0.1f));
 
-		ImVec2 uv0(0, 1); 
+		ImVec2 uv0(0, 1);
 		ImVec2 uv1(1, 0);
 
 		if (ImGui::ImageButton((void*)(intptr_t)zeroPointButton, { viewportSettingsSize.y * 0.7f,viewportSettingsSize.y * 0.7f }, uv0, uv1))
@@ -443,8 +443,7 @@ namespace UI
 			camera.Orientation = glm::vec3(0.0f, 0.0f, -1.0f);
 		}
 
-
-		ImGui::SetCursorPos(ImVec2((viewportSettingsSize.x * 0.005f) , viewportSettingsSize.y * 0.1f));
+		ImGui::SetCursorPos(ImVec2((viewportSettingsSize.x * 0.005f), viewportSettingsSize.y * 0.1f));
 
 		if (ImGui::ImageButton((void*)(intptr_t)gridButton, { viewportSettingsSize.y * 0.7f,viewportSettingsSize.y * 0.7f }, uv0, uv1))
 		{
@@ -534,7 +533,6 @@ namespace UI
 				showDropdown = false;
 			}
 
-			
 			ImGui::EndCombo();
 		}
 
@@ -545,7 +543,7 @@ namespace UI
 
 		ImGui::PopStyleColor();
 		ImGui::SetCursorPos(ImVec2(viewportSettingsSize.x * 0.96f - (ImGui::GetFontSize() * 4), viewportSettingsSize.y * 0.3f));
-		
+
 		ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
 
 		ImGui::End();
@@ -571,7 +569,7 @@ namespace UI
 
 	}
 
-	void DoUIobjectReTransformations(size_t currentselectedobj , scene &scene , DATA::UIdataPack&data)
+	void DoUIobjectReTransformations(size_t currentselectedobj, scene& scene, DATA::UIdataPack& data)
 	{
 		if (currentselectedobj >= 2)
 		{
@@ -581,13 +579,11 @@ namespace UI
 			scene.GetModel(currentselectedobj - 2)->transformation.Scale(glm::vec3(1 / data.scaleamount, 1 / data.scaleamount, 1 / data.scaleamount));
 			scene.GetModel(currentselectedobj - 2)->transformation.Translate(-glm::vec3(data.moveamount.x, data.moveamount.y, data.moveamount.z));
 			scene.GetModel(CURRENT_OBJECT(currentselectedobj))->dynamic_origin -= glm::vec3(data.moveamount.x, data.moveamount.y, data.moveamount.z);
-
-
 		}
 
 	}
 
-	void HandleSliderMaxValues(DATA::UIdataPack &data , GLFWwindow *window)
+	void HandleSliderMaxValues(DATA::UIdataPack& data, GLFWwindow* window)
 	{
 
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
@@ -617,21 +613,19 @@ namespace UI
 
 	}
 
-	void HandleAutoRotation(int &currentselectedobj , scene &scene ,std::vector<uint> &auto_rotate_on)
+	void HandleAutoRotation(int& currentselectedobj, scene& scene, std::vector<uint>& auto_rotate_on)
 	{
 		for (size_t i = 0; i < auto_rotate_on.size(); i++)
 		{
 			if (auto_rotate_on.at(i) != CURRENT_OBJECT(currentselectedobj))
 			{
 				scene.GetModel(auto_rotate_on.at(i))->UIprop.degree = scene.GetModel(auto_rotate_on.at(i))->UIprop.rotationamount;
-
 				scene.GetModel(auto_rotate_on.at(i))->UIprop.degree += 0.1f;
 
 				if (scene.GetModel(auto_rotate_on.at(i))->UIprop.degree >= 360.0f)
 				{
 					scene.GetModel(auto_rotate_on.at(i))->UIprop.degree = NULL;
 				}
-
 				scene.GetModel(auto_rotate_on.at(i))->UIprop.rotationamount = scene.GetModel(auto_rotate_on.at(i))->UIprop.degree;
 			}
 
@@ -642,37 +636,30 @@ namespace UI
 			if (auto_rotate_on.at(i) != CURRENT_OBJECT(currentselectedobj))
 			{
 				scene.GetModel(auto_rotate_on.at(i))->transformation.Translate(glm::vec3(0.0f, 0.0f, 0.0f));
-
 				scene.GetModel(auto_rotate_on.at(i))->transformation.Rotate(scene.GetModel(auto_rotate_on.at(i))->UIprop.rotationamount, glm::vec3(0.0f, 1.0f, 0.0f));
-
 				scene.GetModel(auto_rotate_on.at(i))->transformation.Translate(-glm::vec3(0.0f, 0.0f, 0.0f));
-
 			}
 
 		}
 
 	}
 
-	void HandleReverseAutoTranslation(size_t currentselectedobj , scene &scene , std::vector<uint>& auto_rotate_on)
+	void HandleReverseAutoTranslation(size_t currentselectedobj, scene& scene, std::vector<uint>& auto_rotate_on)
 	{
 
 		for (size_t i = 0; i < auto_rotate_on.size(); i++)
 		{
 			if (auto_rotate_on.at(i) != CURRENT_OBJECT(currentselectedobj))
 			{
-
 				scene.GetModel(auto_rotate_on.at(i))->transformation.Translate(glm::vec3(0.0f, 0.0f, 0.0f));
-
 				scene.GetModel(auto_rotate_on.at(i))->transformation.Rotate(-scene.GetModel(auto_rotate_on.at(i))->UIprop.rotationamount, glm::vec3(0.0f, 1.0f, 0.0f));
-
 				scene.GetModel(auto_rotate_on.at(i))->transformation.Translate(-glm::vec3(0.0f, 0.0f, 0.0f));
-
 			}
 		}
 
 	}
 
-	void IncrementRotationDegree(DATA::UIdataPack &data)
+	void IncrementRotationDegree(DATA::UIdataPack& data)
 	{
 		if (data.autorotate)
 		{
@@ -726,13 +713,18 @@ namespace UI
 			StrCmprCaseInsnstv(FileExtention, ".gltf") || StrCmprCaseInsnstv(FileExtention, ".dae") || StrCmprCaseInsnstv(FileExtention, ".glb"))
 		{
 			DropdownFileData.OverAllFileType = OBJECT_FILE;
+			DropdownFileData.MakeModelPreview = true;
 			LOG("ITS AN MODEL FILE! :: " << FileExtention);
 		}
 		DropdownFileData.DropDownFileSize = GetFileSize<CONVERSION_MEGABYTE>(DropdownFileData.DropDownFilePath.c_str());
 	}
 
-	void DropDownMenu(Vec2<int> WindowSize, DATA::UIdataPack& data , scene& scene , const int& OverallFileType )
+	void DropDownMenu(Vec2<int> WindowSize, DATA::UIdataPack& data, scene& scene, const int& OverallFileType , Shader& PreviewShader , ThreadPool& threadpool)
 	{
+		static bool ModelImportError = false;
+		static bool MeshImportError = false;
+		static bool TextureUsageImportError = false;
+
 		static ImVec2 DropDownMenuSize = { WindowSize.x / 2.0f , WindowSize.y / 2.0f };
 		static ImVec2 DropDownMenuPosition = ImVec2((WindowSize.x / 2) - (DropDownMenuSize.x / 2), (WindowSize.y / 2) - (DropDownMenuSize.y / 2));
 		const char* FileExtention = strrchr(DropdownFileData.DropDownFilePath.c_str(), '.');
@@ -740,7 +732,7 @@ namespace UI
 		ImGui::SetNextWindowSize(ImVec2(DropDownMenuSize.x, DropDownMenuSize.y));
 		ImGui::SetNextWindowPos(DropDownMenuPosition, ImGuiCond_FirstUseEver);
 		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.ChildMenuColor));
-		
+
 		ImGui::Begin("Drop-Down assign", &DropdownFileData.DropDownImport, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse);
 		float OriginalFontSize = ImGui::GetFont()->FontSize;
 		float FontSizeMultiplier = ((DropDownMenuSize.x / WindowSize.x) + (DropDownMenuSize.y / WindowSize.y)) / 2.0f;
@@ -752,7 +744,7 @@ namespace UI
 		ImGui::Text(("File Path: " + DropdownFileData.DropDownFilePath).c_str());
 		ImGui::Text("");
 		ImGui::SameLine();
-		ImGui::Text(("Size:" + std::to_string(DropdownFileData.DropDownFileSize) + "mb").c_str());
+		ImGui::Text(("Size: " + std::to_string(DropdownFileData.DropDownFileSize) + "mb").c_str());
 		ImGui::Text("");
 		ImGui::SameLine();
 		ImGui::Text("Type:");
@@ -768,19 +760,166 @@ namespace UI
 		else if (DropdownFileData.OverAllFileType == IMAGE_FILE)
 		{
 			ImGui::Text("Texture file");
+			ImGui::Spacing();
+			ImGui::Spacing();
+			ImGui::Text("Assignment Options:");
+			ImGui::Spacing();
+						
+			if (scene.GetModelCount() - 1 != 0)
+			{
+				if (ModelImportError)
+				{
+					ImGui::TextColored({ 1.0f,0.0f,0.0f,1.0f }, "Model isn't chosen!");
+				}
+				ImGui::Text("Select Object:");
+				ImGui::SameLine();
+
+				if (ImGui::BeginCombo("##Select Object Assign", "Select an object to assign"))
+				{
+					for (size_t i = 1; i < scene.GetModelCount(); i++)
+					{
+						if (ImGui::Selectable(scene.GetModel(i)->ModelName.c_str()))
+						{
+							DropdownFileData.ModelToAssignName = scene.GetModel(i)->ModelName;
+							DropdownFileData.ModelToAssignID = i;
+						}
+					}
+					ImGui::EndCombo();
+				}
+
+				if (DropdownFileData.ModelToAssignID > 0)
+				{
+					if (MeshImportError)
+					{
+						ImGui::TextColored({ 1.0f,0.0f,0.0f,1.0f }, "Mesh isn't chosen!");
+					}
+					ImGui::Text("Select Mesh:");
+					ImGui::SameLine();
+
+					if (ImGui::BeginCombo("##Select Mesh Assign", "Select a mesh to assign"))
+					{
+						for (size_t i = 0; i < scene.GetModel(DropdownFileData.ModelToAssignID)->meshes.size(); i++)
+						{
+							if (ImGui::Selectable(scene.GetModel(DropdownFileData.ModelToAssignID)->meshes[i].meshname.c_str()))
+							{
+								DropdownFileData.MeshToAssignID = i;
+							}
+						}
+						ImGui::EndCombo();
+					}
+
+				}
+
+				if (TextureUsageImportError)
+				{
+					ImGui::TextColored({ 1.0f,0.0f,0.0f,1.0f }, "Texture Usage isn't chosen!");
+				}
+				ImGui::Text("Texture Usage:");
+				ImGui::SameLine();
+				if (ImGui::BeginCombo("##Select Texture Usage", "Select Texture Usage"))
+				{
+					if (ImGui::Selectable("Diffuse Texture"))
+					{
+						DropdownFileData.ImportedTextureUsage = "texture_diffuse";
+					}
+					if (ImGui::Selectable("Roughness Texture"))
+					{
+						DropdownFileData.ImportedTextureUsage = "texture_specular";
+					}
+					if (ImGui::Selectable("Metallic Texture"))
+					{
+						DropdownFileData.ImportedTextureUsage = "texture_metalic";
+					}
+					if (ImGui::Selectable("Normal Texture"))
+					{
+						DropdownFileData.ImportedTextureUsage = "texture_normal";
+					}
+					ImGui::EndCombo();
+				}
+			}
+			else
+			{
+				ImGui::TextColored({ 1.0f,0.0f,0.0f,1.0f }, "There isn't an object to assign to!");
+			}
 		}
 		else if (DropdownFileData.OverAllFileType == OBJECT_FILE)
 		{
 			ImGui::Text("3D Object file");
+
+			if (DropdownFileData.MakeModelPreview)
+			{
+				try
+				{
+					/*threadpool.enqueue(PREVIEW::CreatePreviewForModel, DropdownFileData.ModelPreview, DropdownFileData.DropDownFilePath.c_str(), PreviewShader);
+					DropdownFileData.MakeModelPreview = false;*/
+					PREVIEW::CreatePreviewForModel(DropdownFileData.ModelPreview, DropdownFileData.DropDownFilePath.c_str(), PreviewShader);
+					DropdownFileData.MakeModelPreview = false;
+				}
+				catch (const std::exception& e)
+				{
+					LOG_ERR("Exception creating a model preview! :: " << e.what());
+				}
+			}
+
+			ImVec2 uv0(0, 1); 
+			ImVec2 uv1(1, 0);
+			float ImageSize = DropDownMenuSize.x / 3.0f;
+			ImGui::Text("Preview:");
+			ImGui::Image((void*)(intptr_t)DropdownFileData.ModelPreview, ImVec2(ImageSize, ImageSize), uv0, uv1);
 		}
-		
+		else
+		{
+			ImGui::TextColored({ 1.0f,0.0f,0.0f,1.0f }, "File type isn't compatible!");
+		}
 
 		const ImVec2 ButtonSize = { DropDownMenuSize.x * 0.1f , DropDownMenuSize.x * 0.05f };
 		ImGui::SetCursorPos({ DropDownMenuSize.x * 0.99f - ButtonSize.x , DropDownMenuSize.y * 0.99f - ButtonSize.y });
 		if (ImGui::Button("Import", ButtonSize))
 		{
-			DropdownFileData.CheckFileType = true;
-			DropdownFileData.DropDownImport = false;
+			bool AllowToProceed = true;
+			if (OverallFileType < 0)
+			{
+				AllowToProceed = false;
+			}
+			else if (DropdownFileData.OverAllFileType == IMAGE_FILE)
+			{
+				if (DropdownFileData.ModelToAssignID < 0)
+				{
+					AllowToProceed = false;
+					ModelImportError = true;
+				}
+				else { ModelImportError = false; }
+
+				if (DropdownFileData.MeshToAssignID < 0)
+				{
+					AllowToProceed = false;
+					MeshImportError = true;
+				}
+				else { MeshImportError = false; }
+
+				if (DropdownFileData.ImportedTextureUsage.empty())
+				{
+					AllowToProceed = false;
+					TextureUsageImportError = true;
+				}
+				else { TextureUsageImportError = false; }
+
+			}
+
+			if (AllowToProceed)
+			{
+				DropdownFileData.CheckFileType = true;
+				DropdownFileData.DropDownImport = false;
+				ModelImportError = false;
+				MeshImportError = false;
+				TextureUsageImportError = false;
+
+				if (!DropdownFileData.MakeModelPreview)
+				{
+					glDeleteTextures(1, &DropdownFileData.ModelPreview);
+				}
+				DropdownFileData.MakeModelPreview = true;
+			}
 		}
 
 		DropDownMenuSize = ImGui::GetWindowSize();
@@ -788,12 +927,12 @@ namespace UI
 		ImGui::End();
 	}
 
-	void DropDownImportModel(GLuint import_shader , scene& scene , std::vector<std::string>& logs , Vec2<int> WindowSize, DATA::UIdataPack& data, GLFWwindow* window,
-		GLuint light_shader,Camera& camera,int &renderPass, GLuint HDRItoCubeMapShader, GLuint ConvolutateCubeMapShader, GLuint PrefilterHDRIShader , CubeMap& Cubemap)
+	void DropDownImportModel(GLuint import_shader, scene& scene, std::vector<std::string>& logs, Vec2<int> WindowSize, DATA::UIdataPack& data, GLFWwindow* window,
+		GLuint light_shader, Camera& camera, int& renderPass, GLuint HDRItoCubeMapShader, GLuint ConvolutateCubeMapShader, GLuint PrefilterHDRIShader, CubeMap& Cubemap , Shader& PreviewShader , ThreadPool& threadpool)
 	{
 		if (DropdownFileData.DropDownImport)
 		{
-			DropDownMenu(WindowSize, data, scene, DropdownFileData.OverAllFileType);
+			DropDownMenu(WindowSize, data, scene, DropdownFileData.OverAllFileType,PreviewShader, threadpool);
 		}
 		if (DropdownFileData.CheckFileType && !DropdownFileData.DropDownImport)
 		{
@@ -809,6 +948,26 @@ namespace UI
 			}
 			else if (DropdownFileData.OverAllFileType == IMAGE_FILE)
 			{
+				if (DropdownFileData.ModelToAssignID >= 0 && DropdownFileData.MeshToAssignID >= 0 && !DropdownFileData.ImportedTextureUsage.empty())
+				{
+					auto& SelectedTextureSet = scene.models[DropdownFileData.ModelToAssignID]->meshes[DropdownFileData.MeshToAssignID].textures;
+
+					Textures newTexture(DropdownFileData.DropDownFilePath.c_str(), SelectedTextureSet.size(), GL_TEXTURE_2D, GL_UNSIGNED_BYTE, NULL, DropdownFileData.ImportedTextureUsage);
+					if (newTexture.GetTextureState() == TEXTURE_SUCCESS)
+					{
+						Texture newTexturePush;
+						newTexturePush.id = *newTexture.GetTexture();
+						newTexturePush.path = newTexture.GetPathData();
+						newTexturePush.type = DropdownFileData.ImportedTextureUsage;
+
+						scene.models[DropdownFileData.ModelToAssignID]->meshes[DropdownFileData.MeshToAssignID].textures.push_back(newTexturePush);
+						scene.models[DropdownFileData.ModelToAssignID]->textures_loaded.push_back(newTexturePush);
+					}
+				}
+				else
+				{
+					LOG_ERR("Model , mesh or texture usage isn't choosen!");
+				}
 			}
 			else if (DropdownFileData.OverAllFileType == OBJECT_FILE)
 			{
@@ -832,10 +991,15 @@ namespace UI
 
 			DropdownFileData.DropDownImport = false;
 			DropdownFileData.CheckFileType = false;
+			DropdownFileData.ModelToAssignName.clear();
+			DropdownFileData.ImportedTextureUsage.clear();
+			DropdownFileData.ModelToAssignID = -1;
+			DropdownFileData.ModelToAssignID = -1;
+			DropdownFileData.OverAllFileType = -1;
 		}
 	}
 
-	void UIthemeComboBox(DATA::UIdataPack & data)
+	void UIthemeComboBox(DATA::UIdataPack& data)
 	{
 		static bool showDropdown = false;
 
@@ -961,7 +1125,7 @@ namespace UI
 		}
 	}
 
-	void ConfigureUI(int &currentselectedobj , DATA::UIdataPack &data , scene &scene , std::vector<std::string>& logs ,GLuint import_shader , glm::vec4 lightcolor , glm::vec3 lightpos , GLFWwindow* window , std::vector<uint> &auto_rotate_on , GLuint screen_image,GLuint light_shader, int &currentselectedlight , ThreadPool& threads , CubeMap &Cubemap , GLuint HDRItoCubeMapShader , Textures& SplashScreenImage , int &renderPass , Camera& camera , GLuint ConvolutateCubeMapShader , GLuint PrefilterHDRIShader)
+	void ConfigureUI(int& currentselectedobj, DATA::UIdataPack& data, scene& scene, std::vector<std::string>& logs, GLuint import_shader, glm::vec4 lightcolor, glm::vec3 lightpos, GLFWwindow* window, std::vector<uint>& auto_rotate_on, GLuint screen_image, GLuint light_shader, int& currentselectedlight, ThreadPool& threads, CubeMap& Cubemap, GLuint HDRItoCubeMapShader, Textures& SplashScreenImage, int& renderPass, Camera& camera, GLuint ConvolutateCubeMapShader, GLuint PrefilterHDRIShader)
 	{
 
 		static bool importmodel_menu = false;
@@ -977,11 +1141,11 @@ namespace UI
 		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.MidMenuColor));
 
 
-        if (ImGui::BeginMainMenuBar())
-        {
-            if (ImGui::BeginMenu("File"))
-            {
-               
+		if (ImGui::BeginMainMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+
 				if (ImGui::MenuItem("Open HML file", "Ctrl+H+M"))
 				{
 					if (!OpenHMLfile)
@@ -1027,7 +1191,7 @@ namespace UI
 						}
 
 						LOG_INF("Reading HML file... :: " << path);
-						SAVEFILE::ReadHMLfile(path.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs,window, Cubemap, HDRItoCubeMapShader, ConvolutateCubeMapShader, PrefilterHDRIShader);
+						SAVEFILE::ReadHMLfile(path.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs, window, Cubemap, HDRItoCubeMapShader, ConvolutateCubeMapShader, PrefilterHDRIShader);
 
 						if (data.saveFileData.RecentProjects.size() < 5)
 						{
@@ -1094,11 +1258,11 @@ namespace UI
 						}
 
 						LOG_INF("Reading HML file... :: " << path);
-						SAVEFILE::ReadHMLfilePacked(path.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs,window, Cubemap, HDRItoCubeMapShader, ConvolutateCubeMapShader, PrefilterHDRIShader);
+						SAVEFILE::ReadHMLfilePacked(path.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs, window, Cubemap, HDRItoCubeMapShader, ConvolutateCubeMapShader, PrefilterHDRIShader);
 
 						if (data.saveFileData.RecentProjects.size() < 5)
 						{
-							data.saveFileData.RecentProjects.push_back({ path, HML_FILE_PACKED});
+							data.saveFileData.RecentProjects.push_back({ path, HML_FILE_PACKED });
 						}
 						else if (data.saveFileData.RecentProjects.size() >= 5)
 						{
@@ -1125,7 +1289,7 @@ namespace UI
 						data.imported = false;
 
 						nfdfilteritem_t filterItem[1] = { { "hml file", "hml" } };
-						nfdresult_t result = NFD_SaveDialog(&data.outPath, filterItem, 1, NULL , "Project");
+						nfdresult_t result = NFD_SaveDialog(&data.outPath, filterItem, 1, NULL, "Project");
 						if (result == NFD_OKAY)
 						{
 							puts("Successfully fetched the file path to save the hml file!");
@@ -1250,8 +1414,6 @@ namespace UI
 						}
 
 
-
-						// The user clicked cancel -- typically do nothing.
 					}
 				}
 
@@ -1301,9 +1463,9 @@ namespace UI
 					if (!data.takesreenshot)
 					{
 
-						
-					    data.takesreenshot = true;
-						
+
+						data.takesreenshot = true;
+
 
 					}
 					if (data.takesreenshot)
@@ -1347,16 +1509,16 @@ namespace UI
 				}
 
 
-                ImGui::EndMenu();
-            }
+				ImGui::EndMenu();
+			}
 
-            if (ImGui::BeginMenu("Edit"))
-            {
-                
-                if (ImGui::MenuItem("Undo", "Ctrl+Z")) { /* Do something */ }
-                if (ImGui::MenuItem("Redo", "Ctrl+Y")) { /* Do something */ }
-                ImGui::EndMenu();
-            }
+			if (ImGui::BeginMenu("Edit"))
+			{
+
+				if (ImGui::MenuItem("Undo", "Ctrl+Z")) { /* Do something */ }
+				if (ImGui::MenuItem("Redo", "Ctrl+Y")) { /* Do something */ }
+				ImGui::EndMenu();
+			}
 
 			if (ImGui::BeginMenu("Add"))
 			{
@@ -1405,8 +1567,8 @@ namespace UI
 				ImGui::EndMenu();
 			}
 
-            ImGui::EndMainMenuBar();
-        }
+			ImGui::EndMainMenuBar();
+		}
 
 		ImGui::PopStyleColor();
 
@@ -1416,7 +1578,7 @@ namespace UI
 			ImVec2 ApplicationSettingPosition = ImVec2((win_size.x / 2) - (ApplicationSettingSizes.x / 2), (win_size.y / 2) - (ApplicationSettingSizes.y / 2));
 
 			ImGui::SetNextWindowSize(ImVec2(ApplicationSettingSizes.x, ApplicationSettingSizes.y));
-			ImGui::SetNextWindowPos(ApplicationSettingPosition , ImGuiCond_FirstUseEver);
+			ImGui::SetNextWindowPos(ApplicationSettingPosition, ImGuiCond_FirstUseEver);
 
 			ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.ChildMenuColor));
 
@@ -1424,14 +1586,14 @@ namespace UI
 
 			ApplicationSettingPosition = ImGui::GetWindowPos();
 
-			ImVec2 Max = ImVec2(ApplicationSettingPosition.x + (ApplicationSettingSizes.x ) , ApplicationSettingPosition.y + (ApplicationSettingSizes.y ));
-			ImVec2 Min = ImVec2(ApplicationSettingPosition.x - (ApplicationSettingSizes.x ), ApplicationSettingPosition.y - (ApplicationSettingSizes.y ));
+			ImVec2 Max = ImVec2(ApplicationSettingPosition.x + (ApplicationSettingSizes.x), ApplicationSettingPosition.y + (ApplicationSettingSizes.y));
+			ImVec2 Min = ImVec2(ApplicationSettingPosition.x - (ApplicationSettingSizes.x), ApplicationSettingPosition.y - (ApplicationSettingSizes.y));
 
 			if (!ImGui::IsMouseHoveringRect(Min, Max) && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 			{
-				
+
 				ApplicationMenuEnabled = false;
-				
+
 			}
 
 			static bool HDRISettingShowDropdown = false;
@@ -1482,7 +1644,7 @@ namespace UI
 					CameraLayoutSettingShowDropdown = false;
 					data.cameraLayOutNameStr = "First Person";
 				}
-				
+
 
 				ImGui::EndCombo();
 			}
@@ -1519,7 +1681,7 @@ namespace UI
 			Vec2<float> ScreenScaleRatio(win_size.x / (float)mode->width, win_size.y / (float)mode->height);
 
 			ApplicationSettingSizes = { (SplashScreenImage.GetTextureWidth() * ScreenScaleRatio.x * 0.5f),
-									  (SplashScreenImage.GetTextureHeight()* ScreenScaleRatio.x * 0.5f) + (win_size.y * 0.2f) };
+									  (SplashScreenImage.GetTextureHeight() * ScreenScaleRatio.x * 0.5f) + (win_size.y * 0.2f) };
 			ImVec2 ApplicationSettingPosition = ImVec2((win_size.x / 2) - (ApplicationSettingSizes.x / 2), (win_size.y / 2) - (ApplicationSettingSizes.y / 2));
 
 			ImGui::SetNextWindowSize(ImVec2(ApplicationSettingSizes.x, ApplicationSettingSizes.y));
@@ -1534,10 +1696,10 @@ namespace UI
 			ImVec2 Max = ImVec2(ApplicationSettingPosition.x + (ApplicationSettingSizes.x), ApplicationSettingPosition.y + (ApplicationSettingSizes.y));
 			ImVec2 Min = ImVec2(ApplicationSettingPosition.x - (ApplicationSettingSizes.x), ApplicationSettingPosition.y - (ApplicationSettingSizes.y));
 
-			ImVec2 uv0(0, 1); 
+			ImVec2 uv0(0, 1);
 			ImVec2 uv1(1, 0);
 
-			ImGui::Image((void*)(intptr_t)*SplashScreenImage.GetTexture(), ImVec2(SplashScreenImage.GetTextureWidth()* ScreenScaleRatio.x * 0.5f, SplashScreenImage.GetTextureHeight()* ScreenScaleRatio.x * 0.5f), uv0, uv1);
+			ImGui::Image((void*)(intptr_t)*SplashScreenImage.GetTexture(), ImVec2(SplashScreenImage.GetTextureWidth() * ScreenScaleRatio.x * 0.5f, SplashScreenImage.GetTextureHeight() * ScreenScaleRatio.x * 0.5f), uv0, uv1);
 
 			if (data.IsPreferencesFileEmpty)
 			{
@@ -1578,7 +1740,7 @@ namespace UI
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, current_color_sheme.ChildMenuColor);
 				ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-				
+
 				ImGui::Spacing();
 
 				for (size_t i = 0; i < data.saveFileData.RecentProjects.size(); i++)
@@ -1586,15 +1748,15 @@ namespace UI
 					std::string buttonLabel(strrchr(data.saveFileData.RecentProjects[i].first.c_str(), '/'));
 					buttonLabel = buttonLabel.substr(1);
 					ImGui::SetCursorPosX(RecentPrPosition);
-					if (ImGui::Button(buttonLabel.c_str(), { ImGui::CalcTextSize((buttonLabel + " ").c_str()).x , ImGui::GetFontSize() * 2.0f}))
+					if (ImGui::Button(buttonLabel.c_str(), { ImGui::CalcTextSize((buttonLabel + " ").c_str()).x , ImGui::GetFontSize() * 2.0f }))
 					{
 						if (data.saveFileData.RecentProjects[i].second == HML_FILE)
 						{
-							SAVEFILE::ReadHMLfile(data.saveFileData.RecentProjects[i].first.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs,window,Cubemap,HDRItoCubeMapShader,ConvolutateCubeMapShader,PrefilterHDRIShader);
+							SAVEFILE::ReadHMLfile(data.saveFileData.RecentProjects[i].first.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs, window, Cubemap, HDRItoCubeMapShader, ConvolutateCubeMapShader, PrefilterHDRIShader);
 						}
 						else if (data.saveFileData.RecentProjects[i].second == HML_FILE_PACKED)
 						{
-							SAVEFILE::ReadHMLfilePacked(data.saveFileData.RecentProjects[i].first.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs,window, Cubemap, HDRItoCubeMapShader, ConvolutateCubeMapShader, PrefilterHDRIShader);
+							SAVEFILE::ReadHMLfilePacked(data.saveFileData.RecentProjects[i].first.c_str(), scene, import_shader, light_shader, data, camera, renderPass, logs, window, Cubemap, HDRItoCubeMapShader, ConvolutateCubeMapShader, PrefilterHDRIShader);
 						}
 
 						data.SplashScreenEnabled = false;
@@ -1617,24 +1779,24 @@ namespace UI
 			ImGui::PopStyleColor();
 		}
 
-        FrameBufferSizeCallBack(window);
-        
+		FrameBufferSizeCallBack(window);
+
 		const float MainTabCount = 2.0f;
 		ImVec2 MainTabSize(current_win_size.x / MainTabCount, current_win_size.y * 0.05f);
 
-        ImGui::Begin("Settings", (bool*)0, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse );
+		ImGui::Begin("Settings", (bool*)0, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse);
 
-       
-        ImGui::SetCursorPos(ImVec2(0, 18));
 
-        if (ImGui::Button("Object Properties", MainTabSize))
-        {
-            data.propertiesbutton = true;
-            data.logbutton = false;
-        }
-		
-		const ImVec2 ChildMenuSize(current_win_size.x / 1.01f, current_win_size.y / 1.165f);
-		const ImVec2 ChildMenuPos(current_win_size.x * 0.007f, current_win_size.y * 0.03f + MainTabSize.y);
+		ImGui::SetCursorPos(ImVec2(0, 18));
+
+		if (ImGui::Button("Object Properties", MainTabSize))
+		{
+			data.propertiesbutton = true;
+			data.logbutton = false;
+		}
+
+		const ImVec2 ChildMenuSize(current_win_size.x / 1.01f, current_win_size.y * 0.91f);
+		const ImVec2 ChildMenuPos(current_win_size.x * 0.005f, current_win_size.y * 0.03f + MainTabSize.y);
 
 		if (data.propertiesbutton)
 		{
@@ -1645,16 +1807,11 @@ namespace UI
 				{
 					ImGui::SetCursorPos(ChildMenuPos);
 
-
 					//ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(ImVec4(45 / 255.0, 55 / 255.0, 71 / 255.0, 28 / 255.0)));
 
 					ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.MidMenuColor));
-
 					ImGui::BeginChildFrame(66, ChildMenuSize, ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
-
 					ImGui::PopStyleColor();
-
-
 
 					//ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(ImVec4(72 / 255.0, 89 / 255.0, 115 / 255.0, 45 / 255.0)));
 					//ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.MenuBackgroundColor));
@@ -1665,11 +1822,8 @@ namespace UI
 					if (ImGui::CollapsingHeader("Model General Settings", ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_Framed))
 					{
 						ImGui::BeginChildFrame(3, ImVec2(ChildMenuSize.x * 0.98f, ChildMenuSize.y * 0.40f), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
-
-
 						static float f = 0.0f;
 						static int counter = 0;
-
 
 						//ImGui::SetCursorPos(ImVec2(10, 10));
 						ImGui::Checkbox("Show light meshes", &data.renderlights);
@@ -1692,11 +1846,9 @@ namespace UI
 							{
 								auto_rotate_on.push_back(CURRENT_OBJECT(currentselectedobj));
 							}
-
 						}
 						else
 						{
-
 							for (size_t i = 0; i < auto_rotate_on.size(); i++)
 							{
 								if (auto_rotate_on.at(i) == CURRENT_OBJECT(currentselectedobj))
@@ -1705,7 +1857,6 @@ namespace UI
 								}
 
 							}
-
 						}
 
 						ImGui::SliderFloat("Rotate object", &data.rotationamount, 0.0f, 360.0f);
@@ -1713,9 +1864,9 @@ namespace UI
 						ImGui::SliderFloat("Translate object(y axis)", &data.moveamount.y, 0.0f, data.maxmove.y);
 						ImGui::SliderFloat("Translate object(z axis)", &data.moveamount.z, 0.0f, data.maxmove.z);
 						ImGui::SliderFloat("Scale object", &data.scaleamount, 0.1f, data.maxscale);
-						ImGui::ColorEdit4("Background color", (float*)&std::get<5>(chosen_color_sheme)); 
+						ImGui::ColorEdit4("Background color", (float*)&std::get<5>(chosen_color_sheme));
 						ImGui::Text("Selected Object: %d", currentselectedobj);
-						
+
 						ImGui::EndChildFrame();
 
 					}
@@ -1736,7 +1887,6 @@ namespace UI
 						ImGui::Text("Duplicate object: Left ctrl + D keys");
 
 						ImGui::EndChildFrame();
-
 					}
 
 
@@ -1752,22 +1902,15 @@ namespace UI
 						ImGui::SliderFloat("Metallic", &data.metallic, 0.0f, 1.0f);
 						ImGui::SliderFloat("roughness", &data.roughness, 0.0f, 1.0f);
 						ImGui::SliderFloat("ao", &data.ao, 0.0f, 1.0f);
-						
+
 
 						static bool allow_import_texture = false;
 						nfdchar_t* texture_path = nullptr;
 						int Map_count = 4;
 
-
-
-
-
-						// Set the background color for the button
 						ImVec4 bgColor = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
 
-						// Push the background color to the Imgui style stack
 						ImGui::PushStyleColor(ImGuiCol_Button, bgColor);
-
 						const char* button_info = nullptr;
 
 						int map_type = NULL;
@@ -1902,9 +2045,6 @@ namespace UI
 										texture.type = newtexture.GetTexturePbrType_str();
 										texture.path = newtexture.GetPathData();
 
-
-										//if (!skip)
-										//{   // if texture hasn't been loaded already, load it
 										if (scene.models.at(currentselectedobj - 2)->meshes[i].textures.size() >= s + 1)
 										{
 											if (std::strcmp(scene.models.at(currentselectedobj - 2)->meshes.at(i).textures.at(s).type.data(), texture.type.data()) == 0)
@@ -1946,14 +2086,9 @@ namespace UI
 
 						}
 
-
-						// Pop the background color from the Imgui style stack
 						ImGui::PopStyleColor();
 
-
 						//}
-
-
 						ImGui::EndChildFrame();
 
 					}
@@ -1962,7 +2097,6 @@ namespace UI
 					ImGui::PopStyleVar();
 
 					ImGui::EndChildFrame();
-
 				}
 				// }
 
@@ -1972,22 +2106,18 @@ namespace UI
 
 				ImGui::BeginGroup();
 
-
 				static float f = 0.0f;
 				static int counter = 0;
 				static bool importmodel = false;
 
 				ImGui::SetCursorPos(ChildMenuPos);
 
-
 				//ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(ImVec4(45 / 255.0, 55 / 255.0, 71 / 255.0, 28 / 255.0)));
 				//ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.MenuBackgroundColor));
 				//ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.ChildMenuColor));
 
 				ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.MidMenuColor));
-
 				ImGui::BeginChildFrame(66, ChildMenuSize, ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
-
 				ImGui::PopStyleColor();
 				//ImGui::PushStyleColor(ImGuiCol_Header | , ImGui::ColorConvertFloat4ToU32(ImVec4(80 / 255.0, 40 / 255.0, 250 / 255.0, 98 / 255.0)));
 				//ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.2f, 0.2f, 0.2f, 1.0f)); // Set the background color of the header
@@ -2009,11 +2139,9 @@ namespace UI
 					//ImGui::SetCursorPos(ImVec2(10, 100));
 					ImGui::Text("Current existing object count: %d", scene.GetModelCount());
 					//ImGui::SetCursorPos(ImVec2(10, 130));
-
 					ImGui::EndChildFrame();
-
 				}
-				
+
 				if (ImGui::CollapsingHeader("Input manuel", ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_Framed))
 				{
 					ImGui::BeginChildFrame(7, ImVec2(ChildMenuSize.x * 0.98f, ChildMenuSize.y * 0.40f), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
@@ -2032,9 +2160,7 @@ namespace UI
 					ImGui::Text("Delete object: Delete key");
 					//ImGui::SetCursorPos(ImVec2(10, 265));
 					ImGui::Text("Duplicate object: Left ctrl + D keys");
-
 					ImGui::EndChildFrame();
-
 				}
 
 				if (ImGui::CollapsingHeader("Light Settings", ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_Framed))
@@ -2133,8 +2259,8 @@ namespace UI
 
 					if (ImportHDRI)
 					{
-						std::pair<GLuint , int> CubeMapTexture = HDRItoCubeMap(data.outPath, data.CubeMapSize, HDRItoCubeMapShader);
-						
+						std::pair<GLuint, int> CubeMapTexture = HDRItoCubeMap(data.outPath, data.CubeMapSize, HDRItoCubeMapShader);
+
 						if (CubeMapTexture.second == HDRI_COMPLETE)
 						{
 							data.HDRIpath = data.outPath;
@@ -2152,10 +2278,10 @@ namespace UI
 						{
 							logs.push_back("Error importing HDRI(Unable to complete the Framebuffer)! :: " + std::string(data.outPath));
 						}
-						
+
 						ImportHDRI = false;
 					}
-				
+
 
 
 					ImGui::Spacing();
@@ -2261,31 +2387,28 @@ namespace UI
 
 					if (ImGui::Button("Import Model", ButtonSize))
 					{
-							importmodel = true;
-							data.imported = false;
+						importmodel = true;
+						data.imported = false;
 
-							nfdfilteritem_t filterItem[3] = { { "3D object files", "obj,fbx" }, { "obj", "obj" } , {"fbx","fbx"} };
-							nfdresult_t result;
-							result = NFD_OpenDialog(&data.outPath, filterItem, 3, NULL);
-							if (result == NFD_OKAY)
-							{
-								puts("Success!");
-								puts(data.outPath);
-							}
-							else if (result == NFD_CANCEL)
-							{
-								puts("User pressed cancel.");
-								data.imported = true;
-								importmodel = false;
-							}
-							else
-							{
-								printf("Error: %s\n", NFD_GetError());
-							}
+						nfdfilteritem_t filterItem[3] = { { "3D object files", "obj,fbx" }, { "obj", "obj" } , {"fbx","fbx"} };
+						nfdresult_t result;
+						result = NFD_OpenDialog(&data.outPath, filterItem, 3, NULL);
+						if (result == NFD_OKAY)
+						{
+							puts("Success!");
+							puts(data.outPath);
+						}
+						else if (result == NFD_CANCEL)
+						{
+							puts("User pressed cancel.");
+							data.imported = true;
+							importmodel = false;
+						}
+						else
+						{
+							printf("Error: %s\n", NFD_GetError());
+						}
 					}
-
-
-					// The user clicked cancel -- typically do nothing.
 				}
 
 				if (importmodel)
@@ -2397,9 +2520,9 @@ namespace UI
 						if (ImGui::TreeNode(scene.models[i]->ModelName.c_str()))
 						{
 
-							ImGui::SameLine(0.0f , 2.0f);
+							ImGui::SameLine(0.0f, 2.0f);
 							ImGui::Button("hello", { ImGui::GetFontSize(),ImGui::GetFontSize() });
-							
+
 							if (ImGui::Selectable(("Select##Object" + std::to_string(i)).c_str()))
 							{
 								currentselectedobj = i + 2;
@@ -2410,31 +2533,31 @@ namespace UI
 							{
 								if (ImGui::TreeNode(scene.models[i]->meshes[t].meshname.c_str()))
 								{
-							
+
 									if (ImGui::Selectable(("Select##Object" + std::to_string(t)).c_str()))
 									{
-										
+
 									}
 
-									ImGui::TreePop(); 
+									ImGui::TreePop();
 								}
 							}
 
 							ImGui::TreePop();
 
-							ImGui::Unindent(); 
+							ImGui::Unindent();
 
 						}
 						else
 						{
-							float distance = current_win_size.x ;
+							float distance = current_win_size.x;
 							//LOG("(float)current_win_size.x: " << distance * 0.6f);
 							ImGui::SameLine(0.0f, distance * 0.6f);
 							ImGui::Button("hello", { ImGui::GetFontSize(),ImGui::GetFontSize() });
 						}
 
-						
-						
+
+
 					}
 
 					for (size_t i = 0; i < scene.lights.size(); i++)
@@ -2449,12 +2572,12 @@ namespace UI
 
 							if (ImGui::Selectable(("Delete##Object" + std::to_string(i)).c_str()))
 							{
-								scene.DeleteLight(i,import_shader);
+								scene.DeleteLight(i, import_shader);
 								std::string logtemp = "A light is deleted!";
 								logs.push_back(logtemp);
 								currentselectedlight = 0;
 							}
-							
+
 
 							ImGui::TreePop();
 
@@ -2484,27 +2607,21 @@ namespace UI
 
 
 				ImGui::EndChildFrame();
-
 				ImGui::PopStyleColor();
-
 				ImGui::EndGroup();
 
 			}
 		}
 
+		ImGui::SetCursorPos(ImVec2(current_win_size.x / MainTabCount, 18));
+		if (ImGui::Button("Logs", MainTabSize))
+		{
+			data.propertiesbutton = false;;
+			data.logbutton = true;
+		}
 
-        ImGui::SetCursorPos(ImVec2(current_win_size.x / MainTabCount, 18));
-
-        //ImGui::SameLine();
-
-        if (ImGui::Button("Logs", MainTabSize))
-        {
-            data.propertiesbutton = false;;
-            data.logbutton = true;
-        }
-
-        if (data.logbutton)
-        {
+		if (data.logbutton)
+		{
 
 			ImGui::SetCursorPos(ChildMenuPos);
 
@@ -2531,23 +2648,12 @@ namespace UI
 			}
 
 			ImGui::EndChildFrame();
-
 			ImGui::PopStyleColor();
-
 			ImGui::EndTabItem();
-
-		
-        }
-
+		}
 		current_win_size({ (int)ImGui::GetWindowSize().x,current_viewport_size.y });
-		
-
-        ImGui::End();
-
-
-
+		ImGui::End();
 	}
-
 }
 
 #endif // !UI

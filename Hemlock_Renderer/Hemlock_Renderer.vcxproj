@@ -154,6 +154,7 @@
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="nativefiledialog-extended-master\src\nfd_win.cpp" />
     <ClCompile Include="PickingTexture.cpp" />
+    <ClCompile Include="PreviewMaker.cpp" />
     <ClCompile Include="SaveFile.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="SSAO.cpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="NormalBaker.hpp" />
     <ClInclude Include="post_process.h" />
     <ClInclude Include="G_Buffer.h" />
+    <ClInclude Include="PreviewMaker.hpp" />
     <ClInclude Include="SaveFile.h" />
     <ClInclude Include="SSAO.h" />
     <ClInclude Include="StopWatch.h" />
@@ -222,6 +224,8 @@
     <None Include="Shaders\HighPolyNormalBake.vs" />
     <None Include="Shaders\light.frag" />
     <None Include="Shaders\light.vert" />
+    <None Include="Shaders\ModelPreview.fs" />
+    <None Include="Shaders\ModelPreview.vs" />
     <None Include="Shaders\OmniShadow.fs" />
     <None Include="Shaders\OmniShadow.gs" />
     <None Include="Shaders\OmniShadow.vs" />

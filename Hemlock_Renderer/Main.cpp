@@ -40,7 +40,6 @@ const int windowheight = 1000;
 int main()
 {
 	GLFWwindow* window = initializeWindow(windowwidth, windowheight, "Hemlock Standalone Renderer");
-
 	glViewport(0, 0, windowwidth, windowheight);
 
 	Shader defaultshader("Shaders/vertsource.vert", "Shaders/fragsource.frag");
@@ -61,6 +60,7 @@ int main()
 	Shader HighPolyBakingShader("Shaders/HighPolyNormalBake.vs", "Shaders/HighPolyNormalBake.fs");
 	Shader ScreenSpaceilluminationShader("Shaders/SSGU.vs", "Shaders/SSGU.fs");
 	Shader brdfLUTShader("Shaders/brdfLUT.vs", "Shaders/brdfLUT.fs");
+	Shader PreviewShader("Shaders/ModelPreview.vs", "Shaders/ModelPreview.fs");
 
 	scene scene;
 	FBO screen_fbo;
@@ -92,7 +92,6 @@ int main()
 	Textures SplashScreenImage("resources/SplashScreenImage.png", 4, GL_TEXTURE_2D, GL_UNSIGNED_BYTE, GL_LINEAR, GL_LINEAR, true);
 
 	GBUFFER::gBuffer SceneGbuffer;
-
 	NFD_Init();
 
 	glUniform4f(glGetUniformLocation(PBRShader.GetID(), "colorpr"), 1.0f, 0.0f, 0.0f, 1.0f);
@@ -124,7 +123,6 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_STENCIL_TEST);
 
-
 	float degree = NULL;
 
 	pickingtexture pickingtex(mode->width, mode->height);
@@ -132,6 +130,7 @@ int main()
 
 	picking_technique pickingteq;
 
+	InitializeCameraMesh();
 	AddCamera(glm::vec3(0.0f, 0.3f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f));
 
 	int selection = NULL;
@@ -212,7 +211,7 @@ int main()
 		
 		camera.updateMatrix(data.CameraFOV, 0.1f, 100.0f, window, UI::current_viewport_size, data.takesreenshot);
 		UI::DropDownImportModel(PBRShader.GetID(), scene, logs,{width,height} , data,window, lightshader.GetID(),camera,RenderPass,
-			HDRIShader.GetID(), ConvolutateCubeMapShader.GetID(), PreFilterCubeMapShader.GetID(),Cubemap);
+			HDRIShader.GetID(), ConvolutateCubeMapShader.GetID(), PreFilterCubeMapShader.GetID(),Cubemap,PreviewShader,threads);
 		scene.DeleteModelKeyboardAction(currentselectedobj, window, logs);
 		scene.CopyModelKeyboardAction(currentselectedobj, defaultshader.GetID(), window, logs, lightcolor, lightpos);
 		scene.DeleteLightKeyboardAction(currentselectedlight, window, logs, PBRShader.GetID());
@@ -351,14 +350,18 @@ int main()
 	DeleteShaderProgram(HighPolyBakingShader.GetID());
 	DeleteShaderProgram(ScreenSpaceilluminationShader.GetID());
 	DeleteShaderProgram(brdfLUTShader.GetID());
+	DeleteShaderProgram(PreviewShader.GetID());
 
 	zeroPointButton.DeleteTexture();
 	GridButton.DeleteTexture();
 	SplashScreenImage.DeleteTexture();
 
+	screen_fbo.Clear();
+
 	glDeleteTextures(1, &data.brdfLUT);
 	glDeleteTextures(1, &data.PrefilteredEnvMap);
 
+	DisposeCameraMesh();
 	DisposeCameras();
 
 	UI::EndUI();

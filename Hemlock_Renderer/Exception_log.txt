@@ -74,3 +74,6 @@ LOG:: SAVEFILE::ReadHMLfile :: Exception while reading hml file :: [json.excepti
 LOG:: SAVEFILE::CheckHMLfileType :: Exception while reading the HML file :: [json.exception.type_error.302] type must be number, but is null :: C:\Users\Lenovo\Desktop\GUN.hml :: 17:04:51 :: Dec 12 2023
 LOG:: SAVEFILE::CheckHMLfileType :: Exception while reading the HML file :: [json.exception.type_error.302] type must be number, but is null :: C:\Users\Lenovo\Desktop\GUN.hml :: 17:04:51 :: Dec 12 2023
 LOG:: SAVEFILE::CheckHMLfileType :: Exception while reading the HML file :: [json.exception.type_error.302] type must be number, but is null :: C:\Users\Lenovo\Desktop\GUN.hml :: 17:04:51 :: Dec 12 2023
+LOG:: SAVEFILE::CheckHMLfileType :: Exception while reading the HML file :: [json.exception.type_error.302] type must be number, but is null :: C:\Users\kbald\Desktop\CameraScene.hml :: 23:31:52 :: Dec 12 2023
+LOG:: SAVEFILE::CheckHMLfileType :: Exception while reading the HML file :: [json.exception.type_error.302] type must be number, but is null :: C:\Users\kbald\Desktop\Models\FishCut.hml :: 22:05:19 :: Dec 13 2023
+LOG:: SAVEFILE::CheckHMLfileType :: Exception while reading the HML file :: [json.exception.type_error.302] type must be number, but is null :: C:\Users\kbald\Desktop\Models\try_scene.hml :: 22:05:19 :: Dec 13 2023

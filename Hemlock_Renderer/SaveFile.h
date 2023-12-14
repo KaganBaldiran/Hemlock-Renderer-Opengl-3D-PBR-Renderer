@@ -63,6 +63,14 @@ namespace SAVEFILE
 		bool CheckFileType = false;
 		int OverAllFileType = -1;
 		float DropDownFileSize = 0.0f;
+
+		std::string ModelToAssignName;
+		int ModelToAssignID = -1;
+		int MeshToAssignID = -1;
+		std::string ImportedTextureUsage;
+
+		GLuint ModelPreview;
+		bool MakeModelPreview = false;
 	};
 
 }

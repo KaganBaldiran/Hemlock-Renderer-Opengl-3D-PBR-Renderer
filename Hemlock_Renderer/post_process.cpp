@@ -18,6 +18,11 @@ void FBO::DeleteFBO()
 	glDeleteFramebuffers(1, &fbo);
 }
 
+void FBO::DeleteRBO()
+{
+	glDeleteRenderbuffers(1, &rbo);
+}
+
 void BindFBONULL()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, NULL);

@@ -93,6 +93,8 @@ public:
             }
         }
 
+        LOG("ModelIDiterator: " << ModelIDiterator);
+
         modelcounterptr = &ModelIDiterator;
         modelid = ModelIDiterator;
         modelpath = path;
@@ -110,18 +112,13 @@ public:
 
     ~Model()
     {
-
         for (size_t i = 0; i < meshes.size(); i++)
         {
             meshes[i].CleanBuffer();
         }
-
         static long int model_count = NULL;
-
-        std::cout << "Model " <<model_count<< " buffers are cleaned :: "<< modelpath << "\n";
-
+        LOG_INF("Model " <<model_count<< " buffers are cleaned :: "<< modelpath);
         model_count++;
-
     }
 
     void Draw(GLuint shader , Camera& camera, GLuint shadowMap , GLuint cube_map_texture)
@@ -170,6 +167,66 @@ public:
             meshes[i].Draw(shader, ShaderPreperation);
     }
 
+    void FindGlobalMeshScales()
+    {
+
+        float maxX = -std::numeric_limits<float>::infinity();
+        float maxY = -std::numeric_limits<float>::infinity();
+        float maxZ = -std::numeric_limits<float>::infinity();
+        float minX = std::numeric_limits<float>::infinity();
+        float minY = std::numeric_limits<float>::infinity();
+        float minZ = std::numeric_limits<float>::infinity();
+
+        for (size_t j = 0; j < meshes.size(); j++)
+        {
+            auto& VertexArray = meshes[j].vertices;
+            Vertex origin = VertexArray[0];
+
+            for (unsigned int k = 0; k < VertexArray.size(); k++) {
+
+                Vertex vertex;
+                vertex.Position.x = VertexArray[k].Position.x - origin.Position.x;
+                vertex.Position.y = VertexArray[k].Position.y - origin.Position.y;
+                vertex.Position.z = VertexArray[k].Position.z - origin.Position.z;
+
+                maxX = std::max(maxX, vertex.Position.x);
+                maxY = std::max(maxY, vertex.Position.y);
+                maxZ = std::max(maxZ, vertex.Position.z);
+                minX = std::min(minX, vertex.Position.x);
+                minY = std::min(minY, vertex.Position.y);
+                minZ = std::min(minZ, vertex.Position.z);
+            }
+        }
+
+
+        float meshWidth = maxX - minX;
+        float meshHeight = maxY - minY;
+        float meshDepth = maxZ - minZ;
+
+        transformation.ObjectScales.x = meshWidth;
+        transformation.ObjectScales.y = meshHeight;
+        transformation.ObjectScales.z = meshDepth;
+
+        maxX = -std::numeric_limits<float>::infinity();
+        maxY = -std::numeric_limits<float>::infinity();
+        maxZ = -std::numeric_limits<float>::infinity();
+        minX = std::numeric_limits<float>::infinity();
+        minY = std::numeric_limits<float>::infinity();
+        minZ = std::numeric_limits<float>::infinity();
+
+        transformation.scale_avg = (transformation.ObjectScales.x + transformation.ObjectScales.y + transformation.ObjectScales.z) / 3;
+        transformation.dynamic_scale_avg = transformation.scale_avg;
+
+        transformation.ObjectScales.x = transformation.ObjectScales.x;
+        transformation.ObjectScales.y = transformation.ObjectScales.y;
+        transformation.ObjectScales.z = transformation.ObjectScales.z;
+
+        transformation.InitialObjectScales = transformation.ObjectScales;
+
+        std::cout << "Model width: " << transformation.ObjectScales.x << " Model height: " << transformation.ObjectScales.y << " Model Depth: " << transformation.ObjectScales.z << "\n";
+        std::cout << "Scale avg: " << transformation.scale_avg << "\n";
+    }
+
 
     int GetModelID() { return modelid; };
 
@@ -188,9 +245,9 @@ private:
         Assimp::Importer importer;
         const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_PreTransformVertices);
         
-        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
+        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) 
         {
-            cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
+            LOG_ERR("ERROR::ASSIMP:: " << importer.GetErrorString());
             return;
         }
 
@@ -217,7 +274,6 @@ private:
             originPoints.push_back(glm::vec3(centerX, centerY, centerZ));
         }
 
-        // Compute overall origin point
         float overallCenterX = 0.0f, overallCenterY = 0.0f, overallCenterZ = 0.0f;
         for (unsigned int i = 0; i < originPoints.size(); i++) {
             overallCenterX += originPoints[i].x;
@@ -232,14 +288,8 @@ private:
 
         dynamic_origin = glm::vec3(overallCenterX, overallCenterY, overallCenterZ);
 
-        std::cout << "Overall origin point: (" << overallCenterX << ", " << overallCenterY << ", " << overallCenterZ << ")" << std::endl;
-
-        
-        // retrieve the directory path of the filepath
-
+        LOG_INF("Overall origin point: (" << overallCenterX << ", " << overallCenterY << ", " << overallCenterZ << ")");
         directory = path.substr(0, path.find_last_of('/'));
-
-        
         processNode(scene->mRootNode, scene);
     }
 
@@ -393,7 +443,7 @@ unsigned int TextureFromFile(const char* path, const string& directory, bool gam
     int width, height, nrComponents;
     stbi_set_flip_vertically_on_load(false);
     unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
-    std::cout <<"Texture filepath: " << filename.c_str() << " widht: " << width << " height: " << height << " Count of components: " << nrComponents << "\n";
+    LOG_INF("Texture filepath: " << filename.c_str() << " widht: " << width << " height: " << height << " Count of components: " << nrComponents);
 
     if (data)
     {
@@ -418,7 +468,7 @@ unsigned int TextureFromFile(const char* path, const string& directory, bool gam
     }
     else
     {
-        std::cout << "Texture failed to load at path: " << path << std::endl;
+        LOG_ERR("Texture failed to load at path: " << path);
         stbi_image_free(data);
     }
 

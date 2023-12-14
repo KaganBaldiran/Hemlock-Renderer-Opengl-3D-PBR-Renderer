@@ -138,12 +138,12 @@ public:
 			models.at(i)->transformation.ObjectScales.z = models.at(i)->transformation.ObjectScales.z ;
 
 
-			std::cout << "Model width: " << models.at(i)->transformation.ObjectScales.x << " Model height: " << models.at(i)->transformation.ObjectScales.y << " Model Depth: " << models.at(i)->transformation.ObjectScales.z << "\n";
-			std::cout << "Scale avg: " << models.at(i)->transformation.scale_avg << "\n";
+			LOG_INF("Model width: " << models.at(i)->transformation.ObjectScales.x << " Model height: " << models.at(i)->transformation.ObjectScales.y << " Model Depth: " << models.at(i)->transformation.ObjectScales.z);
+			LOG_INF("Scale avg: " << models.at(i)->transformation.scale_avg);
 
 		}
 
-		std::cout << "GLOBAL SCALE: " << globalScale << "\n";
+		LOG_INF("GLOBAL SCALE: " << globalScale);
 
 
 	}
@@ -346,12 +346,8 @@ public:
 		}
 		else
 		{
-
-			std::cout << "Already reached the sufficent count of lights!" << "\n";
-
+			LOG_ERR("Already reached the sufficent count of lights!");
 		}
-
-
 	}
 
 	void ImportModel(std::string filepath, GLuint shader)
@@ -1005,9 +1001,9 @@ public:
 
 	void DeleteModel(size_t index)
 	{
+		*models.at(index)->GetModelIDcounterptr() -= 1;
 		delete models.at(index);
 		models.erase(models.begin() + index);
-		ModelIDiterator--;
 	}
 
 	void DeleteLights()
@@ -1712,6 +1708,33 @@ public:
 		}
 	}
 
+	void ImportTextureIntoModel(const char* filePath ,int ModelIndex , int MeshIndex, const char* TextureUsage)
+	{
+		auto& SelectedObjectTextureSet = models[ModelIndex]->meshes[MeshIndex].textures;
+
+		Textures newTexture(filePath, SelectedObjectTextureSet.size(), GL_TEXTURE_2D, GL_UNSIGNED_BYTE, NULL, TextureUsage);
+		if (newTexture.GetTextureState() == TEXTURE_SUCCESS)
+		{
+			Texture newTexturePush;
+			newTexturePush.id = *newTexture.GetTexture();
+			newTexturePush.path = newTexture.GetPathData();
+			newTexturePush.type = TextureUsage;
+
+			for (size_t i = 0; i < SelectedObjectTextureSet.size(); i++)
+			{
+				if (SelectedObjectTextureSet[i].type == TextureUsage)
+				{
+
+					break;
+				}
+			}
+
+			SelectedObjectTextureSet.push_back(newTexturePush);
+			models[ModelIndex]->textures_loaded.push_back(newTexturePush);
+		}
+
+	}
+
 	/*void PickObject(int &index , GLFWwindow* window ,int &currentselectedobj , int &currentselectedlight , int &currentselectedgizmo , bool& allowclick,
 		pickingtexture& pickingtex , DATA::UIdataPack &data , Vec2<double> mousepos , Vec2<int> WindowSize , Shader& PBRShader)
 	{
@@ -1772,4 +1795,4 @@ public:
 };
 
 
-#endif // !LIGHTCLASS
+#endif 

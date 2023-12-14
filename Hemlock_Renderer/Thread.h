@@ -4,6 +4,7 @@
 #include <queue>
 #include <thread>
 #include <mutex>
+#include <future>
 
 class ThreadPool
 {
@@ -56,6 +57,30 @@ public:
 				std::unique_lock<std::mutex> lock(mutex);
 				tasks.emplace(std::forward<F>(task));
 			}
+			condition.notify_one();
+		}
+		else
+		{
+			LOG_WARN("Reached the maximum count of tasks in queue!");
+		}
+	}
+
+	template<class F, class... Args>
+	void enqueue(F&& task, Args&&... args)
+	{
+		if (tasks.size() <= maxTaskCount)
+		{
+			using TaskType = std::packaged_task<void()>;
+
+			auto packagedTask = std::make_shared<TaskType>(
+				std::bind(std::forward<F>(task), std::forward<Args>(args)...)
+			);
+
+			{
+				std::unique_lock<std::mutex> lock(mutex);
+				tasks.emplace([packagedTask]() { (*packagedTask)(); });
+			}
+
 			condition.notify_one();
 		}
 		else
