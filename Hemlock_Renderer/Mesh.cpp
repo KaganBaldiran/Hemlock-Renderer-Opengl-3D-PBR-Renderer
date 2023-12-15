@@ -11,8 +11,6 @@ Meshs::Meshs(std::vector<Vertexs> &vertices, std::vector<GLuint> &indices, std::
 	this->vbo.Bind();
 	this->ebo.Bind();
 
-    std::cout << "textures: " << textures.size() << "\n";
-
     GLint posattr = glGetAttribLocation(Shaderprogram, "vertexdata");
     glEnableVertexAttribArray(posattr);
     glVertexAttribPointer(posattr, 3, GL_FLOAT, GL_FALSE, sizeof(Vertexs), (GLvoid*)0);

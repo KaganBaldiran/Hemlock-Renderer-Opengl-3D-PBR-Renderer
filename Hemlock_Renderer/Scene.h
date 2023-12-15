@@ -350,60 +350,51 @@ public:
 		}
 	}
 
-	void ImportModel(std::string filepath, GLuint shader)
+	void CheckDoubleIntanceName(Model* NewModel)
 	{
-		Model* newmodel = new Model(filepath, shader);
-
 		for (size_t i = 0; i < models.size(); i++)
 		{
-			if (newmodel->ModelName == models.at(i)->ModelName)
+			if (NewModel->ModelName == models.at(i)->ModelName)
 			{
 				models.at(i)->SameModelInstances++;
-				newmodel->ModelName += "(" + std::to_string(models.at(i)->SameModelInstances) + ")";
+				NewModel->ModelName += "(" + std::to_string(models.at(i)->SameModelInstances) + ")";
 				break;
 			}
 		}
+	}
 
+	void ImportModel(std::string filepath, GLuint shader)
+	{
+		Model* newmodel = new Model(filepath, shader);
+		CheckDoubleIntanceName(newmodel);
 		models.push_back(newmodel);
-
 		FindGlobalMeshScales();
+	}
 
+	void ImportModel(Model* ModeltoImport)
+	{
+		CheckDoubleIntanceName(ModeltoImport);
+		models.push_back(ModeltoImport);
+		FindGlobalMeshScales();
 	}
 
 	void CopyModel(size_t index)
 	{
-
 		Model* newmodel = new Model;
 
-		//newmodel->meshes.assign(->meshes.begin(), models.at(index)->meshes.end());
 		for (size_t i = 0; i < models.at(index)->meshes.size(); i++)
 		{
 			newmodel->meshes.push_back(Mesh(models.at(index)->meshes[i].vertices, models.at(index)->meshes[i].indices, models.at(index)->meshes[i].textures));
-			//newmodel->meshes[i].setupMesh();
 		}
-		//newmodel->textures_loaded.assign(models.at(index)->textures_loaded.begin(), models.at(index)->textures_loaded.end());
 		newmodel->directory = models.at(index)->directory;
 		newmodel->modelpath = models.at(index)->modelpath;
+		newmodel->ModelName = models.at(index)->ModelName;
 
-		std::cout << "copied models Mesh count: " << newmodel->meshes.size() << "\n";
-		std::cout << "newmodel->meshes[1].textures.size(): " << newmodel->meshes[0].vertices.size() << "\n";
-		std::cout << "models.at(index)->meshes[i].textures: " << models.at(index)->meshes[0].textures.size() << "\n";
-
+		this->CheckDoubleIntanceName(newmodel);
 		newmodel->transformation = models.at(index)->transformation;
-		*newmodel->GetModelIDcounterptr() += 1;
-		*GetModel(GetModelCount() - 1)->GetModelIDcounterptr() += 1;
-		*newmodel->GetModelIDptr() = GetModelCount() + 2;
-
-
-
-		std::cout << "Coppied models ID: " << *newmodel->GetModelIDptr() << "\n";
-		//memcpy(newmodel,models.at(index), sizeof(*models.at(index)));
-
-		std::cout << "COPPIED MODEL ID: " << *GetModel(0)->GetModelIDcounterptr() << "\n";
-		std::cout << "COPPIED MODEL ID: " << *newmodel->GetModelIDcounterptr() << "\n";
-
+		
+		LOG_INF("Coppied models ID: " << *newmodel->GetModelIDptr());
 		models.push_back(newmodel);
-
 	}
 	
 	void DrawGbuffer(GBUFFER::gBuffer& SceneGbuffer, GLuint GbufferShader, Camera& camera, Vec2<float> menuSize, GLFWwindow& window , int currentselectedobj , std::pair<uint,bool> enablegizmo_p, int currentselectedlight , 
@@ -1617,70 +1608,47 @@ public:
 
 	void CopyModelKeyboardAction(size_t currentselectedobj , GLuint shader , GLFWwindow *window ,std::vector<std::string> &logs ,glm::vec4 lightcolor , glm::vec3 lightpos)
 	{
-		if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS && currentselectedobj >= 2)
+
+		static bool PressReloaded = true;
+
+		if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_D) == GLFW_RELEASE && currentselectedobj >= 2 && !PressReloaded)
 		{
+			PressReloaded = true;
+		}
 
-			static int counterf = NULL;
-
-			if (counterf < 1)
-			{
-
-				CopyModel(currentselectedobj - 2);
-
-				handlelights(shader);
-
-				UseShaderProgram(shader);
-
-				//glUniformMatrix4fv(glGetUniformLocation(defaultshader.GetID(), "model"), 1, GL_FALSE, glm::value_ptr(pyramidmodel));
-				glUniform4f(glGetUniformLocation(shader, "lightColor1"), lightcolor.x, lightcolor.y, lightcolor.z, lightcolor.w);
-				glUniform3f(glGetUniformLocation(shader, "lightpos1"), lightpos.x, lightpos.y, lightpos.z);
-
-				std::string logtemp = "A new object is duplicated!";
-
-				logs.push_back(logtemp);
-
-			}
-
-
-			counterf++;
+		if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS && currentselectedobj >= 2 && PressReloaded)
+		{
+			CopyModel(currentselectedobj - 2);
+			handlelights(shader);
+			std::string logtemp = "A new object is duplicated!";
+			logs.push_back(logtemp);
+			PressReloaded = false;
 		}
 
 	}
 
 	void DeleteModelKeyboardAction(int &currentselectedobj , GLFWwindow *window , std::vector<std::string>& logs)
 	{
-
 		if (glfwGetKey(window, GLFW_KEY_DELETE) == GLFW_PRESS && currentselectedobj >= 2)
 		{
-			uint* tempptr = GetModel(GetModelCount() - 1)->GetModelIDcounterptr();
+			uint tempptr = *GetModel(GetModelCount() - 1)->GetModelIDcounterptr();
+			int ModelToDeleteID = CURRENT_OBJECT(currentselectedobj);
 
-			*GetModel(GetModelCount() - 1)->GetModelIDcounterptr() -= 1;
-
-			DeleteModel(currentselectedobj - 2);
-
-			if (GetModelCount() >= 1)
+			if (GetModelCount() > 1)
 			{
-				for (size_t i = 0; i < GetModelCount(); i++)
+				for (size_t i = ModelToDeleteID + 1; i < GetModelCount(); i++)
 				{
-					if (GetModel(i)->GetModelID() > 2 && GetModel(currentselectedobj - 3)->GetModelID() != GetModelCount() + 1)
-					{
-						*GetModel(i)->GetModelIDptr() -= 1;
-
-					}
-
+					*GetModel(i)->GetModelIDptr() -= 1;
 				}
 			}
 
-			std::cout << "NEW MODEL ID COUNTER: " << *tempptr << "\n";
+			DeleteModel(ModelToDeleteID);
 
+			//std::cout << "NEW MODEL ID COUNTER: " << tempptr - 1 << "\n";
 			std::string logtemp = "A new object is deleted!";
-
 			logs.push_back(logtemp);
-
 			currentselectedobj = 0;
-
 		}
-
 	}
 
 	void DeleteLightKeyboardAction(int& currentSelectedLight, GLFWwindow* window, std::vector<std::string>& logs , GLuint Shader)
@@ -1692,7 +1660,6 @@ public:
 			std::string logtemp = "A light is deleted!";
 			logs.push_back(logtemp);
 			currentSelectedLight = 0;
-
 		}
 
 	}
@@ -1724,7 +1691,9 @@ public:
 			{
 				if (SelectedObjectTextureSet[i].type == TextureUsage)
 				{
-
+					glDeleteTextures(1, &SelectedObjectTextureSet[i].id);
+					SelectedObjectTextureSet.erase(SelectedObjectTextureSet.begin() + i);
+					models[ModelIndex]->textures_loaded.erase(models[ModelIndex]->textures_loaded.begin() + i);
 					break;
 				}
 			}
@@ -1732,7 +1701,10 @@ public:
 			SelectedObjectTextureSet.push_back(newTexturePush);
 			models[ModelIndex]->textures_loaded.push_back(newTexturePush);
 		}
-
+		else
+		{
+			LOG_ERR("Error importing texture :: " << filePath);
+		}
 	}
 
 	/*void PickObject(int &index , GLFWwindow* window ,int &currentselectedobj , int &currentselectedlight , int &currentselectedgizmo , bool& allowclick,

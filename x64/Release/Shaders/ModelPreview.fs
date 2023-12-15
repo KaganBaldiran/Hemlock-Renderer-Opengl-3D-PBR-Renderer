@@ -13,6 +13,33 @@
 
   uniform vec3 CamPos;
   uniform vec3 ObjectScales;
+  uniform float FarNearPlaneDifference;
+
+   vec3 DirectionalLight(vec3 LightPosition , vec3 ObjectColor , vec3 LightColor , float LightIntensity)
+  {
+    float Ambient = 0.10f;
+
+    vec3 specularColor = LightColor;
+
+    vec3 N = Normal;
+    vec3 L = LightPosition - currentpos;
+    vec3 LDR = normalize(L);
+
+    //float LightDistance = length(L);
+    //float a = 0.2f;
+    //float b = 0.1f;
+    //float intensity = LightIntensity / (a * LightDistance * LightDistance + b * LightDistance + 1.0f);
+   
+    float intensity = LightIntensity;
+
+    vec3 V = CamPos - currentpos;
+    vec3 H = normalize(L + V);
+
+    float diffuse = max(dot(N,LDR),0.0f);
+    vec3 specular = pow(max(dot(N,H),0.0f),32.0f) * specularColor;
+
+    return ObjectColor * LightColor * ((diffuse  * intensity + Ambient) + specular * intensity);
+  }
 
   vec3 PointLight(vec3 LightPosition , vec3 ObjectColor , vec3 LightColor , float LightIntensity)
   {
@@ -50,12 +77,12 @@
     vec3 ObjectColor = vec3(1.0f,1.0f,1.0f);
     vec3 LightColor0 = vec3(1.0f,1.0f,1.0f);
 
-    float LightIntensity0 = AverageScale;
+    float LightIntensity0 = 0.17f;
 
     vec3 Result = vec3(0.0f,0.0f,0.0f);
     for(int i = 0;i < 3;i++)
     {
-       Result += PointLight(LightPositions[i],ObjectColor,LightColor0,LightIntensity0);
+       Result += DirectionalLight(LightPositions[i],ObjectColor,LightColor0,LightIntensity0);
     }
 
     outColor = vec4(Result,1.0f);

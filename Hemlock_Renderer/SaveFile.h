@@ -60,7 +60,7 @@ namespace SAVEFILE
 	public:
 		std::string DropDownFilePath;
 		bool DropDownImport = false;
-		bool CheckFileType = false;
+		bool FinalizeImport = false;
 		int OverAllFileType = -1;
 		float DropDownFileSize = 0.0f;
 
@@ -71,6 +71,7 @@ namespace SAVEFILE
 
 		GLuint ModelPreview;
 		bool MakeModelPreview = false;
+		Model* ImportedPreviewModel = nullptr;
 	};
 
 }

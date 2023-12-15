@@ -100,6 +100,10 @@ namespace UI
 	Vec2<float> ApplicationSettingSizes;
 	Vec2<float> viewport_size;
 	float image_ratio_divisor = NULL;
+	ImFont* ImportedFont;
+
+	ImVec2 MainMenuBarSize;
+
 
 	UIcolorShemePack current_color_sheme;
 	color_sheme_t chosen_color_sheme = GITHUB_STYLE_THEME;
@@ -109,14 +113,23 @@ namespace UI
 	{
 		ImGui::CreateContext();
 		ImGui::StyleColorsDark();
+
+		std::string FilePath = "resources\\Inter.ttf";
+		try
+		{
+			ImGuiIO& io = ImGui::GetIO();
+			ImportedFont = io.Fonts->AddFontFromFileTTF(FilePath.c_str(), 17.0f, NULL, io.Fonts->GetGlyphRangesDefault());
+		}
+		catch (const std::exception& e)
+		{
+			LOG_ERR("Cannot import font :: " << e.what() << " :: " << FilePath);
+		}
 	}
 
 	void SetPlatformBackEnd(const char* version, GLFWwindow* window)
 	{
-		// Setup Platform/Renderer backends
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init(version);
-
 	}
 
 	void CreateNewFrame()
@@ -426,8 +439,7 @@ namespace UI
 		static bool showDropdown = true;
 
 		Vec2<float> viewportSettingsSize(winsize.x - current_win_size.x, current_win_size.y * 0.05f);
-
-		ImGui::SetNextWindowPos(ImVec2(current_win_size.x, 18));
+		ImGui::SetNextWindowPos(ImVec2(current_win_size.x, MainMenuBarSize.y));
 		ImGui::SetNextWindowSize(ImVec2(viewportSettingsSize.x, viewportSettingsSize.y));
 
 		ImGui::Begin("Viewport", (bool*)0, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground);
@@ -693,20 +705,11 @@ namespace UI
 		{
 			const int Filetype = SAVEFILE::CheckHMLfileType(DropdownFileData.DropDownFilePath.c_str());
 			LOG(Filetype);
-			if (Filetype == HML_FILE)
-			{
-				LOG("ITS AN HML FILE! :: " << FileExtention);
-			}
-			else if (Filetype == HML_FILE_PACKED)
-			{
-				LOG("ITS A PACKED HML FILE! :: " << FileExtention);
-			}
 			DropdownFileData.OverAllFileType = Filetype;
 		}
 		else if (StrCmprCaseInsnstv(FileExtention, ".png") || StrCmprCaseInsnstv(FileExtention, ".tga") ||
 			StrCmprCaseInsnstv(FileExtention, ".jpeg") || StrCmprCaseInsnstv(FileExtention, ".jpg"))
 		{
-			LOG("ITS AN IMAGE FILE! :: " << FileExtention);
 			DropdownFileData.OverAllFileType = IMAGE_FILE;
 		}
 		else if (StrCmprCaseInsnstv(FileExtention, ".obj") || StrCmprCaseInsnstv(FileExtention, ".fbx") || StrCmprCaseInsnstv(FileExtention, ".blend") ||
@@ -714,7 +717,6 @@ namespace UI
 		{
 			DropdownFileData.OverAllFileType = OBJECT_FILE;
 			DropdownFileData.MakeModelPreview = true;
-			LOG("ITS AN MODEL FILE! :: " << FileExtention);
 		}
 		DropdownFileData.DropDownFileSize = GetFileSize<CONVERSION_MEGABYTE>(DropdownFileData.DropDownFilePath.c_str());
 	}
@@ -798,6 +800,7 @@ namespace UI
 
 					if (ImGui::BeginCombo("##Select Mesh Assign", "Select a mesh to assign"))
 					{
+						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
 						for (size_t i = 0; i < scene.GetModel(DropdownFileData.ModelToAssignID)->meshes.size(); i++)
 						{
 							if (ImGui::Selectable(scene.GetModel(DropdownFileData.ModelToAssignID)->meshes[i].meshname.c_str()))
@@ -805,6 +808,8 @@ namespace UI
 								DropdownFileData.MeshToAssignID = i;
 							}
 						}
+
+						ImGui::PopStyleColor();
 						ImGui::EndCombo();
 					}
 
@@ -818,6 +823,8 @@ namespace UI
 				ImGui::SameLine();
 				if (ImGui::BeginCombo("##Select Texture Usage", "Select Texture Usage"))
 				{
+					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+
 					if (ImGui::Selectable("Diffuse Texture"))
 					{
 						DropdownFileData.ImportedTextureUsage = "texture_diffuse";
@@ -835,6 +842,8 @@ namespace UI
 						DropdownFileData.ImportedTextureUsage = "texture_normal";
 					}
 					ImGui::EndCombo();
+
+					ImGui::PopStyleColor();
 				}
 			}
 			else
@@ -850,9 +859,9 @@ namespace UI
 			{
 				try
 				{
-					/*threadpool.enqueue(PREVIEW::CreatePreviewForModel, DropdownFileData.ModelPreview, DropdownFileData.DropDownFilePath.c_str(), PreviewShader);
-					DropdownFileData.MakeModelPreview = false;*/
-					PREVIEW::CreatePreviewForModel(DropdownFileData.ModelPreview, DropdownFileData.DropDownFilePath.c_str(), PreviewShader);
+					//threadpool.enqueue(PREVIEW::CreatePreviewForModel, DropdownFileData.ModelPreview, DropdownFileData.DropDownFilePath.c_str(), PreviewShader , threadpool);
+					//DropdownFileData.MakeModelPreview = false;
+					PREVIEW::CreatePreviewForModel(DropdownFileData.ModelPreview, DropdownFileData.DropDownFilePath.c_str(), PreviewShader,&DropdownFileData.ImportedPreviewModel);
 					DropdownFileData.MakeModelPreview = false;
 				}
 				catch (const std::exception& e)
@@ -908,7 +917,7 @@ namespace UI
 
 			if (AllowToProceed)
 			{
-				DropdownFileData.CheckFileType = true;
+				DropdownFileData.FinalizeImport = true;
 				DropdownFileData.DropDownImport = false;
 				ModelImportError = false;
 				MeshImportError = false;
@@ -933,8 +942,16 @@ namespace UI
 		if (DropdownFileData.DropDownImport)
 		{
 			DropDownMenu(WindowSize, data, scene, DropdownFileData.OverAllFileType,PreviewShader, threadpool);
+
+			if (!DropdownFileData.DropDownImport && !DropdownFileData.FinalizeImport && DropdownFileData.ImportedPreviewModel != nullptr)
+			{
+				*DropdownFileData.ImportedPreviewModel->GetModelIDcounterptr() -= 1;
+				delete DropdownFileData.ImportedPreviewModel;
+				DropdownFileData.ImportedPreviewModel = nullptr;
+				LOG_INF("User pressed cancel :: clearing the model buffer!");
+			}
 		}
-		if (DropdownFileData.CheckFileType && !DropdownFileData.DropDownImport)
+		if (DropdownFileData.FinalizeImport && !DropdownFileData.DropDownImport)
 		{
 			if (DropdownFileData.OverAllFileType == HML_FILE)
 			{
@@ -950,19 +967,9 @@ namespace UI
 			{
 				if (DropdownFileData.ModelToAssignID >= 0 && DropdownFileData.MeshToAssignID >= 0 && !DropdownFileData.ImportedTextureUsage.empty())
 				{
-					auto& SelectedTextureSet = scene.models[DropdownFileData.ModelToAssignID]->meshes[DropdownFileData.MeshToAssignID].textures;
-
-					Textures newTexture(DropdownFileData.DropDownFilePath.c_str(), SelectedTextureSet.size(), GL_TEXTURE_2D, GL_UNSIGNED_BYTE, NULL, DropdownFileData.ImportedTextureUsage);
-					if (newTexture.GetTextureState() == TEXTURE_SUCCESS)
-					{
-						Texture newTexturePush;
-						newTexturePush.id = *newTexture.GetTexture();
-						newTexturePush.path = newTexture.GetPathData();
-						newTexturePush.type = DropdownFileData.ImportedTextureUsage;
-
-						scene.models[DropdownFileData.ModelToAssignID]->meshes[DropdownFileData.MeshToAssignID].textures.push_back(newTexturePush);
-						scene.models[DropdownFileData.ModelToAssignID]->textures_loaded.push_back(newTexturePush);
-					}
+					LOG_INF("Reading Image file... :: " << DropdownFileData.DropDownFilePath);
+					scene.ImportTextureIntoModel(DropdownFileData.DropDownFilePath.c_str(), DropdownFileData.ModelToAssignID,
+						                         DropdownFileData.MeshToAssignID, DropdownFileData.ImportedTextureUsage.c_str());
 				}
 				else
 				{
@@ -971,26 +978,19 @@ namespace UI
 			}
 			else if (DropdownFileData.OverAllFileType == OBJECT_FILE)
 			{
-				std::string path(DropdownFileData.DropDownFilePath);
-
-				for (size_t i = 0; i < path.size(); i++)
-				{
-					if (path.at(i) == '\\')
-					{
-						path.at(i) = '/';
-					}
-				}
-				std::string temp(path);
-				scene.ImportModel(temp, import_shader);
+				LOG_INF("Reading object file... :: " << DropdownFileData.DropDownFilePath);
+				scene.ImportModel(DropdownFileData.ImportedPreviewModel);
 				scene.handlelights(import_shader);
 				UseShaderProgram(import_shader);
 				scene.GetModel(scene.GetModelCount() - 1)->transformation.Scale(glm::vec3(0.05f, 0.05f, 0.05f));
 				std::string logtemp = "A new object is imported!";
 				logs.push_back(logtemp);
+
+				DropdownFileData.ImportedPreviewModel = nullptr;
 			}
 
 			DropdownFileData.DropDownImport = false;
-			DropdownFileData.CheckFileType = false;
+			DropdownFileData.FinalizeImport = false;
 			DropdownFileData.ModelToAssignName.clear();
 			DropdownFileData.ImportedTextureUsage.clear();
 			DropdownFileData.ModelToAssignID = -1;
@@ -1005,6 +1005,7 @@ namespace UI
 
 		if (ImGui::BeginCombo("Set Application Color Theme", "Select an option"))
 		{
+			ImGui::PushStyleColor(ImGuiCol_Text, current_color_sheme.TextColor);
 
 			if (ImGui::Selectable("DARK THEME"))
 			{
@@ -1012,6 +1013,8 @@ namespace UI
 				chosen_color_sheme = DARK_THEME;
 				data.saveFileData.ViewportTheme = DARK_THEME_ID;
 				showDropdown = false;
+
+
 			}
 			if (ImGui::Selectable("LIGHT THEME"))
 			{
@@ -1113,7 +1116,7 @@ namespace UI
 				data.saveFileData.ViewportTheme = ROYAL_PURPLE_THEME_ID;
 				showDropdown = false;
 			}
-
+			ImGui::PopStyleColor();
 
 			ImGui::EndCombo();
 		}
@@ -1127,13 +1130,14 @@ namespace UI
 
 	void ConfigureUI(int& currentselectedobj, DATA::UIdataPack& data, scene& scene, std::vector<std::string>& logs, GLuint import_shader, glm::vec4 lightcolor, glm::vec3 lightpos, GLFWwindow* window, std::vector<uint>& auto_rotate_on, GLuint screen_image, GLuint light_shader, int& currentselectedlight, ThreadPool& threads, CubeMap& Cubemap, GLuint HDRItoCubeMapShader, Textures& SplashScreenImage, int& renderPass, Camera& camera, GLuint ConvolutateCubeMapShader, GLuint PrefilterHDRIShader)
 	{
-
+		ImGui::PushFont(ImportedFont);
 		static bool importmodel_menu = false;
 		static bool OpenHMLfile = false;
 		static bool SaveHMLfile = false;
 		static bool OpenHMLfilePacked = false;
 		static bool SaveHMLfilePacked = false;
 		static bool ApplicationMenuEnabled = false;
+
 
 		Vec2<int> win_size = { NULL,NULL };
 		glfwGetWindowSize(window, &win_size.x, &win_size.y);
@@ -1567,6 +1571,8 @@ namespace UI
 				ImGui::EndMenu();
 			}
 
+			MainMenuBarSize = ImGui::GetWindowSize();
+
 			ImGui::EndMainMenuBar();
 		}
 
@@ -1784,10 +1790,12 @@ namespace UI
 		const float MainTabCount = 2.0f;
 		ImVec2 MainTabSize(current_win_size.x / MainTabCount, current_win_size.y * 0.05f);
 
+		ImGui::SetNextWindowPos({0,MainMenuBarSize.y});
+
 		ImGui::Begin("Settings", (bool*)0, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse);
 
 
-		ImGui::SetCursorPos(ImVec2(0, 18));
+		ImGui::SetCursorPos(ImVec2(0, MainMenuBarSize.y));
 
 		if (ImGui::Button("Object Properties", MainTabSize))
 		{
@@ -2051,13 +2059,13 @@ namespace UI
 											{
 												Texture temp = scene.models.at(currentselectedobj - 2)->meshes[i].textures.at(s);
 												scene.models.at(currentselectedobj - 2)->meshes[i].textures.at(s) = texture;
-												scene.models.at(currentselectedobj - 2)->textures_loaded.at(s) = texture;  // store it as texture loaded for entire model, to ensure we won't unnecessary load duplicate textures.
+												scene.models.at(currentselectedobj - 2)->textures_loaded.at(s) = texture;  
 												glDeleteTextures(1, &temp.id);
 											}
 											else
 											{
 												scene.models.at(currentselectedobj - 2)->meshes[i].textures.push_back(texture);
-												scene.models.at(currentselectedobj - 2)->textures_loaded.push_back(texture);  // store it as texture loaded for entire model, to ensure we won't unnecessary load duplicate textures.
+												scene.models.at(currentselectedobj - 2)->textures_loaded.push_back(texture);  
 
 											}
 
@@ -2067,7 +2075,7 @@ namespace UI
 										{
 
 											scene.models.at(currentselectedobj - 2)->meshes[i].textures.push_back(texture);
-											scene.models.at(currentselectedobj - 2)->textures_loaded.push_back(texture);  // store it as texture loaded for entire model, to ensure we won't unnecessary load duplicate textures.
+											scene.models.at(currentselectedobj - 2)->textures_loaded.push_back(texture);  
 
 
 										}
@@ -2613,7 +2621,7 @@ namespace UI
 			}
 		}
 
-		ImGui::SetCursorPos(ImVec2(current_win_size.x / MainTabCount, 18));
+		ImGui::SetCursorPos(ImVec2(current_win_size.x / MainTabCount,MainMenuBarSize.y));
 		if (ImGui::Button("Logs", MainTabSize))
 		{
 			data.propertiesbutton = false;;

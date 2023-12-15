@@ -1,5 +1,8 @@
 #include "Camera.h"
 #include <vector>
+#include "Imgui/imgui.h"
+#include "Imgui/imgui_impl_opengl3.h"
+#include "Imgui/imgui_impl_glfw.h"
 
 Vec2<double> ScrollAmount;
 Vec2<double> MousePosCamera;
@@ -85,6 +88,7 @@ void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane, Vec2<in
 	this->nearPlane = nearPlane;
 	this->farPlane = farPlane;
 	float aspect_rat = (float)WindowSize.x / (float)WindowSize.y;
+
 	if (ActiveCameraID == this->CameraID)
 	{
 		Objectview = glm::lookAt(glm::vec3(0.0f), -Orientation, Up);
