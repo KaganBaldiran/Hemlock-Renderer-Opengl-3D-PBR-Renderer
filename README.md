@@ -20,7 +20,8 @@ Here are some of the key features
 - Screen based post processing(DOF etc)
 - Linear Shadow Mapping for directional lights(Soon to be replaced)
 - Omnidirectional shadow mapping for point lights
-- Native scene file save-read 
+- Native scene file save-read
+- Drop down file import-assign
 
 # To-Do
 
