@@ -28,7 +28,7 @@ Camera::Camera(int window_width, int window_height, glm::vec3 position)
 
 Camera::~Camera()
 {
-	
+
 }
 
 void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane , GLFWwindow* window, Vec2<int> menu_size, bool TakeScreenShot)

@@ -46,6 +46,20 @@ public:
     float scaleamount = 1.0f;
     float maxscale = 2.0f;
 
+    UIproperties& operator=(const UIproperties& other)
+    {
+        autorotate = other.autorotate;
+        rotationamount = other.rotationamount;
+        keepoldrotation = other.keepoldrotation;
+        moveamount = other.moveamount;
+        maxmove = other.maxmove;
+        newtreshold = other.newtreshold;
+        degree = other.degree;
+        scaleamount = other.scaleamount;
+        maxscale = other.maxscale;
+        return *this;
+    }
+
 };
 
 

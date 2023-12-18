@@ -47,4 +47,5 @@ void PREVIEW::CreatePreviewForModel(GLuint& PreviewTexture, const char* FilePath
 	fbo.DeleteFBO();
 	fbo.DeleteRBO();
 	*PreviewModelPointer = PreviewModel;
+	CameraIterator -= 1;
 }

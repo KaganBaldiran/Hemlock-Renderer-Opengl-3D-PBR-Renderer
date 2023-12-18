@@ -137,6 +137,7 @@
     <ClCompile Include="Buffers.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Cubemap.cpp" />
+    <ClCompile Include="Data.cpp" />
     <ClCompile Include="G_Buffer.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="NormalBaker.cpp" />
@@ -161,6 +162,7 @@
     <ClCompile Include="StopWatch.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Transformation.cpp" />
+    <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Desktop\Projects\SDL2 PROJECTS\VS_sdl2_projects\2DRendererbyKB\2DRendererbyKB\stb_image.h" />
@@ -204,6 +206,7 @@
     <ClInclude Include="Shadow_Map.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="UI.h" />
+    <ClInclude Include="Window.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="nativefiledialog-extended-master\src\nfd_cocoa.m" />

@@ -15,6 +15,7 @@
 #include "Cubemap.h"
 #include "Entity.h"
 #include "Shadow_Map.h"
+#include "UI.h"
 
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -27,7 +28,6 @@
 #include "Log.h"
 #include "StopWatch.h"
 #include "Thread.h"
-#include "UI.h"
 #include "Scene.h"
 #include "NormalBaker.hpp"
 #include <thread>
@@ -103,8 +103,6 @@ int main()
 	glm::vec4 lightcolor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	glm::vec3 lightpos2 = glm::vec3(0.75f, 1.5f, 0.0f);
 	glm::vec4 lightcolor2 = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
-	glm::vec3 lightpos3 = glm::vec3(-1.0f, 0.9f, -2.0f);
-	glm::vec4 lightcolor3 = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	scene.Addlight(lightpos, glm::vec3(2.0f, 2.0f, 2.0f), lightcolor, lightshader.GetID(), CUBE_LIGHT, DIRECTIONAL_LIGHT);
 	scene.Addlight(lightpos2, glm::vec3(1.0f, 1.0f, 1.0f), lightcolor2, lightshader.GetID(), CUBE_LIGHT, SPOT_LIGHT);
@@ -117,9 +115,6 @@ int main()
 	scene.handlelights(PBRShader.GetID());
 	UseShaderProgram(PBRShader.GetID());
 
-	glUniform4f(glGetUniformLocation(PBRShader.GetID(), "lightColor1"), lightcolor.x, lightcolor.y, lightcolor.z, lightcolor.w);
-	glUniform3f(glGetUniformLocation(PBRShader.GetID(), "lightpos1"), lightpos.x, lightpos.y, lightpos.z);
-
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_STENCIL_TEST);
 
@@ -128,16 +123,13 @@ int main()
 	pickingtexture pickingtex(mode->width, mode->height);
 	pickingtexture pickingBuffertex(mode->width, mode->height);
 
-	picking_technique pickingteq;
-
 	InitializeCameraMesh();
 	AddCamera(glm::vec3(0.0f, 0.3f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f));
 
 	int selection = NULL;
 	int index = NULL;
-	int currentselectedobj = NULL;
-	int currentselectedlight = NULL;
-	int currentselectedgizmo = NULL;
+	
+	DATA::ObjectSelectionState SelectionState;
 
 	Vec2<double> PrevMousePos = { NULL,NULL };
 
@@ -157,7 +149,7 @@ int main()
 
 	Model* selected_model = nullptr;
 	int  selectedobjlock = NULL;
-	std::vector<std::string> logs;
+	//std::vector<std::string> logs;
 	UI::InitLogs(logs);
 	shadowmap ShadowMap(1024, 1024);
 
@@ -185,6 +177,9 @@ int main()
 	const double TARGET_FRAME_TIME = 1.0 / TARGET_FPS;
 
 	data.brdfLUT = ComputeLUT(brdfLUTShader).first;
+	
+	WINDOWMANAGER::AddNewWindow<WINDOWMANAGER::OutlinerWindow>(scene, SelectionState, UI::current_color_sheme, PBRShader);
+	WINDOWMANAGER::AddNewWindow<WINDOWMANAGER::LogsWindow>(UI::current_color_sheme);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -201,41 +196,43 @@ int main()
 		glClearStencil(0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		UI::CreateNewFrame();
+		UI::CreateNewFrame({width,height});
 		camera.HandleInputs(window, UI::current_win_size, { width,height }, data.cameraLayout);
 		UI::HandleSliderMaxValues(data, window);
 
-		UI::ConfigureUI(currentselectedobj, data, scene, logs, PBRShader.GetID(), lightcolor, lightpos, window, auto_rotate_on,
-			ShadowMap.GetShadowMapImage(), lightshader.GetID(), currentselectedlight, threads,
+		WINDOWMANAGER::WindowGarbageCollector();
+		WINDOWMANAGER::UpdateWindows();
+
+		UI::ConfigureUI(SelectionState.SelectedObject, data, scene, logs, PBRShader.GetID(), lightcolor, lightpos, window, auto_rotate_on,
+			ShadowMap.GetShadowMapImage(), lightshader.GetID(), SelectionState.SelectedLight, threads,
 			Cubemap, HDRIShader.GetID(), SplashScreenImage, RenderPass, camera, ConvolutateCubeMapShader.GetID(), PreFilterCubeMapShader.GetID());
 		
-		camera.updateMatrix(data.CameraFOV, 0.1f, 100.0f, window, UI::current_viewport_size, data.takesreenshot);
+		camera.updateMatrix(data.CameraFOV, 0.1f, 100.0f, window, { (int)(UI::UndockedViewPortRect.Max.x - UI::UndockedViewPortRect.Min.x) ,(int)(UI::UndockedViewPortRect.Max.y - UI::UndockedViewPortRect.Min.y) }, data.takesreenshot);
 		UI::DropDownImportModel(PBRShader.GetID(), scene, logs,{width,height} , data,window, lightshader.GetID(),camera,RenderPass,
 			HDRIShader.GetID(), ConvolutateCubeMapShader.GetID(), PreFilterCubeMapShader.GetID(),Cubemap,PreviewShader,threads);
-		scene.DeleteModelKeyboardAction(currentselectedobj, window, logs);
-		scene.CopyModelKeyboardAction(currentselectedobj, defaultshader.GetID(), window, logs, lightcolor, lightpos);
-		scene.DeleteLightKeyboardAction(currentselectedlight, window, logs, PBRShader.GetID());
-		scene.FocusKeyboardAction(currentselectedobj, camera, data.cameraLayout, window);
+		scene.DeleteModelKeyboardAction(SelectionState.SelectedObject, window, logs);
+		scene.DeleteLightKeyboardAction(SelectionState.SelectedLight, window, logs, PBRShader.GetID());
+		scene.FocusKeyboardAction(SelectionState.SelectedObject, camera, data.cameraLayout, window);
 		UI::IncrementRotationDegree(data);
-		Vec2<double> temp_mouse_pos = scene.UseGizmo(window, currentselectedgizmo, currentselectedobj, enablegizmo_p, PrevMousePos, camera, currentselectedlight, defaultshader.GetID(), PBRShader.GetID(), mousepos);
-		UI::DoUIobjectTransformations(currentselectedobj, scene, data);
-		UI::HandleAutoRotation(currentselectedobj, scene, auto_rotate_on);
+		Vec2<double> temp_mouse_pos = scene.UseGizmo(window, enablegizmo_p, PrevMousePos, camera, defaultshader.GetID(), PBRShader.GetID(), mousepos , SelectionState);
+		UI::DoUIobjectTransformations(SelectionState.SelectedObject, scene, data);
+		UI::HandleAutoRotation(SelectionState.SelectedObject, scene, auto_rotate_on);
+		scene.CopyModelKeyboardAction(SelectionState.SelectedObject, defaultshader.GetID(), window, logs, lightcolor, lightpos);
 
-		scene.DrawGbuffer(SceneGbuffer, GbufferPassShader.GetID(), camera, UI::current_win_size.Cast<float>(), *window, currentselectedobj,
-			enablegizmo_p, currentselectedlight, PickingBufferTextureShader.GetID(), pickingBuffertex, data.renderlights, data, { width,height });
+		scene.DrawGbuffer(SceneGbuffer, GbufferPassShader.GetID(), camera,enablegizmo_p, PickingBufferTextureShader.GetID(), pickingBuffertex, data,SelectionState, { width,height });
 
 		//ShadowMap.LightProjection(scene.LightPositions[0], ShadowMapShader.GetID(), window, scene.models, scene.globalscale, camera, UI::current_viewport_size);
 		//scene.DrawShadowMap(&ShadowMap, ShadowMapShader.GetID(), camera, window, glm::vec4(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w));
 		//ShadowMap.Draw(scene, ShadowMapShader.GetID(), camera, window, glm::vec4(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w));
-
 		scene.DrawScene(data, OmnishadowMaps, OmniShadowShader.GetID(), camera, window, PBRShader, lightshader,
-			screen_fbo, RenderPass, currentselectedobj, Outlineshader, Cubemap, currentselectedlight, enablegizmo_p,
+			screen_fbo, RenderPass, SelectionState.SelectedObject, Outlineshader, Cubemap, SelectionState.SelectedLight, enablegizmo_p,
 			ssao, SSAOShader, SSAOblurShader, SceneGbuffer, width, height, grid, UI::current_viewport_size);
 
 
 		scene.DrawScreenQuad(FrameBufferShader.GetID(), screen_fbo, SceneGbuffer,
 			UI::current_win_size.Cast<float>(), UI::current_viewport_size.y, RenderPass, pickingtex,
-			pickingshader.GetID(), pickingBuffertex, ssao, data.EnableSSAO, *window, data, camera);
+			pickingshader.GetID(), pickingBuffertex, ssao, data.EnableSSAO, *window, data, camera,{UI::UndockedViewPortRect.Min.x,UI::UndockedViewPortRect.Min.y,
+			UI::UndockedViewPortRect.Max.x , UI::UndockedViewPortRect.Max.y });
 
 		//scene.DrawSSGUScreenQuad(ScreenSpaceilluminationShader.GetID(), screen_fbo.GetScreenImage(), SceneGbuffer,
 			//UI::current_win_size.Cast<float>(), UI::current_viewport_size.y, RenderPass, pickingtex,
@@ -251,9 +248,7 @@ int main()
 		UI::DrawOnViewportSettings({ width,height }, RenderPass, *zeroPointButton.GetTexture(), *GridButton.GetTexture(), camera, data);
 		UI::Render();
 
-		//scene.PickObject(index, window, currentselectedobj, currentselectedlight, currentselectedgizmo, allowclick, pickingtex, data,
-			//mousepos, { width,height }, PBRShader);
-
+		
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE && !allowclick)
 		{
 			index = 0;
@@ -266,9 +261,9 @@ int main()
 
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS && allowclick)
 		{
-			if (currentselectedobj >= 2)
+			if (SelectionState.SelectedObject >= 2)
 			{
-				UI::ReturnSelectedObjectData(data, scene.GetModel(CURRENT_OBJECT(currentselectedobj))->UIprop);
+				UI::ReturnSelectedObjectData(data, scene.GetModel(CURRENT_OBJECT(SelectionState.SelectedObject))->UIprop);
 			}
 
 			allowclick = false;
@@ -276,25 +271,25 @@ int main()
 			glUniform1i(glGetUniformLocation(PBRShader.GetID(), "stencilindex"), index);
 			if (index - 1 <= scene.GetModelCount())
 			{
-				currentselectedobj = index;
-				currentselectedlight = NULL;
-				currentselectedgizmo = NULL;
+				SelectionState.SelectedObject = index;
+				SelectionState.SelectedLight = NULL;
+				SelectionState.SelectedGizmo = NULL;
 			}
 			else if (index - 1 >= scene.GetModelCount() && index - 1 <= scene.GetModelCount() + scene.lights.size())
 			{
-				currentselectedlight = index;
-				currentselectedobj = NULL;
-				currentselectedgizmo = NULL;
+				SelectionState.SelectedLight = index;
+				SelectionState.SelectedObject = NULL;
+				SelectionState.SelectedGizmo = NULL;
 			}
 			else if (index == NULL)
 			{
-				currentselectedlight = NULL;
-				currentselectedobj = NULL;
-				currentselectedgizmo = NULL;
+				SelectionState.SelectedLight = NULL;
+				SelectionState.SelectedObject = NULL;
+				SelectionState.SelectedGizmo = NULL;
 			}
-			if (currentselectedobj >= 2)
+			if (SelectionState.SelectedObject >= 2)
 			{
-				UI::UseSelectedObjectData(data, scene.GetModel(CURRENT_OBJECT(currentselectedobj))->UIprop);
+				UI::UseSelectedObjectData(data, scene.GetModel(CURRENT_OBJECT(SelectionState.SelectedObject))->UIprop);
 			}
 		}
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
@@ -304,7 +299,7 @@ int main()
 
 			if (index - 1 >= scene.GetModelCount() + scene.lights.size())
 			{
-				currentselectedgizmo = index;
+				SelectionState.SelectedGizmo = index;
 			}
 
 		}
@@ -312,8 +307,8 @@ int main()
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
-		UI::DoUIobjectReTransformations(currentselectedobj, scene, data);
-		UI::HandleReverseAutoTranslation(currentselectedobj, scene, auto_rotate_on);
+		UI::DoUIobjectReTransformations(SelectionState.SelectedObject, scene, data);
+		UI::HandleReverseAutoTranslation(SelectionState.SelectedObject, scene, auto_rotate_on);
 
 		PrevMousePos = temp_mouse_pos;
 
@@ -365,6 +360,7 @@ int main()
 	DisposeCameras();
 
 	UI::EndUI();
+	WINDOWMANAGER::DisposeWindows();
 
 	NFD_Quit();
 	DeinitializeWindow();

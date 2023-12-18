@@ -39,7 +39,7 @@ public:
 	float globalscale;
 
 
-	unsigned int quadVAO, quadVBO;
+	unsigned int quadVAO, quadVBO , quadEBO;
 
 	scene()
 	{
@@ -389,16 +389,18 @@ public:
 		newmodel->directory = models.at(index)->directory;
 		newmodel->modelpath = models.at(index)->modelpath;
 		newmodel->ModelName = models.at(index)->ModelName;
+		newmodel->ModelImportPath = models.at(index)->ModelImportPath;
 
 		this->CheckDoubleIntanceName(newmodel);
-		newmodel->transformation = models.at(index)->transformation;
+		newmodel->transformation(models.at(index)->transformation);
+		newmodel->UIprop = models.at(index)->UIprop;
 		
 		LOG_INF("Coppied models ID: " << *newmodel->GetModelIDptr());
 		models.push_back(newmodel);
 	}
 	
-	void DrawGbuffer(GBUFFER::gBuffer& SceneGbuffer, GLuint GbufferShader, Camera& camera, Vec2<float> menuSize, GLFWwindow& window , int currentselectedobj , std::pair<uint,bool> enablegizmo_p, int currentselectedlight , 
-		GLuint pickingtextureShader , pickingtexture& pickingtex , bool Drawlights , DATA::UIdataPack& data , Vec2<int> windowSize)
+	void DrawGbuffer(GBUFFER::gBuffer& SceneGbuffer, GLuint GbufferShader, Camera& camera , std::pair<uint,bool> enablegizmo_p, GLuint pickingtextureShader , pickingtexture& pickingtex ,
+		            DATA::UIdataPack& data , DATA::ObjectSelectionState& SelectionState , Vec2<int> windowSize)
 	{
 		if (!models.empty())
 		{
@@ -437,7 +439,7 @@ public:
 				models[i]->Draw(pickingtextureShader, camera, NULL, NULL);
 			}
 
-			if (Drawlights)
+			if (data.renderlights)
 			{
 
 				for (int i = 0; i < lights.size(); i++) {
@@ -449,7 +451,7 @@ public:
 				}
 			}
 
-			if (CURRENT_OBJECT(currentselectedobj) >= NULL || CURRENT_LIGHT(currentselectedlight) >= NULL)
+			if (CURRENT_OBJECT(SelectionState.SelectedObject) >= NULL || CURRENT_LIGHT(SelectionState.SelectedLight) >= NULL)
 			{
 				glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 				glStencilMask(0xFF);
@@ -459,7 +461,7 @@ public:
 				{
 					glStencilFunc(GL_ALWAYS, i + 1 + GetModelCount() + 1 + lights.size() + 2, -1);
 
-					DrawGizmo(pickingtextureShader, camera, i, currentselectedobj, enablegizmo_p, currentselectedlight);
+					DrawGizmo(pickingtextureShader, camera, i, SelectionState.SelectedObject, enablegizmo_p, SelectionState.SelectedLight);
 
 				}
 
@@ -476,61 +478,93 @@ public:
 
 	void SetScreenQuads()
 	{
-
-		float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
-			// positions   // texCoords
-			-1.0f,  1.0f,  0.0f, 1.0f,
-			-1.0f, -1.0f,  0.0f, 0.0f,
-			 1.0f, -1.0f,  1.0f, 0.0f,
-
-			-1.0f,  1.0f,  0.0f, 1.0f,
-			 1.0f, -1.0f,  1.0f, 0.0f,
-			 1.0f,  1.0f,  1.0f, 1.0f
+		
+		float quadVertices[] = {
+			-1.0f,  1.0f, 0.0f, 1.0f, // top-left
+			 1.0f,  1.0f, 1.0f, 1.0f, // top-right
+			 1.0f, -1.0f, 1.0f, 0.0f, // bottom-right
+			-1.0f, -1.0f, 0.0f, 0.0f  // bottom-left
 		};
 
+		unsigned int quadIndices[] = {
+			0, 1, 2, 
+			0, 2, 3  
+		};
 
 		glGenVertexArrays(1, &quadVAO);
 		glGenBuffers(1, &quadVBO);
+		glGenBuffers(1, &quadEBO);
+
 		glBindVertexArray(quadVAO);
+
 		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadEBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quadIndices), quadIndices, GL_STATIC_DRAW);
+
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
 	}
 
-	void DrawScreenQuad(GLuint shader, FBO& buffertexture , GBUFFER::gBuffer& screenGbuffer , Vec2<float> menuSize,float viewportHeight , int RenderPass,pickingtexture &pickingTexture,GLuint PickingShader, pickingtexture &pickingBuffertex, SSAO &ssao, bool EnableSSAO,GLFWwindow &window , DATA::UIdataPack& data , Camera& camera)
+	float ViewPortToWorldCoord(float input)
+	{
+		return input * 2.0f - 1.0f;
+	}
+
+	void DrawScreenQuad(GLuint shader, FBO& buffertexture , GBUFFER::gBuffer& screenGbuffer , Vec2<float> menuSize,float viewportHeight , int RenderPass,pickingtexture &pickingTexture,GLuint PickingShader, pickingtexture &pickingBuffertex, SSAO &ssao, bool EnableSSAO,GLFWwindow &window , DATA::UIdataPack& data , Camera& camera , Vec4<float> UndockedRect)
 	{
 		int width, height;
 		glfwGetWindowSize(&window, &width, &height);
 
 		glViewport(0, 0, width, height);
 
-		glm::vec3 TranslateCoeff(menuSize.x / width, -((height - (height - 18.0f)) / height), 0.0f);
-		glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), TranslateCoeff);
+		float rectVertices[] = {
+			// positions   // texCoords
+			ViewPortToWorldCoord(UndockedRect.x / (float)width), ViewPortToWorldCoord(1.0f - (UndockedRect.w / (float)height)), 0.0f, -1.0f,
+			ViewPortToWorldCoord(UndockedRect.z / (float)width), ViewPortToWorldCoord(1.0f - (UndockedRect.w / (float)height)), 1.0f, -1.0f,
+			ViewPortToWorldCoord(UndockedRect.z / (float)width), ViewPortToWorldCoord(1.0f - (UndockedRect.y / (float)height)), 1.0f, 0.0f,
+			ViewPortToWorldCoord(UndockedRect.x / (float)width), ViewPortToWorldCoord(1.0f - (UndockedRect.y / (float)height)), 0.0f, 0.0f,
+		};
 
-		glm::vec3 ScaleCoeff(((float)width - menuSize.x) / width, (menuSize.y + 18.0f) / height, 1.0f);
-		glm::mat4 ScaleMat = glm::scale(glm::mat4(1.0f), ScaleCoeff);
+		float quadVertices[] = {
+			-1.0f,  1.0f, 0.0f, 1.0f, // top-left
+			 1.0f,  1.0f, 1.0f, 1.0f, // top-right
+			 1.0f, -1.0f, 1.0f, 0.0f, // bottom-right
+			-1.0f, -1.0f, 0.0f, 0.0f  // bottom-left
+		};
 
+		UseShaderProgram(PickingShader);
 		pickingTexture.EnableWriting();
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glDisable(GL_DEPTH_TEST);
-		UseShaderProgram(PickingShader);
 
-		glUniformMatrix4fv(glGetUniformLocation(PickingShader, "modelMat"), 1, GL_FALSE, glm::value_ptr(modelMat * ScaleMat));
+		glUniformMatrix4fv(glGetUniformLocation(PickingShader, "modelMat"), 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
 
 		glBindVertexArray(quadVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+		if (data.takesreenshot)
+		{
+			glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+
+		}
+		else
+		{
+			glBufferData(GL_ARRAY_BUFFER, sizeof(rectVertices), &rectVertices, GL_STATIC_DRAW);
+		}
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, pickingBuffertex.GetPickingTexture());
 		glUniform1i(glGetUniformLocation(PickingShader, "IDtexture"), 0);
 		glUniform1i(glGetUniformLocation(PickingShader, "RenderStep"), 2);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		UseShaderProgram(0);
 		glBindTexture(GL_TEXTURE_2D, 0);
-
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glDisable(GL_DEPTH_TEST);
@@ -547,14 +581,8 @@ public:
 
 		UseShaderProgram(shader);
 		
-		if (data.takesreenshot)
-		{
-			glUniformMatrix4fv(glGetUniformLocation(shader, "modelMat"), 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
-		}
-		else
-		{
-		    glUniformMatrix4fv(glGetUniformLocation(shader, "modelMat"), 1, GL_FALSE, glm::value_ptr(modelMat * ScaleMat));
-		}
+		
+		glUniformMatrix4fv(glGetUniformLocation(shader, "modelMat"), 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
 		
 		GLuint renderpass = buffertexture.GetScreenImage();
 
@@ -622,9 +650,10 @@ public:
 
 		glUniform1i(glGetUniformLocation(shader, "EnableSSAO"), EnableSSAO);
 
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		UseShaderProgram(0);
 		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 		glEnable(GL_DEPTH_TEST);
 
@@ -1294,35 +1323,36 @@ public:
 
 	}
 
-	Vec2<double> UseGizmo(GLFWwindow* window , int &currentselectedgizmo , int currentselectedobj, std::pair<uint , bool> &enablegizmo_p , Vec2<double> PrevMousePos , Camera& camera , int currentselectedlight , GLuint Model_Shader , GLuint PBR_Shader, Vec2<double> &temp_mouse)
+	Vec2<double> UseGizmo(GLFWwindow* window , std::pair<uint , bool> &enablegizmo_p , Vec2<double> PrevMousePos , Camera& camera, 
+		 GLuint Model_Shader , GLuint PBR_Shader, Vec2<double> &temp_mouse , DATA::ObjectSelectionState& SelectionState)
 	{
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
 		{
 			enablegizmo_p = { NULL,false };
-			currentselectedgizmo = NULL;
+			SelectionState.SelectedGizmo = NULL;
 		}
 
-		if (currentselectedgizmo == (4 + GetModelCount() + lights.size()) && !enablegizmo_p.second)
+		if (SelectionState.SelectedGizmo == (4 + GetModelCount() + lights.size()) && !enablegizmo_p.second)
 		{
 			enablegizmo_p = { Y_GIZMO, true };
 		}
-		else if (currentselectedgizmo == (5 + GetModelCount() + lights.size()) && !enablegizmo_p.second)
+		else if (SelectionState.SelectedGizmo == (5 + GetModelCount() + lights.size()) && !enablegizmo_p.second)
 		{
 			enablegizmo_p = { Z_GIZMO, true };
 		}
-		else if (currentselectedgizmo == (6 + GetModelCount() + lights.size()) && !enablegizmo_p.second)
+		else if (SelectionState.SelectedGizmo == (6 + GetModelCount() + lights.size()) && !enablegizmo_p.second)
 		{
 			enablegizmo_p = { X_GIZMO, true };
 		}
 
 		Vec2<double> delta_mouse = { temp_mouse.x - PrevMousePos.x, temp_mouse.y - PrevMousePos.y };
 
-		if (CURRENT_OBJECT(currentselectedobj) >= NULL)
+		if (CURRENT_OBJECT(SelectionState.SelectedObject) >= NULL)
 		{
 			if (enablegizmo_p.first == Y_GIZMO && enablegizmo_p.second == true)
 			{
-				GetModel(CURRENT_OBJECT(currentselectedobj))->transformation.Translate(glm::vec3(NULL, -delta_mouse.y / 20.0f, NULL));
-				GetModel(CURRENT_OBJECT(currentselectedobj))->dynamic_origin += glm::vec3(NULL, -delta_mouse.y / 20.0f, NULL);
+				GetModel(CURRENT_OBJECT(SelectionState.SelectedObject))->transformation.Translate(glm::vec3(NULL, -delta_mouse.y / 20.0f, NULL));
+				GetModel(CURRENT_OBJECT(SelectionState.SelectedObject))->dynamic_origin += glm::vec3(NULL, -delta_mouse.y / 20.0f, NULL);
 			}
 			else if (enablegizmo_p.first == Z_GIZMO && enablegizmo_p.second == true)
 			{
@@ -1375,8 +1405,8 @@ public:
 					}
 				}
 	
-				GetModel(CURRENT_OBJECT(currentselectedobj))->transformation.Translate(glm::vec3(NULL, NULL, active_delta_mouse / 20.0f));
-				GetModel(CURRENT_OBJECT(currentselectedobj))->dynamic_origin += glm::vec3(NULL, NULL, active_delta_mouse / 20.0f);
+				GetModel(CURRENT_OBJECT(SelectionState.SelectedObject))->transformation.Translate(glm::vec3(NULL, NULL, active_delta_mouse / 20.0f));
+				GetModel(CURRENT_OBJECT(SelectionState.SelectedObject))->dynamic_origin += glm::vec3(NULL, NULL, active_delta_mouse / 20.0f);
 			}
 
 			else if (enablegizmo_p.first == X_GIZMO && enablegizmo_p.second == true)
@@ -1431,15 +1461,15 @@ public:
 					}
 				}
 
-				GetModel(CURRENT_OBJECT(currentselectedobj))->transformation.Translate(glm::vec3(active_delta_mouse / 20.0f, NULL, NULL));
-				GetModel(CURRENT_OBJECT(currentselectedobj))->dynamic_origin += glm::vec3(active_delta_mouse / 20.0f, NULL, NULL);
+				GetModel(CURRENT_OBJECT(SelectionState.SelectedObject))->transformation.Translate(glm::vec3(active_delta_mouse / 20.0f, NULL, NULL));
+				GetModel(CURRENT_OBJECT(SelectionState.SelectedObject))->dynamic_origin += glm::vec3(active_delta_mouse / 20.0f, NULL, NULL);
 			}
 		}
 
-		if (CURRENT_LIGHT(currentselectedlight) >= NULL)
+		if (CURRENT_LIGHT(SelectionState.SelectedLight) >= NULL)
 		{
 
-			Light* currentlight = lights.at(CURRENT_LIGHT(currentselectedlight));
+			Light* currentlight = lights.at(CURRENT_LIGHT(SelectionState.SelectedLight));
 			const float lightSpeed = 0.004f;
 
 			if (enablegizmo_p.first == Y_GIZMO && enablegizmo_p.second == true)
@@ -1452,7 +1482,7 @@ public:
 
 				currentlight->originpoint += glm::vec3(NULL, deltaTransformation, NULL);
 
-				LightPositions[CURRENT_LIGHT(currentselectedlight)] = currentlight->lightpos;
+				LightPositions[CURRENT_LIGHT(SelectionState.SelectedLight)] = currentlight->lightpos;
 
 				currentlight->lightmodel = currentlight->transformation.GetModelMat4();
 
@@ -1519,7 +1549,7 @@ public:
 
 				currentlight->originpoint += glm::vec3(NULL, NULL, deltaTransformation);
 
-				LightPositions[CURRENT_LIGHT(currentselectedlight)] = currentlight->lightpos;
+				LightPositions[CURRENT_LIGHT(SelectionState.SelectedLight)] = currentlight->lightpos;
 
 				currentlight->lightmodel = currentlight->transformation.GetModelMat4();
 
@@ -1590,7 +1620,7 @@ public:
 
 				currentlight->originpoint += glm::vec3(deltaTransformation, NULL, NULL);
 
-				LightPositions[CURRENT_LIGHT(currentselectedlight)] = currentlight->lightpos;
+				LightPositions[CURRENT_LIGHT(SelectionState.SelectedLight)] = currentlight->lightpos;
 
 				currentlight->lightmodel = currentlight->transformation.GetModelMat4();
 

@@ -8,8 +8,17 @@
 #include "Camera.h"
 #define MAX_LIGHT_COUNT 20
 
+typedef std::vector<std::string> LogArray;
+extern LogArray logs;
+
 namespace DATA
 {
+	struct ObjectSelectionState
+	{
+		int SelectedObject = NULL;
+		int SelectedLight = NULL;
+		int SelectedGizmo = NULL;
+	};
 
 	struct SaveFileData
 	{
@@ -44,6 +53,7 @@ namespace DATA
 
 		bool logbutton = false;
 		bool propertiesbutton = false;
+		bool Outlinerbutton = false;
 
 		nfdchar_t* outPath = nullptr;
 		nfdchar_t* screenshotPath = nullptr;

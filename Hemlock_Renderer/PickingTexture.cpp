@@ -55,29 +55,21 @@ void pickingtexture::DisableWriting()
 pickingtexture::pixelinfo pickingtexture::ReadPixel(uint x, uint y , Vec2<int> WindowSize)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
-
 	pixelinfo pixelP;
 	float pixel[4];
 
 	glReadPixels(x, WindowSize.y-y, 1,1, GL_RGBA, GL_FLOAT, &pixel);
 
 	//LOG("PIXEL PICKED: " << pixel[0] << " " << pixel[1] << " " << pixel[2] << " " << pixel[3] << " " << x << " " << y);
-
 	glReadBuffer(GL_NONE);
-
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 	pixelP.ObjectID = pixel[0];
-
 	return pixelP;
 }
 
 bool picking_technique::init()
 {
-
-
 	return false;
 }
 

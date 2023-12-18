@@ -21,6 +21,8 @@
 
 extern Vec2<double> ScrollAmount;
 extern int ActiveCameraID;
+extern int CameraIterator;
+
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 void InitializeCameraMesh();
 void DisposeCameraMesh();
