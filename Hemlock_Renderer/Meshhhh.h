@@ -16,11 +16,11 @@
 using namespace std;
 
 #define MAX_BONE_INFLUENCE 4
-namespace newwww {
+namespace MeshUtil {
     struct Vertex {
         
         glm::vec3 Position;
-        
+     
         glm::vec3 Normal;
        
         glm::vec2 TexCoords;
@@ -38,6 +38,8 @@ namespace newwww {
         unsigned int id = NULL;
         string type;
         string path;
+        GLenum InternalFormat;
+        glm::vec2 Size;
     };
 
     class Mesh {

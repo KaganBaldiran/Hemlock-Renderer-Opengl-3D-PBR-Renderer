@@ -384,7 +384,9 @@ public:
 
 		for (size_t i = 0; i < models.at(index)->meshes.size(); i++)
 		{
-			newmodel->meshes.push_back(Mesh(models.at(index)->meshes[i].vertices, models.at(index)->meshes[i].indices, models.at(index)->meshes[i].textures));
+			MeshUtil::Mesh CopiedMesh(models.at(index)->meshes[i].vertices, models.at(index)->meshes[i].indices, models.at(index)->meshes[i].textures);
+			CopiedMesh.meshname = models.at(index)->meshes[i].meshname;
+			newmodel->meshes.push_back(CopiedMesh);
 		}
 		newmodel->directory = models.at(index)->directory;
 		newmodel->modelpath = models.at(index)->modelpath;
@@ -1021,7 +1023,7 @@ public:
 
 	void DeleteModel(size_t index)
 	{
-		*models.at(index)->GetModelIDcounterptr() -= 1;
+		ModelIDiterator--;
 		delete models.at(index);
 		models.erase(models.begin() + index);
 	}
@@ -1304,7 +1306,6 @@ public:
 		{
 
 		   GetModel(0)->transformation.Scale(1.0f / (glm::vec3(lights.at(Model_index)->transformation.scale_avg / 5.0f)));
-		   //GetModel(0)->transformation.scale(1.0f / (glm::vec3(GetModel(0)->transformation.scale_avg / 5.0f)));
 
 		}
 		else if (CURRENT_OBJECT(currentselectedobject) >= NULL)
@@ -1661,7 +1662,7 @@ public:
 	{
 		if (glfwGetKey(window, GLFW_KEY_DELETE) == GLFW_PRESS && currentselectedobj >= 2)
 		{
-			uint tempptr = *GetModel(GetModelCount() - 1)->GetModelIDcounterptr();
+			uint tempptr = ModelIDiterator;
 			int ModelToDeleteID = CURRENT_OBJECT(currentselectedobj);
 
 			if (GetModelCount() > 1)
@@ -1705,35 +1706,92 @@ public:
 		}
 	}
 
+	void ClearDuplicateTexture(std::vector<MeshUtil::Texture> &TextureSet , std::vector<MeshUtil::Texture>& TexturesLoaded, const char* TextureType)
+	{
+		for (size_t i = 0; i < TextureSet.size(); i++)
+		{
+			if (TextureSet[i].type == TextureType)
+			{
+				glDeleteTextures(1, &TextureSet[i].id);
+				TextureSet.erase(TextureSet.begin() + i);
+				TexturesLoaded.erase(TexturesLoaded.begin() + i);
+				break;
+			}
+		}
+	}
+
 	void ImportTextureIntoModel(const char* filePath ,int ModelIndex , int MeshIndex, const char* TextureUsage)
 	{
 		auto& SelectedObjectTextureSet = models[ModelIndex]->meshes[MeshIndex].textures;
-
-		Textures newTexture(filePath, SelectedObjectTextureSet.size(), GL_TEXTURE_2D, GL_UNSIGNED_BYTE, NULL, TextureUsage);
-		if (newTexture.GetTextureState() == TEXTURE_SUCCESS)
+		auto& SelectedModelLoadedTextures = models[ModelIndex]->textures_loaded;
+		bool WasImported = false;
+		
+		for (size_t modelid = 0; modelid < models.size(); modelid++)
 		{
-			Texture newTexturePush;
-			newTexturePush.id = *newTexture.GetTexture();
-			newTexturePush.path = newTexture.GetPathData();
-			newTexturePush.type = TextureUsage;
+			auto& TempModelLoadedTextures = models[modelid]->textures_loaded;
 
-			for (size_t i = 0; i < SelectedObjectTextureSet.size(); i++)
+			for (size_t i = 0; i < TempModelLoadedTextures.size(); i++)
 			{
-				if (SelectedObjectTextureSet[i].type == TextureUsage)
+				if (TempModelLoadedTextures[i].path.compare(filePath) == 0)
 				{
-					glDeleteTextures(1, &SelectedObjectTextureSet[i].id);
-					SelectedObjectTextureSet.erase(SelectedObjectTextureSet.begin() + i);
-					models[ModelIndex]->textures_loaded.erase(models[ModelIndex]->textures_loaded.begin() + i);
+					try
+					{
+						LOG_INF("Texture was found in previously loaded textures. Copying it to the current texture set from :: " << models[modelid]->ModelName << "...");
+						auto& SourceTexture = TempModelLoadedTextures[i];
+						Textures newTexture(SourceTexture.id, SourceTexture.InternalFormat, SourceTexture.Size,
+							SourceTexture.path.c_str(), SelectedObjectTextureSet.size(), GL_TEXTURE_2D, GL_UNSIGNED_BYTE, GL_LINEAR, GL_LINEAR);
+
+						Texture newTexturePush;
+						newTexturePush.id = *newTexture.GetTexture();
+						newTexturePush.path = newTexture.GetPathData();
+						newTexturePush.type = TextureUsage;
+						newTexturePush.InternalFormat = newTexture.GetInternalFormat();
+						newTexturePush.Size = { newTexture.GetTextureWidth() , newTexture.GetTextureHeight() };
+
+						ClearDuplicateTexture(SelectedObjectTextureSet, SelectedModelLoadedTextures, TextureUsage);
+
+						SelectedObjectTextureSet.push_back(newTexturePush);
+						SelectedModelLoadedTextures.push_back(newTexturePush);
+
+						WasImported = true;
+					}
+					catch (const std::exception& e)
+					{
+						LOG_CRITICAL("Exception while copying texture :: " << filePath << " :: " << e.what() << " :: Importing the texture instead!");
+					}
+
 					break;
 				}
-			}
 
-			SelectedObjectTextureSet.push_back(newTexturePush);
-			models[ModelIndex]->textures_loaded.push_back(newTexturePush);
+			}
+			if (WasImported)
+			{
+				break;
+			}
 		}
-		else
+
+		
+		if (!WasImported)
 		{
-			LOG_ERR("Error importing texture :: " << filePath);
+			Textures newTexture(filePath, SelectedObjectTextureSet.size(), GL_TEXTURE_2D, GL_UNSIGNED_BYTE, NULL, TextureUsage);
+			if (newTexture.GetTextureState() == TEXTURE_SUCCESS)
+			{
+				Texture newTexturePush;
+				newTexturePush.id = *newTexture.GetTexture();
+				newTexturePush.path = newTexture.GetPathData();
+				newTexturePush.type = TextureUsage;
+				newTexturePush.InternalFormat = newTexture.GetInternalFormat();
+				newTexturePush.Size = { newTexture.GetTextureWidth() , newTexture.GetTextureHeight() };
+
+				ClearDuplicateTexture(SelectedObjectTextureSet, SelectedModelLoadedTextures, TextureUsage);
+
+				SelectedObjectTextureSet.push_back(newTexturePush);
+				models[ModelIndex]->textures_loaded.push_back(newTexturePush);
+			}
+			else
+			{
+				LOG_ERR("Error importing texture :: " << filePath);
+			}
 		}
 	}
 

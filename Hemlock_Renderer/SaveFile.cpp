@@ -50,6 +50,9 @@ void SAVEFILE::ClearScene(scene& scene, DATA::UIdataPack& data, GLuint shader)
 	{
 		scene.DeleteModel(i);
 	}
+
+
+
 	DisposeCameras();
 	scene.DeleteLights();
 }
@@ -205,7 +208,9 @@ void SAVEFILE::WriteHMLfilePacked(const char* fileName, scene& scene, DATA::UIda
 
 			for (size_t i = 1; i < scene.GetModelCount(); i++)
 			{
-				HMLfile["models"][i]["directory"] = "models" + std::string(strrchr(scene.models[i]->ModelImportPath.c_str(), '/'));
+				std::string modelID("model" + std::to_string(i));
+
+				HMLfile["models"][modelID]["directory"] = "models" + std::string(strrchr(scene.models[i]->ModelImportPath.c_str(), '/'));
 				LOG("MESH NAME: " << "models" + std::string(strrchr(scene.models[i]->ModelImportPath.c_str(), '/')));
 
 				std::filesystem::copy(scene.models[i]->modelpath, ModelsDirectory, std::filesystem::copy_options::recursive);
@@ -214,24 +219,24 @@ void SAVEFILE::WriteHMLfilePacked(const char* fileName, scene& scene, DATA::UIda
 				{
 					std::string meshidname("mesh" + std::to_string(meshid));
 
-					HMLfile["models"][i][meshidname]["textureCount"] = scene.models[i]->meshes[meshid].textures.size();
+					HMLfile["models"][modelID][meshidname]["textureCount"] = scene.models[i]->meshes[meshid].textures.size();
 
 					for (size_t textureid = 0; textureid < scene.models[i]->meshes[meshid].textures.size(); textureid++)
 					{
-						HMLfile["models"][i][meshidname]["textures"][textureid]["directory"] = "textures" + std::string(strrchr(scene.models[i]->meshes[meshid].textures[textureid].path.c_str(), '\\'));
+						HMLfile["models"][modelID][meshidname]["textures"][textureid]["directory"] = "textures" + std::string(strrchr(scene.models[i]->meshes[meshid].textures[textureid].path.c_str(), '\\'));
 						std::filesystem::copy(scene.models[i]->meshes[meshid].textures[textureid].path, TexturesDirectory, std::filesystem::copy_options::recursive);
 						LOG("TEXTURE DIRECTORY: " << "textures\\" + std::string(strrchr(scene.models[i]->meshes[meshid].textures[textureid].path.c_str(), '\\')));
-						HMLfile["models"][i][meshidname]["textures"][textureid]["type"] = scene.models[i]->meshes[meshid].textures[textureid].type;
+						HMLfile["models"][modelID][meshidname]["textures"][textureid]["type"] = scene.models[i]->meshes[meshid].textures[textureid].type;
 					}
 				}
 
-				HMLfile["models"][i]["attributes"]["position"]["x"] = scene.models[i]->transformation.TranslationMatrix[3][0];
-				HMLfile["models"][i]["attributes"]["position"]["y"] = scene.models[i]->transformation.TranslationMatrix[3][1];
-				HMLfile["models"][i]["attributes"]["position"]["z"] = scene.models[i]->transformation.TranslationMatrix[3][2];
+				HMLfile["models"][modelID]["attributes"]["position"]["x"] = scene.models[i]->transformation.TranslationMatrix[3][0];
+				HMLfile["models"][modelID]["attributes"]["position"]["y"] = scene.models[i]->transformation.TranslationMatrix[3][1];
+				HMLfile["models"][modelID]["attributes"]["position"]["z"] = scene.models[i]->transformation.TranslationMatrix[3][2];
 
-				HMLfile["models"][i]["attributes"]["scale"]["x"] = scene.models[i]->transformation.ScalingMatrix[0][0];
-				HMLfile["models"][i]["attributes"]["scale"]["y"] = scene.models[i]->transformation.ScalingMatrix[1][1];
-				HMLfile["models"][i]["attributes"]["scale"]["z"] = scene.models[i]->transformation.ScalingMatrix[2][2];
+				HMLfile["models"][modelID]["attributes"]["scale"]["x"] = scene.models[i]->transformation.ScalingMatrix[0][0];
+				HMLfile["models"][modelID]["attributes"]["scale"]["y"] = scene.models[i]->transformation.ScalingMatrix[1][1];
+				HMLfile["models"][modelID]["attributes"]["scale"]["z"] = scene.models[i]->transformation.ScalingMatrix[2][2];
 			}
 
 
@@ -239,16 +244,18 @@ void SAVEFILE::WriteHMLfilePacked(const char* fileName, scene& scene, DATA::UIda
 
 			for (size_t i = 0; i < scene.numberoflights; i++)
 			{
-				HMLfile["lights"][i]["attributes"]["position"]["x"] = scene.LightPositions[i].x;
-				HMLfile["lights"][i]["attributes"]["position"]["y"] = scene.LightPositions[i].y;
-				HMLfile["lights"][i]["attributes"]["position"]["z"] = scene.LightPositions[i].z;
+				std::string LightID("light" + std::to_string(i));
 
-				HMLfile["lights"][i]["attributes"]["intensity"] = scene.LightIntensities[i];
+				HMLfile["lights"][LightID]["attributes"]["position"]["x"] = scene.LightPositions[i].x;
+				HMLfile["lights"][LightID]["attributes"]["position"]["y"] = scene.LightPositions[i].y;
+				HMLfile["lights"][LightID]["attributes"]["position"]["z"] = scene.LightPositions[i].z;
 
-				HMLfile["lights"][i]["attributes"]["color"]["r"] = scene.LightColors[i].x;
-				HMLfile["lights"][i]["attributes"]["color"]["g"] = scene.LightColors[i].y;
-				HMLfile["lights"][i]["attributes"]["color"]["b"] = scene.LightColors[i].z;
-				HMLfile["lights"][i]["attributes"]["color"]["a"] = scene.LightColors[i].w;
+				HMLfile["lights"][LightID]["attributes"]["intensity"] = scene.LightIntensities[i];
+
+				HMLfile["lights"][LightID]["attributes"]["color"]["r"] = scene.LightColors[i].x;
+				HMLfile["lights"][LightID]["attributes"]["color"]["g"] = scene.LightColors[i].y;
+				HMLfile["lights"][LightID]["attributes"]["color"]["b"] = scene.LightColors[i].z;
+				HMLfile["lights"][LightID]["attributes"]["color"]["a"] = scene.LightColors[i].w;
 			}
 
 
@@ -337,19 +344,19 @@ void SAVEFILE::WriteHMLfile(const char* fileName, scene& scene , DATA::UIdataPac
 
 			for (size_t i = 1; i < scene.GetModelCount(); i++)
 			{
-				HMLfile["models"][i]["directory"] = scene.models[i]->ModelImportPath;
-
+				std::string modelID("model" + std::to_string(i));
+				HMLfile["models"][modelID]["directory"] = scene.models[i]->ModelImportPath;
 
 				for (size_t meshid = 0; meshid < scene.models[i]->meshes.size(); meshid++)
 				{
 					std::string meshidname("mesh" + std::to_string(meshid));
 
-					HMLfile["models"][i][meshidname]["textureCount"] = scene.models[i]->meshes[meshid].textures.size();
+					HMLfile["models"][modelID][meshidname]["textureCount"] = scene.models[i]->meshes[meshid].textures.size();
 
 					for (size_t textureid = 0; textureid < scene.models[i]->meshes[meshid].textures.size(); textureid++)
 					{
-						HMLfile["models"][i][meshidname]["textures"][textureid]["directory"] = scene.models[i]->meshes[meshid].textures[textureid].path;
-						HMLfile["models"][i][meshidname]["textures"][textureid]["type"] = scene.models[i]->meshes[meshid].textures[textureid].type;
+						HMLfile["models"][modelID][meshidname]["textures"][textureid]["directory"] = scene.models[i]->meshes[meshid].textures[textureid].path;
+						HMLfile["models"][modelID][meshidname]["textures"][textureid]["type"] = scene.models[i]->meshes[meshid].textures[textureid].type;
 					}
 				}
 
@@ -359,13 +366,13 @@ void SAVEFILE::WriteHMLfile(const char* fileName, scene& scene , DATA::UIdataPac
 					}
 				}
 
-				HMLfile["models"][i]["attributes"]["position"]["x"] = scene.models[i]->transformation.TranslationMatrix[3][0];
-				HMLfile["models"][i]["attributes"]["position"]["y"] = scene.models[i]->transformation.TranslationMatrix[3][1];
-				HMLfile["models"][i]["attributes"]["position"]["z"] = scene.models[i]->transformation.TranslationMatrix[3][2];
+				HMLfile["models"][modelID]["attributes"]["position"]["x"] = scene.models[i]->transformation.TranslationMatrix[3][0];
+				HMLfile["models"][modelID]["attributes"]["position"]["y"] = scene.models[i]->transformation.TranslationMatrix[3][1];
+				HMLfile["models"][modelID]["attributes"]["position"]["z"] = scene.models[i]->transformation.TranslationMatrix[3][2];
 
-				HMLfile["models"][i]["attributes"]["scale"]["x"] = scene.models[i]->transformation.ScalingMatrix[0][0];
-				HMLfile["models"][i]["attributes"]["scale"]["y"] = scene.models[i]->transformation.ScalingMatrix[1][1];
-				HMLfile["models"][i]["attributes"]["scale"]["z"] = scene.models[i]->transformation.ScalingMatrix[2][2];
+				HMLfile["models"][modelID]["attributes"]["scale"]["x"] = scene.models[i]->transformation.ScalingMatrix[0][0];
+				HMLfile["models"][modelID]["attributes"]["scale"]["y"] = scene.models[i]->transformation.ScalingMatrix[1][1];
+				HMLfile["models"][modelID]["attributes"]["scale"]["z"] = scene.models[i]->transformation.ScalingMatrix[2][2];
 
 			}
 
@@ -373,16 +380,18 @@ void SAVEFILE::WriteHMLfile(const char* fileName, scene& scene , DATA::UIdataPac
 
 			for (size_t i = 0; i < scene.numberoflights; i++)
 			{
-				HMLfile["lights"][i]["attributes"]["position"]["x"] = scene.LightPositions[i].x;
-				HMLfile["lights"][i]["attributes"]["position"]["y"] = scene.LightPositions[i].y;
-				HMLfile["lights"][i]["attributes"]["position"]["z"] = scene.LightPositions[i].z;
+				std::string LightID("light" + std::to_string(i));
 
-				HMLfile["lights"][i]["attributes"]["intensity"] = scene.LightIntensities[i];
+				HMLfile["lights"][LightID]["attributes"]["position"]["x"] = scene.LightPositions[i].x;
+				HMLfile["lights"][LightID]["attributes"]["position"]["y"] = scene.LightPositions[i].y;
+				HMLfile["lights"][LightID]["attributes"]["position"]["z"] = scene.LightPositions[i].z;
 
-				HMLfile["lights"][i]["attributes"]["color"]["r"] = scene.LightColors[i].x;
-				HMLfile["lights"][i]["attributes"]["color"]["g"] = scene.LightColors[i].y;
-				HMLfile["lights"][i]["attributes"]["color"]["b"] = scene.LightColors[i].z;
-				HMLfile["lights"][i]["attributes"]["color"]["a"] = scene.LightColors[i].w;
+				HMLfile["lights"][LightID]["attributes"]["intensity"] = scene.LightIntensities[i];
+
+				HMLfile["lights"][LightID]["attributes"]["color"]["r"] = scene.LightColors[i].x;
+				HMLfile["lights"][LightID]["attributes"]["color"]["g"] = scene.LightColors[i].y;
+				HMLfile["lights"][LightID]["attributes"]["color"]["b"] = scene.LightColors[i].z;
+				HMLfile["lights"][LightID]["attributes"]["color"]["a"] = scene.LightColors[i].w;
 			}
 
 
@@ -470,41 +479,32 @@ void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,G
 
 			for (size_t i = 1; i < HMLfile["modelCount"]; i++)
 			{
-				scene.ImportModel(HMLfile["models"][i]["directory"], shader);
+				std::string modelID("model" + std::to_string(i));
+				scene.ImportModel(HMLfile["models"][modelID]["directory"], shader);
 
 				for (size_t meshid = 0; meshid < scene.models[i]->meshes.size(); meshid++)
 				{
 					std::string meshidname("mesh" + std::to_string(meshid));
 
-					for (size_t textureid = 0; textureid < HMLfile["models"][i][meshidname]["textureCount"]; textureid++)
+					for (size_t textureid = 0; textureid < HMLfile["models"][modelID][meshidname]["textureCount"]; textureid++)
 					{
-						std::string texturePath(HMLfile["models"][i][meshidname]["textures"][textureid]["directory"]);
-						std::string textureType(HMLfile["models"][i][meshidname]["textures"][textureid]["type"]);
+						std::string texturePath(HMLfile["models"][modelID][meshidname]["textures"][textureid]["directory"]);
+						std::string textureType(HMLfile["models"][modelID][meshidname]["textures"][textureid]["type"]);
 
-						Textures newTexture(texturePath.c_str(), textureid, GL_TEXTURE_2D, GL_UNSIGNED_BYTE, NULL, textureType);
-						if (newTexture.GetTextureState() == TEXTURE_SUCCESS)
-						{
-							Texture newTexturePush;
-							newTexturePush.id = *newTexture.GetTexture();
-							newTexturePush.path = newTexture.GetPathData();
-							newTexturePush.type = textureType;
-
-							scene.models[i]->meshes[meshid].textures.push_back(newTexturePush);
-							scene.models[i]->textures_loaded.push_back(newTexturePush);
-						}
+						scene.ImportTextureIntoModel(texturePath.c_str(), i, meshid, textureType.c_str());
 					}
 				}
 
 				glm::vec3 position;
 				glm::vec3 scale;
 
-				position.x = HMLfile["models"][i]["attributes"]["position"]["x"];
-				position.y = HMLfile["models"][i]["attributes"]["position"]["y"];
-				position.z = HMLfile["models"][i]["attributes"]["position"]["z"];
+				position.x = HMLfile["models"][modelID]["attributes"]["position"]["x"];
+				position.y = HMLfile["models"][modelID]["attributes"]["position"]["y"];
+				position.z = HMLfile["models"][modelID]["attributes"]["position"]["z"];
 
-				scale.x = HMLfile["models"][i]["attributes"]["scale"]["x"];
-				scale.y = HMLfile["models"][i]["attributes"]["scale"]["y"];
-				scale.z = HMLfile["models"][i]["attributes"]["scale"]["z"];
+				scale.x = HMLfile["models"][modelID]["attributes"]["scale"]["x"];
+				scale.y = HMLfile["models"][modelID]["attributes"]["scale"]["y"];
+				scale.z = HMLfile["models"][modelID]["attributes"]["scale"]["z"];
 
 				scene.models[i]->transformation.Translate(position);
 				scene.models[i]->transformation.Scale(scale);
@@ -513,17 +513,18 @@ void SAVEFILE::ReadHMLfile(const char* fileName, scene& scene , GLuint shader ,G
 
 			for (size_t i = 0; i < HMLfile["lightCount"]; i++)
 			{
+				std::string LightID("light" + std::to_string(i));
 
-				glm::vec3 position(HMLfile["lights"][i]["attributes"]["position"]["x"],
-					HMLfile["lights"][i]["attributes"]["position"]["y"],
-					HMLfile["lights"][i]["attributes"]["position"]["z"]);
+				glm::vec3 position(HMLfile["lights"][LightID]["attributes"]["position"]["x"],
+					HMLfile["lights"][LightID]["attributes"]["position"]["y"],
+					HMLfile["lights"][LightID]["attributes"]["position"]["z"]);
 
-				glm::vec4 color(HMLfile["lights"][i]["attributes"]["color"]["r"],
-					HMLfile["lights"][i]["attributes"]["color"]["g"],
-					HMLfile["lights"][i]["attributes"]["color"]["b"],
-					HMLfile["lights"][i]["attributes"]["color"]["a"]);
+				glm::vec4 color(HMLfile["lights"][LightID]["attributes"]["color"]["r"],
+					HMLfile["lights"][LightID]["attributes"]["color"]["g"],
+					HMLfile["lights"][LightID]["attributes"]["color"]["b"],
+					HMLfile["lights"][LightID]["attributes"]["color"]["a"]);
 
-				float intensity = HMLfile["lights"][i]["attributes"]["intensity"];
+				float intensity = HMLfile["lights"][LightID]["attributes"]["intensity"];
 
 				scene.Addlight(position, glm::vec3(1.0f), color, lightShader, CUBE_LIGHT, POINT_LIGHT);
 				scene.LightIntensities[i] = intensity;
@@ -661,7 +662,9 @@ void SAVEFILE::ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shad
 
 			for (size_t i = 1; i < HMLfile["modelCount"]; i++)
 			{
-				std::string ModelDirectory(HMLfileDirectory + "/" + std::string(HMLfile["models"][i]["directory"]));
+				std::string modelID("model" + std::to_string(i));
+
+				std::string ModelDirectory(HMLfileDirectory + "/" + std::string(HMLfile["models"][modelID]["directory"]));
 				LOG("MODEL DIRECTORY " << ModelDirectory << " " << ModelDirectory.size());
 				scene.ImportModel(ModelDirectory, shader);
 
@@ -669,35 +672,25 @@ void SAVEFILE::ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shad
 				{
 					std::string meshidname("mesh" + std::to_string(meshid));
 
-					for (size_t textureid = 0; textureid < HMLfile["models"][i][meshidname]["textureCount"]; textureid++)
+					for (size_t textureid = 0; textureid < HMLfile["models"][modelID][meshidname]["textureCount"]; textureid++)
 					{
-						std::string texturePath(TextureDirectory + "\\" + std::string(HMLfile["models"][i][meshidname]["textures"][textureid]["directory"]));
-						std::string textureType(HMLfile["models"][i][meshidname]["textures"][textureid]["type"]);
+						std::string texturePath(TextureDirectory + "\\" + std::string(HMLfile["models"][modelID][meshidname]["textures"][textureid]["directory"]));
+						std::string textureType(HMLfile["models"][modelID][meshidname]["textures"][textureid]["type"]);
 
-						Textures newTexture(texturePath.c_str(), textureid, GL_TEXTURE_2D, GL_UNSIGNED_BYTE, NULL, textureType);
-						if (newTexture.GetTextureState() == TEXTURE_SUCCESS)
-						{
-							Texture newTexturePush;
-							newTexturePush.id = *newTexture.GetTexture();
-							newTexturePush.path = newTexture.GetPathData();
-							newTexturePush.type = textureType;
-
-							scene.models[i]->meshes[meshid].textures.push_back(newTexturePush);
-							scene.models[i]->textures_loaded.push_back(newTexturePush);
-						}
+						scene.ImportTextureIntoModel(texturePath.c_str(), i, meshid, textureType.c_str());
 					}
 				}
 
 				glm::vec3 position;
 				glm::vec3 scale;
 
-				position.x = HMLfile["models"][i]["attributes"]["position"]["x"];
-				position.y = HMLfile["models"][i]["attributes"]["position"]["y"];
-				position.z = HMLfile["models"][i]["attributes"]["position"]["z"];
+				position.x = HMLfile["models"][modelID]["attributes"]["position"]["x"];
+				position.y = HMLfile["models"][modelID]["attributes"]["position"]["y"];
+				position.z = HMLfile["models"][modelID]["attributes"]["position"]["z"];
 
-				scale.x = HMLfile["models"][i]["attributes"]["scale"]["x"];
-				scale.y = HMLfile["models"][i]["attributes"]["scale"]["y"];
-				scale.z = HMLfile["models"][i]["attributes"]["scale"]["z"];
+				scale.x = HMLfile["models"][modelID]["attributes"]["scale"]["x"];
+				scale.y = HMLfile["models"][modelID]["attributes"]["scale"]["y"];
+				scale.z = HMLfile["models"][modelID]["attributes"]["scale"]["z"];
 
 				scene.models[i]->transformation.Translate(position);
 				scene.models[i]->transformation.Scale(scale);
@@ -706,17 +699,18 @@ void SAVEFILE::ReadHMLfilePacked(const char* fileName, scene& scene, GLuint shad
 
 			for (size_t i = 0; i < HMLfile["lightCount"]; i++)
 			{
+				std::string LightID("light" + std::to_string(i));
 
-				glm::vec3 position(HMLfile["lights"][i]["attributes"]["position"]["x"],
-					HMLfile["lights"][i]["attributes"]["position"]["y"],
-					HMLfile["lights"][i]["attributes"]["position"]["z"]);
+				glm::vec3 position(HMLfile["lights"][LightID]["attributes"]["position"]["x"],
+					HMLfile["lights"][LightID]["attributes"]["position"]["y"],
+					HMLfile["lights"][LightID]["attributes"]["position"]["z"]);
 
-				glm::vec4 color(HMLfile["lights"][i]["attributes"]["color"]["r"],
-					HMLfile["lights"][i]["attributes"]["color"]["g"],
-					HMLfile["lights"][i]["attributes"]["color"]["b"],
-					HMLfile["lights"][i]["attributes"]["color"]["a"]);
+				glm::vec4 color(HMLfile["lights"][LightID]["attributes"]["color"]["r"],
+					HMLfile["lights"][LightID]["attributes"]["color"]["g"],
+					HMLfile["lights"][LightID]["attributes"]["color"]["b"],
+					HMLfile["lights"][LightID]["attributes"]["color"]["a"]);
 
-				float intensity = HMLfile["lights"][i]["attributes"]["intensity"];
+				float intensity = HMLfile["lights"][LightID]["attributes"]["intensity"];
 
 				scene.Addlight(position, glm::vec3(1.0f), color, lightShader, CUBE_LIGHT, POINT_LIGHT);
 				scene.LightIntensities[i] = intensity;

@@ -18,6 +18,8 @@ struct GLFWwindow;
    class Textures
    {
    public:
+	   //Creates a copy of the texture
+	   Textures(const GLuint& SourceTexture, const GLenum SourceTextureInternalFormat, const glm::vec2 SourceTextureSize, const char* SourceTextureFilePath, GLenum slot, GLenum texturetype, GLenum pixeltype, GLenum MAG_FILTER, GLenum MIN_FILTER);
 
 	   Textures(const char* filepath, GLenum slot, GLenum texturetype, GLenum pixeltype , unsigned int texture_type_for_pbr , std::string texture_type_for_pbr_str);
 	   Textures(const char* filepath, GLenum slot, GLenum texturetype, GLenum pixeltype, GLenum MAG_FILTER, GLenum MIN_FILTER, bool FlipTexture);
@@ -38,11 +40,14 @@ struct GLFWwindow;
 	   int GetTextureWidth() { return this->width; };
 	   int GetTextureHeight() { return this->height; };
 	   int GetTextureState() { return this->TextureState; };
+	   GLenum GetInternalFormat() { return this->InternalFormat; };
 
 	   void texunit(GLuint shader_program, const char* uniform, GLuint unit);
 
 	   unsigned int GetTexturePbrType();
 	   std::string GetTexturePbrType_str();
+
+
 
    private:
 
@@ -51,6 +56,7 @@ struct GLFWwindow;
 	   GLuint texture;
 	   GLenum type;
 	   GLuint unit;
+	   GLenum InternalFormat;
 	   unsigned int texture_type_of_pbr;
 	   std::string texture_type_of_pbr_str;
 	   std::string path;

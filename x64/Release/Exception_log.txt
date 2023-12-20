@@ -2,3 +2,7 @@ LOG:: SAVEFILE::CheckHMLfileType :: Exception while reading the HML file :: [jso
 LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 15:39:24 :: Dec 16 2023
 LOG:: SAVEFILE::ReadHMLfile :: Exception while reading hml file :: [json.exception.type_error.302] type must be number, but is null :: C:/Users/kbald/Desktop/Models/try_scene.hml
 LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 18:11:51 :: Dec 17 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 23:21:16 :: Dec 18 2023
+LOG:: SAVEFILE::ReadHMLfile :: Exception while reading hml file :: [json.exception.type_error.302] type must be number, but is null :: C:/Users/kbald/Desktop/Models/try_scene.hml
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 00:20:06 :: Dec 20 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 00:20:06 :: Dec 20 2023

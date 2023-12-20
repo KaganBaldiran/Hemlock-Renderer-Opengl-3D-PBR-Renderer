@@ -157,6 +157,8 @@ void WINDOWMANAGER::LogsWindow::Update()
 {
 	if (WindowOpen) {
 
+		
+
 		ImGui::Begin("Logs", &WindowOpen, ImGuiWindowFlags_NoSavedSettings);
 		UpdateLocalWindowSize();
 		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(GlobalColorSheme->MidMenuColor));
@@ -180,7 +182,13 @@ void WINDOWMANAGER::LogsWindow::Update()
 		}
 
 		ImGui::PopStyleColor();
+
+		
+
 		ImGui::End();
+
+		
+	
 
 	}
 }

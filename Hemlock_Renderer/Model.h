@@ -26,9 +26,9 @@
 #include "Transformation.hpp"
 
 using namespace std;
-using namespace newwww;
+using namespace MeshUtil;
 
-static uint ModelIDiterator = 2;
+extern uint ModelIDiterator;
 
 inline unsigned int TextureFromFile(const char* path, const string& directory, bool gamma = false);
 

@@ -16,6 +16,7 @@ using json = nlohmann::json;
 #define HML_FILE_PACKED 0x803
 #define OBJECT_FILE 0x904
 #define IMAGE_FILE 0x905
+#define HDRI_FILE 0x906
 #define CONVERSION_KILOBYTE 0x1002
 #define CONVERSION_MEGABYTE 0x1003
 #define CONVERSION_GIGABYTE 0x1004

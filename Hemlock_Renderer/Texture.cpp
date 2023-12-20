@@ -7,6 +7,33 @@
 #include <iostream>
 #include "Log.h"
 
+Textures::Textures(const GLuint& SourceTexture ,const GLenum SourceTextureInternalFormat, const glm::vec2 SourceTextureSize , const char* SourceTextureFilePath 
+	, GLenum slot, GLenum texturetype, GLenum pixeltype, GLenum MAG_FILTER, GLenum MIN_FILTER)
+{
+	glGenTextures(1, &this->texture);
+	glActiveTexture(GL_TEXTURE0 + slot);
+	glBindTexture(texturetype, this->texture);
+
+	glTexParameteri(texturetype, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(texturetype, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(texturetype, GL_TEXTURE_MIN_FILTER, MIN_FILTER);
+	glTexParameteri(texturetype, GL_TEXTURE_MAG_FILTER, MAG_FILTER);
+
+	glTexImage2D(texturetype, 0, SourceTextureInternalFormat, SourceTextureSize.x, SourceTextureSize.y, 0, SourceTextureInternalFormat, pixeltype, (void*)0);
+	glGenerateMipmap(texturetype);
+
+	glCopyImageSubData(
+		SourceTexture, texturetype, 0, 0, 0, 0,
+		this->texture, texturetype, 0, 0, 0, 0,
+		SourceTextureSize.x, SourceTextureSize.y, 1
+	);
+
+	glBindTexture(texturetype, 0);
+
+	LOG_INF("Texture was copied from texture[ID:"<<SourceTexture<<"] to texture[ID:"<< this->texture <<"]");
+	TextureState = TEXTURE_SUCCESS;
+}
+
 Textures::Textures(const char* filepath , GLenum slot , GLenum texturetype , GLenum pixeltype, unsigned int texture_type_for_pbr, std::string texture_type_for_pbr_str)
 {
 	this->channels = -1;
@@ -36,13 +63,13 @@ Textures::Textures(const char* filepath , GLenum slot , GLenum texturetype , GLe
 	else if (channels == 3)
 	{
 		formattex = GL_RGB;
-
 	}
 	else if (channels == 4)
 	{
 		formattex = GL_RGBA;
-
 	}
+
+	this->InternalFormat = formattex;
 
 	LOG_INF("Texture loading :: " << path <<" ::Channel count :: " << channels);
 
@@ -100,6 +127,8 @@ Textures::Textures(const char* filepath, GLenum slot, GLenum texturetype, GLenum
 		formattex = GL_RGBA;
 
 	}
+
+	this->InternalFormat = formattex;
 
 	LOG_INF("Texture loading :: " << path << " ::Channel count :: " << channels);
 

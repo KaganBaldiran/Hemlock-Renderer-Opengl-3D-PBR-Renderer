@@ -42,7 +42,8 @@ private:
 
 };
 
-void ImportCubeMap(CubeMap& cubemap, GLuint& HDRItoCubeMapShader, GLuint& ConvolutateCubeMapShader, GLuint& PrefilterHDRIShader, DATA::UIdataPack& data, std::vector<std::string>& logs);
+int ImportCubeMap(CubeMap& cubemap, GLuint& HDRItoCubeMapShader, GLuint& ConvolutateCubeMapShader, GLuint& PrefilterHDRIShader, DATA::UIdataPack& data, std::vector<std::string>& logs);
+int ImportCubeMap(const char* HDRIpath, CubeMap& cubemap, GLuint& HDRItoCubeMapShader, GLuint& ConvolutateCubeMapShader, GLuint& PrefilterHDRIShader, DATA::UIdataPack& data, std::vector<std::string>& logs);
 
 #endif 
 

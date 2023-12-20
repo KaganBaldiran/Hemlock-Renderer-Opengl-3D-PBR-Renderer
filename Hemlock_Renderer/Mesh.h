@@ -38,8 +38,6 @@ public:
 	std::vector<GLuint> indices;
 	std::vector<Textures> textures;
 
-
-	
 	VAO vao;
 	VBO vbo;
 	EBO ebo;

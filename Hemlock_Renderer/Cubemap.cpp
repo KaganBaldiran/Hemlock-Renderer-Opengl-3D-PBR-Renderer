@@ -804,7 +804,7 @@ std::pair<GLuint, int> ComputeLUT(Shader& LUTshader)
     return { LUT, HDRI_COMPLETE };
 }
 
-void ImportCubeMap(CubeMap& cubemap, GLuint& HDRItoCubeMapShader, GLuint& ConvolutateCubeMapShader, GLuint& PrefilterHDRIShader , DATA::UIdataPack& data , std::vector<std::string>& logs)
+int ImportCubeMap(CubeMap& cubemap, GLuint& HDRItoCubeMapShader, GLuint& ConvolutateCubeMapShader, GLuint& PrefilterHDRIShader , DATA::UIdataPack& data , std::vector<std::string>& logs)
 {
     std::pair<GLuint, int> CubeMapTexture = HDRItoCubeMap(data.HDRIpath.c_str(), data.CubeMapSize, HDRItoCubeMapShader);
 
@@ -824,4 +824,30 @@ void ImportCubeMap(CubeMap& cubemap, GLuint& HDRItoCubeMapShader, GLuint& Convol
     {
         logs.push_back("Error importing HDRI(Unable to complete the Framebuffer)! :: " + std::string(data.HDRIpath));
     }
+
+    return CubeMapTexture.second;
+}
+
+int ImportCubeMap(const char* HDRIpath, CubeMap& cubemap, GLuint& HDRItoCubeMapShader, GLuint& ConvolutateCubeMapShader, GLuint& PrefilterHDRIShader, DATA::UIdataPack& data, std::vector<std::string>& logs)
+{
+    std::pair<GLuint, int> CubeMapTexture = HDRItoCubeMap(HDRIpath, data.CubeMapSize, HDRItoCubeMapShader);
+
+    if (CubeMapTexture.second == HDRI_COMPLETE)
+    {
+        data.ConvDiffCubeMap = ConvolutateCubeMap(CubeMapTexture.first, ConvolutateCubeMapShader).first;
+        data.PrefilteredEnvMap = PreFilterCubeMap(CubeMapTexture.first, PrefilterHDRIShader).first;
+        cubemap.SetCubeMapTexture(CubeMapTexture.first);
+
+        logs.push_back("Imported HDRI :: " + std::string(HDRIpath));
+    }
+    else if (CubeMapTexture.second == HDRI_INCOMPATIBLE_FILE)
+    {
+        logs.push_back("Error importing HDRI(Incompatible file extension)! :: " + std::string(HDRIpath));
+    }
+    else if (CubeMapTexture.second == HDRI_ERROR)
+    {
+        logs.push_back("Error importing HDRI(Unable to complete the Framebuffer)! :: " + std::string(HDRIpath));
+    }
+
+    return CubeMapTexture.second;
 }

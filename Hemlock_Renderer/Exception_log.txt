@@ -82,3 +82,24 @@ LOG:: SAVEFILE::CheckHMLfileType :: Exception while reading the HML file :: [jso
 LOG:: SAVEFILE::CheckHMLfileType :: Exception while reading the HML file :: [json.exception.type_error.302] type must be number, but is null :: C:\Users\kbald\Desktop\Models\Helmet.hml :: 16:02:11 :: Dec 17 2023
 LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 17:10:49 :: Dec 17 2023
 LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 17:30:31 :: Dec 18 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 21:42:25 :: Dec 19 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 21:56:54 :: Dec 19 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 22:48:19 :: Dec 19 2023
+LOG:: SAVEFILE::ReadHMLfile :: Exception while reading hml file :: [json.exception.type_error.305] cannot use operator[] with a numeric argument with object :: C:/Users/kbald/Desktop/Models/Helmet.hml
+LOG:: SAVEFILE::ReadHMLfile :: Exception while reading hml file :: [json.exception.type_error.305] cannot use operator[] with a numeric argument with object :: C:/Users/kbald/Desktop/Models/Helmet.hml
+LOG:: SAVEFILE::ReadHMLfile :: Exception while reading hml file :: [json.exception.type_error.305] cannot use operator[] with a numeric argument with object :: C:/Users/kbald/Desktop/Models/Helmet.hml
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 22:55:40 :: Dec 19 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 22:55:40 :: Dec 19 2023
+LOG:: SAVEFILE::ReadHMLfile :: Exception while reading hml file :: [json.exception.type_error.302] type must be string, but is null :: C:/Users/kbald/Desktop/Models/Helmet.hml
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 22:55:40 :: Dec 19 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 23:01:57 :: Dec 19 2023
+LOG:: SAVEFILE::WriteHMLfilePacked :: Exception while writing packed hml file :: copy: unknown error: "C:/Users/kbald/Desktop/Models/shovel2.obj", "C:/Users/kbald/Desktop/twoShovelsPacked/models" :: C:/Users/kbald/Desktop/twoShovelsPacked.hml :: 23:07:46 :: Dec 19 2023
+LOG:: SAVEFILE::ReadHMLfile :: Exception while reading hml file :: [json.exception.type_error.305] cannot use operator[] with a string argument with array :: C:/Users/kbald/Desktop/Cmaera_Scene.hml
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 23:18:25 :: Dec 19 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 23:20:08 :: Dec 19 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 23:21:52 :: Dec 19 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 23:23:22 :: Dec 19 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 23:23:22 :: Dec 19 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 00:08:57 :: Dec 20 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 00:14:14 :: Dec 20 2023
+LOG:: SAVEFILE::ReadSaveFile :: Exception while reading the preferences file :: [json.exception.type_error.302] type must be string, but is null :: Preferences.json :: 03:33:25 :: Dec 20 2023

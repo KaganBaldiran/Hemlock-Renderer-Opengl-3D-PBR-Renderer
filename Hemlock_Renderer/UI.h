@@ -98,6 +98,26 @@ namespace UI
 			auto DockNode = ImGui::DockBuilderGetCentralNode(dockspace_id);
 			UndockedViewPortRect = DockNode->Rect();
 			
+			/*
+			if (ImGui::DockBuilderGetNode(ImGui::GetID("MyDockspace2")) == NULL)
+			{
+				ImGuiID dockspace_id = ImGui::GetID("MyDockspace2");
+				ImGuiViewport* viewport = ImGui::GetMainViewport();
+				ImGui::DockBuilderRemoveNode(dockspace_id); // Clear out existing layout
+				ImGui::DockBuilderAddNode(dockspace_id); // Add empty node
+
+				ImGuiID dock_main_id = dockspace_id; // This variable will track the document node, however we are not using it here as we aren't docking anything into it.
+				ImGuiID dock_id_left = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.20f, NULL, &dock_main_id);
+				ImGuiID dock_id_right = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.20f, NULL, &dock_main_id);
+				ImGuiID dock_id_bottom = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.20f, NULL, &dock_main_id);
+
+				ImGui::DockBuilderDockWindow("Logs", dock_id_left);
+				//ImGui::DockBuilderDockWindow("James_2", dock_main_id);
+				//ImGui::DockBuilderDockWindow("James_3", dock_id_right);
+				//ImGui::DockBuilderDockWindow("James_4", dock_id_bottom);
+				ImGui::DockBuilderFinish(dockspace_id);
+			}
+			*/
 			//LOG(DockNode->Rect().Min.x << " " << DockNode->Rect().Min.y << " " << DockNode->Rect().Max.x << " " << DockNode->Rect().Max.y);
 		}
 	
@@ -109,6 +129,8 @@ namespace UI
 
 		ImGui::PopStyleColor(2);
 		ImGui::PopStyleVar(3);
+
+		
 	}
 
 	void SetPreferences(DATA::UIdataPack& data)
@@ -324,85 +346,6 @@ namespace UI
 		glfwGetWindowSize(window, &width, &height);
 
 		current_viewport_size = { width - current_win_size.x , current_win_size.y };
-
-	}
-
-	Vec2<double> CalculateVirtualMouse(GLFWwindow* window)
-	{
-		Vec2<double> mousepos;
-		glfwGetCursorPos(window, &mousepos.x, &mousepos.y);
-
-		Vec2<double> virtual_mouse_pos;
-
-		virtual_mouse_pos.x = (mousepos.x) - current_win_size.x;
-		virtual_mouse_pos.y = (mousepos.y - 37);
-
-		std::cout << "VIRTUAL MOUSE POS X: " << virtual_mouse_pos.x << "VIRTUAL MOUSE POS Y: " << mousepos.y << "\n";
-
-		int height = NULL, width = NULL;
-		glfwGetWindowSize(window, &width, &height);
-
-
-		mousepos = { (current_viewport_size.x * virtual_mouse_pos.x) / current_viewport_size.x, (current_viewport_size.y * virtual_mouse_pos.y) / current_viewport_size.y };
-
-		std::cout << "MOUSE POS X: " << mousepos.x << "MOUSE POS Y: " << mousepos.y << "\n";
-
-
-		return mousepos;
-	}
-
-
-	void DrawFrameBuffer(GLuint screen_image, GLFWwindow* window)
-	{
-
-		static float max_viewport_size_y = -std::numeric_limits<float>::infinity();
-
-		Vec2<int> winsize;
-
-		glfwGetWindowSize(window, &winsize.x, &winsize.y);
-
-		max_viewport_size_y = std::max(max_viewport_size_y, (float)current_viewport_size.y);
-
-
-		ImGui::SetNextWindowPos(ImVec2(current_win_size.x, 18));
-		ImGui::SetNextWindowSize(ImVec2(winsize.x - current_win_size.x, current_win_size.y));
-
-		//ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.MidMenuColor));
-
-		ImGui::Begin("Viewport", (bool*)0, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-
-
-		image_ratio_divisor = 1.1f;
-
-		viewport_size = { 1920 / image_ratio_divisor ,1000 / image_ratio_divisor };
-
-
-		float image_aspect_ratio = 1920.0f / 1000.0f;
-
-
-
-		ImGui::SetCursorPos(ImVec2(0, current_win_size.y - max_viewport_size_y));
-
-
-		ImVec2 uv0(0, 1); // Bottom-left corner of texture
-		ImVec2 uv1(1, 0);
-
-		//glEnable(GL_FRAMEBUFFER_SRGB);
-		//ImGui::Image((void*)(intptr_t)screen_image, ImVec2(viewport_size.x, viewport_size.y), uv0, uv1);
-		ImGui::Image((void*)(intptr_t)screen_image, ImVec2(1920, 1080), uv0, uv1);
-
-		//glDisable(GL_FRAMEBUFFER_SRGB);
-
-
-		ImGui::SetCursorPos(ImVec2(winsize.x / 1.3f, winsize.y / 30.0f));
-
-		ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
-
-
-
-		ImGui::End();
-
-		//ImGui::PopStyleColor();
 
 	}
 
@@ -690,6 +633,10 @@ namespace UI
 			DropdownFileData.OverAllFileType = OBJECT_FILE;
 			DropdownFileData.MakeModelPreview = true;
 		}
+		else if (StrCmprCaseInsnstv(FileExtention, ".hdr"))
+		{
+			DropdownFileData.OverAllFileType = HDRI_FILE;
+		}
 		DropdownFileData.DropDownFileSize = GetFileSize<CONVERSION_MEGABYTE>(DropdownFileData.DropDownFilePath.c_str());
 	}
 
@@ -848,6 +795,10 @@ namespace UI
 			ImGui::Text("Preview:");
 			ImGui::Image((void*)(intptr_t)DropdownFileData.ModelPreview, ImVec2(ImageSize, ImageSize), uv0, uv1);
 		}
+		else if (DropdownFileData.OverAllFileType == HDRI_FILE)
+		{
+			ImGui::Text("HDRI file");
+		}
 		else
 		{
 			ImGui::TextColored({ 1.0f,0.0f,0.0f,1.0f }, "File type isn't compatible!");
@@ -959,6 +910,10 @@ namespace UI
 				logs.push_back(logtemp);
 
 				DropdownFileData.ImportedPreviewModel = nullptr;
+			}
+			else if (DropdownFileData.OverAllFileType == HDRI_FILE)
+			{
+				ImportCubeMap(DropdownFileData.DropDownFilePath.c_str(), Cubemap, HDRItoCubeMapShader, ConvolutateCubeMapShader, PrefilterHDRIShader, data, logs);
 			}
 
 			DropdownFileData.DropDownImport = false;
@@ -1957,8 +1912,8 @@ namespace UI
 								}
 
 
-								std::cout << "BUTTON TYPE: " << map_type_string << "\n";
-								std::cout << "image_button_enabled: " << image_button_enabled << "\n";
+								//std::cout << "BUTTON TYPE: " << map_type_string << "\n";
+								//std::cout << "image_button_enabled: " << image_button_enabled << "\n";
 
 
 
@@ -2049,7 +2004,7 @@ namespace UI
 
 										}
 
-										std::cout << "SIZE OF TEXTURES: " << scene.models.at(currentselectedobj - 2)->meshes[i].textures.size() << "\n";
+										//std::cout << "SIZE OF TEXTURES: " << scene.models.at(currentselectedobj - 2)->meshes[i].textures.size() << "\n";
 									}
 
 
@@ -2236,26 +2191,11 @@ namespace UI
 
 					if (ImportHDRI)
 					{
-						std::pair<GLuint, int> CubeMapTexture = HDRItoCubeMap(data.outPath, data.CubeMapSize, HDRItoCubeMapShader);
-
-						if (CubeMapTexture.second == HDRI_COMPLETE)
+						int HDRIstate = ImportCubeMap(data.outPath, Cubemap, HDRItoCubeMapShader, ConvolutateCubeMapShader, PrefilterHDRIShader, data, logs);
+						if (HDRIstate == HDRI_COMPLETE)
 						{
 							data.HDRIpath = data.outPath;
-							data.ConvDiffCubeMap = ConvolutateCubeMap(CubeMapTexture.first, ConvolutateCubeMapShader).first;
-							data.PrefilteredEnvMap = PreFilterCubeMap(CubeMapTexture.first, PrefilterHDRIShader).first;
-							Cubemap.SetCubeMapTexture(CubeMapTexture.first);
-
-							logs.push_back("Imported HDRI :: " + std::string(data.outPath));
 						}
-						else if (CubeMapTexture.second == HDRI_INCOMPATIBLE_FILE)
-						{
-							logs.push_back("Error importing HDRI(Incompatible file extension)! :: " + std::string(data.outPath));
-						}
-						else if (CubeMapTexture.second == HDRI_ERROR)
-						{
-							logs.push_back("Error importing HDRI(Unable to complete the Framebuffer)! :: " + std::string(data.outPath));
-						}
-
 						ImportHDRI = false;
 					}
 
