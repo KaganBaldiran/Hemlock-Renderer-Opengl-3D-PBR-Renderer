@@ -31,6 +31,7 @@
 #include "Scene.h"
 #include "NormalBaker.hpp"
 #include <thread>
+#include "SSLS.hpp"
 
 #define TARGET_FPS 144.0
 
@@ -61,10 +62,12 @@ int main()
 	Shader ScreenSpaceilluminationShader("Shaders/SSGU.vs", "Shaders/SSGU.fs");
 	Shader brdfLUTShader("Shaders/brdfLUT.vs", "Shaders/brdfLUT.fs");
 	Shader PreviewShader("Shaders/ModelPreview.vs", "Shaders/ModelPreview.fs");
+	Shader SSLSshader("Shaders/framebuffer.vert", "Shaders/SSLS.fs");
 
 	scene scene;
 	FBO screen_fbo;
 	const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+	SSLS ssls(mode->width,mode->height);
 	SSAO ssao({ (float)mode->width,(float)mode->height });
 	CreateCustomFrameBuffer(screen_fbo, mode->width, mode->height);
 
@@ -99,7 +102,7 @@ int main()
 	Meshs grid = scene.SetGrid(lightshader.GetID());
 	scene.ImportModel("resources/gizmo_arrow.obj", lightshader.GetID());
 
-	glm::vec3 lightpos = glm::vec3(-0.5f, 0.9f, 0.5f);
+	glm::vec3 lightpos = glm::vec3(-0.5f, 0.9f, 4.0f);
 	glm::vec4 lightcolor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	glm::vec3 lightpos2 = glm::vec3(0.75f, 1.5f, 0.0f);
 	glm::vec4 lightcolor2 = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
@@ -141,6 +144,7 @@ int main()
 
 	float time = NULL;
 	glfwSetScrollCallback(window, scrollCallback);
+	glfwSetWindowSizeCallback(window, WindowSizeCallback);
 
 	DATA::UIdataPack data;
 	UI::InitNewUIwindow();
@@ -197,11 +201,12 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		UI::CreateNewFrame({width,height});
+		WINDOWMANAGER::WindowGarbageCollector();
+		WINDOWMANAGER::UpdateWindows();
 		camera.HandleInputs(window, UI::current_win_size, { width,height }, data.cameraLayout);
 		UI::HandleSliderMaxValues(data, window);
 
-		WINDOWMANAGER::WindowGarbageCollector();
-		WINDOWMANAGER::UpdateWindows();
+		
 
 		UI::ConfigureUI(SelectionState.SelectedObject, data, scene, logs, PBRShader.GetID(), lightcolor, lightpos, window, auto_rotate_on,
 			ShadowMap.GetShadowMapImage(), lightshader.GetID(), SelectionState.SelectedLight, threads,
@@ -219,8 +224,7 @@ int main()
 		UI::HandleAutoRotation(SelectionState.SelectedObject, scene, auto_rotate_on);
 		scene.CopyModelKeyboardAction(SelectionState.SelectedObject, defaultshader.GetID(), window, logs, lightcolor, lightpos);
 
-		scene.DrawGbuffer(SceneGbuffer, GbufferPassShader.GetID(), camera,enablegizmo_p, PickingBufferTextureShader.GetID(), pickingBuffertex, data,SelectionState, { width,height });
-
+		scene.DrawGbuffer(SceneGbuffer, GbufferPassShader.GetID(), camera,enablegizmo_p, PickingBufferTextureShader.GetID(), pickingBuffertex, data,SelectionState, { width,height },lightshader.GetID());
 		//ShadowMap.LightProjection(scene.LightPositions[0], ShadowMapShader.GetID(), window, scene.models, scene.globalscale, camera, UI::current_viewport_size);
 		//scene.DrawShadowMap(&ShadowMap, ShadowMapShader.GetID(), camera, window, glm::vec4(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w));
 		//ShadowMap.Draw(scene, ShadowMapShader.GetID(), camera, window, glm::vec4(data.clear_color.x, data.clear_color.y, data.clear_color.z, data.clear_color.w));
@@ -228,11 +232,13 @@ int main()
 			screen_fbo, RenderPass, SelectionState.SelectedObject, Outlineshader, Cubemap, SelectionState.SelectedLight, enablegizmo_p,
 			ssao, SSAOShader, SSAOblurShader, SceneGbuffer, width, height, grid, UI::current_viewport_size);
 
+		ssls.Draw(camera,SSLSshader.GetID(), SceneGbuffer.SSLS,{SceneGbuffer.window_width,SceneGbuffer.window_height }, SceneGbuffer.gbuffer, scene.LightPositions,
+			      scene.LightIntensities, scene.numberoflights, MAX_LIGHT_COUNT);
 
 		scene.DrawScreenQuad(FrameBufferShader.GetID(), screen_fbo, SceneGbuffer,
 			UI::current_win_size.Cast<float>(), UI::current_viewport_size.y, RenderPass, pickingtex,
 			pickingshader.GetID(), pickingBuffertex, ssao, data.EnableSSAO, *window, data, camera,{UI::UndockedViewPortRect.Min.x,UI::UndockedViewPortRect.Min.y,
-			UI::UndockedViewPortRect.Max.x , UI::UndockedViewPortRect.Max.y });
+			UI::UndockedViewPortRect.Max.x , UI::UndockedViewPortRect.Max.y },ssls.GetSSLStexture());
 
 		//scene.DrawSSGUScreenQuad(ScreenSpaceilluminationShader.GetID(), screen_fbo.GetScreenImage(), SceneGbuffer,
 			//UI::current_win_size.Cast<float>(), UI::current_viewport_size.y, RenderPass, pickingtex,
@@ -318,6 +324,8 @@ int main()
 		if (elapsed_time < TARGET_FRAME_TIME) {
 			std::this_thread::sleep_for(std::chrono::microseconds(static_cast<long long>((TARGET_FRAME_TIME - elapsed_time) * 1e6)));
 		}
+
+		scene.WindowResizeEventReset();
 	}
 
 	BindVAONull();
@@ -346,12 +354,14 @@ int main()
 	DeleteShaderProgram(ScreenSpaceilluminationShader.GetID());
 	DeleteShaderProgram(brdfLUTShader.GetID());
 	DeleteShaderProgram(PreviewShader.GetID());
+	DeleteShaderProgram(SSLSshader.GetID());
 
 	zeroPointButton.DeleteTexture();
 	GridButton.DeleteTexture();
 	SplashScreenImage.DeleteTexture();
 
 	screen_fbo.Clear();
+	ssls.Clean();
 
 	glDeleteTextures(1, &data.brdfLUT);
 	glDeleteTextures(1, &data.PrefilteredEnvMap);

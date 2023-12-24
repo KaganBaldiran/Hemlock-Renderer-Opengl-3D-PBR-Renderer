@@ -105,6 +105,9 @@
     <ClCompile Include="Data.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SSLS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="initialize.h">
@@ -233,6 +236,9 @@
     <ClInclude Include="Window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SSLS.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="nativefiledialog-extended-master\src\nfd_cocoa.m" />
@@ -354,6 +360,9 @@
       <Filter>shaders</Filter>
     </None>
     <None Include="Shaders\ModelPreview.fs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shaders\SSLS.fs">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

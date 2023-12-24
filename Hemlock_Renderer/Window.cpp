@@ -62,7 +62,7 @@ void WINDOWMANAGER::OutlinerWindow::Update()
 {
 	if (WindowOpen) {
 
-		ImGui::Begin("Outliner", &WindowOpen, ImGuiWindowFlags_NoSavedSettings);
+		ImGui::Begin("Outliner", &WindowOpen);
 		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(GlobalColorSheme->ChildMenuColor));
 		ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 40.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 3.0f);
@@ -157,9 +157,7 @@ void WINDOWMANAGER::LogsWindow::Update()
 {
 	if (WindowOpen) {
 
-		
-
-		ImGui::Begin("Logs", &WindowOpen, ImGuiWindowFlags_NoSavedSettings);
+		ImGui::Begin("Logs", &WindowOpen);
 		UpdateLocalWindowSize();
 		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(GlobalColorSheme->MidMenuColor));
 		ImGui::Spacing();
@@ -169,6 +167,7 @@ void WINDOWMANAGER::LogsWindow::Update()
 			for (size_t i = 0; i < logs.size(); i++)
 			{
 				ImGui::Text(logs.at(i).c_str());
+				ImGui::Separator();
 
 				if (i == 4)
 				{

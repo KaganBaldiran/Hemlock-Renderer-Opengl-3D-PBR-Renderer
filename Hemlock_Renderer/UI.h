@@ -81,8 +81,10 @@ namespace UI
 		ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 
+		ImVec2 DockSpaceSize = { (float)(WindowSize.x - current_win_size.x),(float)current_win_size.y + 5 };
+
 		ImGui::SetNextWindowPos({ (float)current_win_size.x,(float)MainMenuBarSize.y });
-		ImGui::SetNextWindowSize({ (float)(WindowSize.x - current_win_size.x),(float)current_win_size.y + 5});
+		ImGui::SetNextWindowSize(DockSpaceSize);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 		ImGui::Begin("###DockSpace", 0, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove | 
 			ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus);
@@ -92,45 +94,38 @@ namespace UI
 		ImGuiIO& io = ImGui::GetIO();
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
-			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+			ImGuiID dockspace_id = ImGui::GetID("MainDockSpace");
 
+			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
 			auto DockNode = ImGui::DockBuilderGetCentralNode(dockspace_id);
 			UndockedViewPortRect = DockNode->Rect();
-			
-			/*
-			if (ImGui::DockBuilderGetNode(ImGui::GetID("MyDockspace2")) == NULL)
+
+			static auto first_time = true;
+			if (first_time)
 			{
-				ImGuiID dockspace_id = ImGui::GetID("MyDockspace2");
-				ImGuiViewport* viewport = ImGui::GetMainViewport();
-				ImGui::DockBuilderRemoveNode(dockspace_id); // Clear out existing layout
-				ImGui::DockBuilderAddNode(dockspace_id); // Add empty node
+				first_time = false;
 
-				ImGuiID dock_main_id = dockspace_id; // This variable will track the document node, however we are not using it here as we aren't docking anything into it.
-				ImGuiID dock_id_left = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.20f, NULL, &dock_main_id);
-				ImGuiID dock_id_right = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.20f, NULL, &dock_main_id);
-				ImGuiID dock_id_bottom = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.20f, NULL, &dock_main_id);
+				ImGui::DockBuilderRemoveNode(dockspace_id); 
+				ImGui::DockBuilderAddNode(dockspace_id, dockspace_flags | ImGuiDockNodeFlags_DockSpace | ImGuiDockNodeFlags_PassthruCentralNode);
+				ImGui::DockBuilderSetNodeSize(dockspace_id, DockSpaceSize);
 
-				ImGui::DockBuilderDockWindow("Logs", dock_id_left);
-				//ImGui::DockBuilderDockWindow("James_2", dock_main_id);
-				//ImGui::DockBuilderDockWindow("James_3", dock_id_right);
-				//ImGui::DockBuilderDockWindow("James_4", dock_id_bottom);
+				auto dock_id_right = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Right, 0.25f, nullptr, &dockspace_id);
+				auto dock_id_left = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Left, 0.25f, nullptr, &dockspace_id);
+				auto dock_id_down= ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Down, 0.25f, nullptr, &dockspace_id);
+
+				ImGui::DockBuilderDockWindow("Logs", dock_id_right);
+				ImGui::DockBuilderDockWindow("Outliner", dock_id_down);
 				ImGui::DockBuilderFinish(dockspace_id);
 			}
-			*/
-			//LOG(DockNode->Rect().Min.x << " " << DockNode->Rect().Min.y << " " << DockNode->Rect().Max.x << " " << DockNode->Rect().Max.y);
+			
 		}
+
 	
 		ImGui::End();
-
-		//ImGui::DockSpaceOverViewport(nullptr, dockspace_flags);
 		ImGui::GetStyle().Colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
 		//ImGui::GetStyle().Colors[ImGuiCol_Separator] = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
-
 		ImGui::PopStyleColor(2);
 		ImGui::PopStyleVar(3);
-
-		
 	}
 
 	void SetPreferences(DATA::UIdataPack& data)
@@ -1615,6 +1610,7 @@ namespace UI
 									  (SplashScreenImage.GetTextureHeight() * ScreenScaleRatio.x * 0.5f) + (win_size.y * 0.2f) };
 			ImVec2 ApplicationSettingPosition = ImVec2((win_size.x / 2) - (ApplicationSettingSizes.x / 2), (win_size.y / 2) - (ApplicationSettingSizes.y / 2));
 
+
 			ImGui::SetNextWindowSize(ImVec2(ApplicationSettingSizes.x, ApplicationSettingSizes.y));
 			ImGui::SetNextWindowPos(ApplicationSettingPosition, ImGuiCond_FirstUseEver);
 
@@ -2430,156 +2426,7 @@ namespace UI
 			}
 		}
 
-		ImGui::SetCursorPos(ImVec2((current_win_size.x / MainTabCount) * 2.0f, MainMenuBarSize.y));
-
-		if (ImGui::Button("Outliner", MainTabSize))
-		{
-			data.Outlinerbutton = true;
-			data.propertiesbutton = false;
-			data.logbutton = false;
-		}
-		if (data.Outlinerbutton)
-		{
-			ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.ChildMenuColor));
-			ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 40.0f);
-			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 3.0f);
-
-			ImGui::SetCursorPosX(ChildMenuSize.x * 0.01f);
-			ImGui::BeginChildFrame(9, ImVec2(ChildMenuSize.x * 0.98f, ChildMenuSize.y * 0.99f), ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
-
-			for (size_t i = 1; i < scene.models.size(); i++)
-			{
-
-				if (ImGui::TreeNode(scene.models[i]->ModelName.c_str()))
-				{
-
-					ImGui::SameLine(0.0f, 2.0f);
-					ImGui::Button("helloobject", { ImGui::GetFontSize(),ImGui::GetFontSize() });
-
-					if (ImGui::Selectable(("Select##Object" + std::to_string(i)).c_str()))
-					{
-						currentselectedobj = i + 2;
-					}
-					ImGui::Indent();
-
-					for (size_t t = 0; t < scene.models[i]->meshes.size(); t++)
-					{
-						if (ImGui::TreeNode(scene.models[i]->meshes[t].meshname.c_str()))
-						{
-
-							if (ImGui::Selectable(("Select##Object" + std::to_string(t)).c_str()))
-							{
-
-							}
-
-							ImGui::TreePop();
-						}
-					}
-
-					ImGui::TreePop();
-
-					ImGui::Unindent();
-
-				}
-				else
-				{
-					float distance = current_win_size.x;
-					//LOG("(float)current_win_size.x: " << distance * 0.6f);
-					ImGui::SameLine(0.0f, distance * 0.6f);
-					ImGui::Button("hello", { ImGui::GetFontSize(),ImGui::GetFontSize() });
-				}
-
-
-
-			}
-
-			for (size_t i = 0; i < scene.lights.size(); i++)
-			{
-
-				if (ImGui::TreeNode(("Light" + std::to_string(i)).c_str()))
-				{
-					if (ImGui::Selectable(("Select##Object" + std::to_string(i)).c_str()))
-					{
-						currentselectedlight = i + 1 + scene.GetModelCount() + 1;
-					}
-
-					if (ImGui::Selectable(("Delete##Object" + std::to_string(i)).c_str()))
-					{
-						scene.DeleteLight(i, import_shader);
-						std::string logtemp = "A light is deleted!";
-						logs.push_back(logtemp);
-						currentselectedlight = 0;
-					}
-
-
-					ImGui::TreePop();
-
-				}
-
-			}
-
-			for (size_t i = 0; i < Cameras.size(); i++)
-			{
-				if (ImGui::TreeNode(("Camera" + std::to_string(i)).c_str()))
-				{
-					if (ImGui::Selectable(("Set Active##Object" + std::to_string(i)).c_str()))
-					{
-						ActiveCameraID = i;
-					}
-					ImGui::TreePop();
-				}
-			}
-
-
-			ImGui::PopStyleColor();
-			ImGui::PopStyleVar();
-			ImGui::PopStyleVar();
-			ImGui::EndChildFrame();
-
-
-		}
-
-		ImGui::SetCursorPos(ImVec2(current_win_size.x / MainTabCount, MainMenuBarSize.y));
-		if (ImGui::Button("Logs", MainTabSize))
-		{
-			data.Outlinerbutton = false;
-			data.propertiesbutton = false;;
-			data.logbutton = true;
-		}
-
-		if (data.logbutton)
-		{
-
-			ImGui::SetCursorPos(ChildMenuPos);
-
-			ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::ColorConvertFloat4ToU32(current_color_sheme.MidMenuColor));
-			ImGui::BeginChildFrame(88, ChildMenuSize, ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_AlwaysAutoResize);
-
-			ImGui::Spacing();
-
-			if (logs.size() >= 1)
-			{
-				for (size_t i = 0; i < logs.size(); i++)
-				{
-					ImGui::Text(logs.at(i).c_str());
-
-					if (i == 4)
-					{
-						ImGui::Spacing();
-						ImVec2 p = ImGui::GetCursorScreenPos();
-						ImGui::GetWindowDrawList()->AddLine(ImVec2(p.x + (current_win_size.x * 0.01f), p.y), ImVec2(p.x + (current_win_size.x * 0.9f), p.y), ImGui::GetColorU32(current_color_sheme.ChildMenuColor), 2.0f);
-						ImGui::Spacing();
-						ImGui::Spacing();
-					}
-				}
-			}
-
-			ImGui::EndChildFrame();
-			ImGui::PopStyleColor();
-			ImGui::EndTabItem();
-		}
 		current_win_size({ (int)ImGui::GetWindowSize().x,current_viewport_size.y });
-		ImGui::End();
 
 	}
 

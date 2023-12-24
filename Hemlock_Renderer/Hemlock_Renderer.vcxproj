@@ -159,6 +159,7 @@
     <ClCompile Include="SaveFile.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="SSAO.cpp" />
+    <ClCompile Include="SSLS.cpp" />
     <ClCompile Include="StopWatch.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Transformation.cpp" />
@@ -180,6 +181,7 @@
     <ClInclude Include="PreviewMaker.hpp" />
     <ClInclude Include="SaveFile.h" />
     <ClInclude Include="SSAO.h" />
+    <ClInclude Include="SSLS.hpp" />
     <ClInclude Include="StopWatch.h" />
     <ClInclude Include="SystemData.h" />
     <ClInclude Include="Thread.h" />
@@ -249,6 +251,7 @@
     <None Include="Shaders\SSAOblur.fs" />
     <None Include="Shaders\SSGU.fs" />
     <None Include="Shaders\SSGU.vs" />
+    <None Include="Shaders\SSLS.fs" />
     <None Include="Shaders\vertsource.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

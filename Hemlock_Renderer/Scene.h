@@ -402,7 +402,7 @@ public:
 	}
 	
 	void DrawGbuffer(GBUFFER::gBuffer& SceneGbuffer, GLuint GbufferShader, Camera& camera , std::pair<uint,bool> enablegizmo_p, GLuint pickingtextureShader , pickingtexture& pickingtex ,
-		            DATA::UIdataPack& data , DATA::ObjectSelectionState& SelectionState , Vec2<int> windowSize)
+		            DATA::UIdataPack& data , DATA::ObjectSelectionState& SelectionState , Vec2<int> windowSize , GLuint LightShader)
 	{
 		if (!models.empty())
 		{
@@ -428,6 +428,15 @@ public:
 				models[i]->Draw(GbufferShader, camera, NULL, NULL);
 			}
 
+			if (data.renderlights)
+			{
+				for (int i = 0; i < lights.size(); i++) {
+
+					lights[i]->LightID = i + 1 + GetModelCount() + 1;
+					lights[i]->Draw(LightShader, camera);
+				}
+			}
+
 			pickingtex.EnableWriting();
 			glViewport(0, 0, SceneGbuffer.window_width, SceneGbuffer.window_height);
 			UseShaderProgram(pickingtextureShader);
@@ -445,11 +454,9 @@ public:
 			{
 
 				for (int i = 0; i < lights.size(); i++) {
-					//glStencilFunc(GL_ALWAYS, i + 1 + GetModelCount() + 1, -1);
-
+					
 					lights[i]->LightID = i + 1 + GetModelCount() + 1;
 					lights[i]->Draw(pickingtextureShader, camera);
-
 				}
 			}
 
@@ -519,7 +526,8 @@ public:
 		return input * 2.0f - 1.0f;
 	}
 
-	void DrawScreenQuad(GLuint shader, FBO& buffertexture , GBUFFER::gBuffer& screenGbuffer , Vec2<float> menuSize,float viewportHeight , int RenderPass,pickingtexture &pickingTexture,GLuint PickingShader, pickingtexture &pickingBuffertex, SSAO &ssao, bool EnableSSAO,GLFWwindow &window , DATA::UIdataPack& data , Camera& camera , Vec4<float> UndockedRect)
+	void DrawScreenQuad(GLuint shader, FBO& buffertexture , GBUFFER::gBuffer& screenGbuffer , Vec2<float> menuSize,float viewportHeight , int RenderPass,pickingtexture &pickingTexture,GLuint PickingShader, 
+		pickingtexture &pickingBuffertex, SSAO &ssao, bool EnableSSAO,GLFWwindow &window , DATA::UIdataPack& data , Camera& camera , Vec4<float> UndockedRect , GLuint sslsTexture)
 	{
 		int width, height;
 		glfwGetWindowSize(&window, &width, &height);
@@ -590,7 +598,13 @@ public:
 
 		if (RenderPass == RENDER_PASS_COMBINED || RenderPass == RENDER_PASS_WIREFRAME)
 		{
+			//renderpass = sslsTexture;
 			renderpass = buffertexture.GetScreenImage();
+
+			glActiveTexture(GL_TEXTURE4);
+			glBindTexture(GL_TEXTURE_2D, sslsTexture);
+			glUniform1i(glGetUniformLocation(shader, "SSLSpass"), 4);
+
 			glUniform1i(glGetUniformLocation(shader, "RenderPass"), 1);
 			glUniform1i(glGetUniformLocation(shader, "DOFenabled"), (int)data.DOFenabled);
 			if (data.DOFenabled)
@@ -605,6 +619,8 @@ public:
 				glActiveTexture(GL_TEXTURE1);
 				glBindTexture(GL_TEXTURE_2D, screenGbuffer.gPosition);
 				glUniform1i(glGetUniformLocation(shader, "PositionBuffer"), 1);
+
+				
 			}
 		}
 		else if (RenderPass == RENDER_PASS_NORMAL)
@@ -695,9 +711,6 @@ public:
 
 			glEnable(GL_STENCIL_TEST);
 			glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-
-
-			//glEnable(GL_FRAMEBUFFER_SRGB);
 
 			if (currentselectedobj >= 2)
 			{
@@ -1792,6 +1805,14 @@ public:
 			{
 				LOG_ERR("Error importing texture :: " << filePath);
 			}
+		}
+	}
+
+	void WindowResizeEventReset()
+	{
+		if (WindowWasResized)
+		{
+			WindowWasResized = false;
 		}
 	}
 

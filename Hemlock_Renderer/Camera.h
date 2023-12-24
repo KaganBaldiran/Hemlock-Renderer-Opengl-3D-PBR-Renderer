@@ -24,6 +24,7 @@ extern int ActiveCameraID;
 extern int CameraIterator;
 
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
+void WindowSizeCallback(GLFWwindow* window, int width, int height);
 void InitializeCameraMesh();
 void DisposeCameraMesh();
 
@@ -54,7 +55,6 @@ void DisposeCameraMesh();
 	  float speed = 0.03f;
 	  float sensitivity = 100.0f;
 
-	  //unsigned int IndicesCount;
 	  WorldTransform transformation;
 	  glm::mat4 Objectview;
 
@@ -70,7 +70,10 @@ void DisposeCameraMesh();
 	  void Draw(glm::mat4& cammatrix, Shader& shader, std::function<void()> shaderPrep);
 
   private:
-	  //GLuint Camvbo, Camvao, Camebo;
+	  
+
+
+
   };
 
   extern std::vector<Camera*> Cameras;

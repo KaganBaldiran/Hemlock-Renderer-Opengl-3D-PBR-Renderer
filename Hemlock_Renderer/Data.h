@@ -10,6 +10,8 @@
 
 typedef std::vector<std::string> LogArray;
 extern LogArray logs;
+extern Vec2<int> OverAllWindowSize;
+extern bool WindowWasResized;
 
 namespace DATA
 {

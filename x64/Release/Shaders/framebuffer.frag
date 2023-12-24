@@ -5,6 +5,7 @@ in vec2 TexCoords;
 in mat4 modelMatr;
 
 uniform sampler2D Viewport;
+uniform sampler2D SSLSpass;
 uniform sampler2D SSAO;
 uniform int RenderPass;
 uniform bool EnableSSAO;
@@ -57,10 +58,12 @@ void main()
 
     if(EnableSSAO)
     {
-        OutColor = OutColor * vec4(vec3(texture(SSAO,TexCoords).r),1.0f);
+        OutColor = (OutColor + texture(SSLSpass, TexCoords)) * vec4(vec3(texture(SSAO,TexCoords).r),1.0f);
     }
     
-      FragColor = vec4(pow(OutColor.xyz,vec3(0.9)),OutColor.w);
+      vec4 SSLS = texture(SSLSpass, TexCoords);
+      FragColor = vec4(pow(OutColor.xyz + SSLS.xyz,vec3(0.9)),OutColor.w);
+
     }
     else if(RenderPass == 3)
     {

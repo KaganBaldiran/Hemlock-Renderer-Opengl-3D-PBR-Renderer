@@ -3,6 +3,7 @@
 #include "Imgui/imgui.h"
 #include "Imgui/imgui_impl_opengl3.h"
 #include "Imgui/imgui_impl_glfw.h"
+#include "Data.h"
 
 Vec2<double> ScrollAmount;
 Vec2<double> MousePosCamera;
@@ -317,6 +318,12 @@ void Camera::Draw(glm::mat4& cammatrix, Shader& shader, std::function<void()> sh
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	ScrollAmount({ xoffset, yoffset });
+}
+
+void WindowSizeCallback(GLFWwindow* window, int width, int height)
+{
+	OverAllWindowSize.SetValues(width, height);
+	WindowWasResized = true;
 }
 
 void InitializeCameraMesh()

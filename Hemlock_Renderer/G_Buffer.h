@@ -22,7 +22,7 @@ namespace GBUFFER
 		gBuffer();
 		~gBuffer();
 
-		GLuint gbuffer, gPosition, gNormal, gColorSpec, RBO;
+		GLuint gbuffer, gPosition, gNormal, gColorSpec, RBO , SSLS;
 		int window_width, window_height;
 
 	private:

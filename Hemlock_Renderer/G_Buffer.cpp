@@ -31,8 +31,15 @@ GBUFFER::gBuffer::gBuffer()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gColorSpec, 0);
 
-	unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 , GL_COLOR_ATTACHMENT2 };
-	glDrawBuffers(3, attachments);
+	glGenTextures(1, &SSLS);
+	glBindTexture(GL_TEXTURE_2D, SSLS);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, window_width, window_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, SSLS, 0);
+
+	unsigned int attachments[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 , GL_COLOR_ATTACHMENT2 , GL_COLOR_ATTACHMENT3 };
+	glDrawBuffers(4, attachments);
 
 	glGenRenderbuffers(1, &RBO);
 	glBindRenderbuffer(GL_RENDERBUFFER, RBO);
@@ -54,6 +61,7 @@ GBUFFER::gBuffer::~gBuffer()
 	glDeleteTextures(1, &gPosition);
 	glDeleteTextures(1, &gNormal);
 	glDeleteTextures(1, &gColorSpec);
+	glDeleteTextures(1, &SSLS);
 	glDeleteFramebuffers(1, &gbuffer);
 	glDeleteRenderbuffers(1, &RBO);
 }
